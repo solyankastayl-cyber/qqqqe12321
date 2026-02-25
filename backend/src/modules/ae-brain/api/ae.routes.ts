@@ -17,7 +17,7 @@ import { buildAeState } from '../services/ae_state.service.js';
 import { classifyRegime } from '../services/ae_regime.service.js';
 import { buildCausalGraph } from '../services/ae_causal.service.js';
 import { buildScenarios } from '../services/ae_scenarios.service.js';
-import { computeNovelty, snapshotState, getNoveltyStats } from '../services/ae_novelty.service.js';
+import { computeNovelty, snapshotState, getNoveltyStats, getStateFromDB } from '../services/ae_novelty.service.js';
 import { buildAeTerminal, getAeBrainHealth } from '../services/ae_terminal.service.js';
 import { runAeBackfill, getBackfillStats } from '../services/ae_backfill.service.js';
 
