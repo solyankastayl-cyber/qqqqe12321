@@ -35,9 +35,11 @@ import type { TerminalMacroPack } from '../contracts/dxy_terminal.contract.js';
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════════
 
-// B4.1: Added housing series to tracking
+// B4.1-B4.3: Series tracking
 const CORE_SERIES = ['FEDFUNDS', 'CPILFESL', 'T10Y2Y', 'UNRATE', 'M2SL', 'CPIAUCSL', 'PPIACO'];
 const HOUSING_SERIES = ['MORTGAGE30US', 'HOUST', 'PERMIT', 'CSUSHPISA'];
+const ACTIVITY_SERIES = ['NAPM', 'INDPRO', 'TCU'];
+const CREDIT_SERIES = ['BAA10Y', 'BAMLH0A0HYM2', 'STLFSI4'];
 
 const FIXED_LIMITS = [
   'Macro overlay does NOT change signal direction (LONG/SHORT)',
