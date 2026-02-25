@@ -240,67 +240,80 @@ KNN cosine distance (K=20):
 ## Next Steps
 
 ### Immediate
-1. **D2** — BTC Cascade Integration (DXY → SPX → BTC)
+1. **D2.1** — OOS Validation BTC 2021-2025 (baseline vs cascade)
 
 ### Backlog
 - Hysteresis — Reduce guard flaps (median 21d → 30d)
 - C8.2 — Rolling Transition Matrix (evolving window)
-- B4.4 — Energy & Commodity (optional)
 - Fix public URL routing for API access
 
 ---
 
-## D-Track: Asset Cascade — IN PROGRESS
+## D-Track: Asset Cascade — COMPLETE ✅
 
-### D1 SPX Cascade — VALIDATED ✅ NEW
+### D1 SPX Cascade — VALIDATED ✅
 
 **Purpose:** DXY/AE → SPX overlay. Cascade NEVER changes SPX direction, only scales exposure.
 
+**Guard Caps (SPX):**
+| Guard Level | Size Cap |
+|-------------|----------|
+| BLOCK | 0.0 |
+| CRISIS | 0.4 |
+| WARN | 0.75 |
+
+**Multipliers:** mStress * mPersist * mNovel * mScenario
+
+---
+
+### D2 BTC Cascade — VALIDATED ✅ NEW
+
+**Purpose:** DXY/AE/SPX → BTC overlay. Complete cascade chain.
+
 **Architecture:**
 ```
-DXY Terminal → ┐
-               ├→ SPX Cascade → Adjusted Decision
-AE Brain     → ┘
+DXY → AE Brain → SPX Cascade → BTC Cascade
 ```
 
-**Module:** `/modules/spx-cascade/`
-- `spx_cascade.contract.ts` — Types and interfaces
-- `spx_cascade.rules.ts` — Pure functions for multiplier calculations
-- `spx_cascade.service.ts` — Service fetching DXY/AE and building cascade pack
-- `spx_cascade.routes.ts` — API endpoints
+**BTC receives:**
+- pStress4w (from AE transition matrix)
+- bearProb, bullProb (from AE scenarios)
+- noveltyLabel (from AE novelty)
+- spxAdj (from SPX cascade multiplier)
+- guardLevel (from AE state)
 
-**Guard Policy (hard caps):**
-| Guard Level | Size Cap | Action |
-|-------------|----------|--------|
-| BLOCK | 0.0 | Full block |
-| CRISIS | 0.4 | Scale down |
-| WARN | 0.75 | Soft cap |
-| NONE | 1.0 | No cap |
+**Guard Caps (BTC — tighter due to volatility):**
+| Guard Level | Size Cap |
+|-------------|----------|
+| BLOCK | 0.0 |
+| CRISIS | 0.35 |
+| WARN | 0.70 |
 
 **Multiplier Formula:**
 ```
-confidenceMultiplier = mStress * mPersist * mNovel * mScenario
-sizeMultiplier = min(guardCap, confidenceMultiplier)
-```
+mStress   = clamp(1 - 1.5 * pStress4w, 0.10, 1.00)
+mScenario = bear>=0.40 → 0.80 | bull>=0.40 → 1.05 | else 1.00
+mNovel    = RARE/UNSEEN → 0.85 | else 1.00
+mSPX      = spxAdj<0.40 → 0.75 | spxAdj>0.80 → 1.05 | else 1.00
 
-**Individual Factors:**
-- `mStress = 1 - 1.2 * pStress4w` (+ 0.85 if in stress regime)
-- `mPersist = 1 - 0.5 * selfTransition` (for stress regimes)
-- `mNovel = 0.85` if novelty score > 0.12
-- `mScenario = 1 - 0.25 * max(bear - bull, 0)`
+mTotal    = min(guardCap, mStress * mScenario * mNovel * mSPX)
+```
 
 **API Endpoints:**
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/fractal/spx/terminal?focus=30d` | Full SPX + cascade |
-| GET | `/api/fractal/spx/cascade?focus=30d` | Cascade only |
-| GET | `/api/fractal/spx/cascade/health` | Health check |
-| POST | `/api/fractal/spx/admin/cascade/validate` | Test guard policies |
+| GET | `/api/fractal/btc/cascade?focus=30d` | Cascade only |
+| GET | `/api/fractal/btc/cascade/debug` | Debug with timing |
+| GET | `/api/fractal/btc/cascade/health` | Health check |
+| POST | `/api/fractal/btc/admin/cascade/validate` | Test guard policies |
 
 **Acceptance Tests:** All passed
 - BLOCK → size=0 ✅
-- CRISIS → size≤0.4 ✅
-- Direction preserved ✅
+- CRISIS → size≤0.35 ✅
+- WARN → size≤0.70 ✅
+- Monotonic: stress↑ → size↓ ✅
+- Bear scenario: mScenario=0.80 ✅
+- SPX coupling: spxAdj<0.40 → mSPX=0.75 ✅
 - No NaN ✅
 - Deterministic ✅
 
