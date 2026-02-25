@@ -421,6 +421,12 @@ async function main() {
   await registerDxyMacroCoreModule(app);
   console.log('[Fractal] ✅ DXY Macro Core B1 registered at /api/dxy-macro-core/*');
   
+  // BLOCK C: Register AE Brain Module (C1-C5)
+  console.log('[Fractal] Registering AE Brain Module (C1-C5)...');
+  const { registerAeRoutes } = await import('./modules/ae-brain/api/ae.routes.js');
+  await registerAeRoutes(app);
+  console.log('[Fractal] ✅ AE Brain registered at /api/ae/*');
+  
   // NOTE: SPX Phase routes already registered via spx-core module
   
   // BLOCK C: Register Combined Terminal (Building)
