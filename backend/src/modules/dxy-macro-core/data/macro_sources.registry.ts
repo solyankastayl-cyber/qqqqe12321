@@ -260,16 +260,16 @@ export const MACRO_SERIES_REGISTRY: MacroSeriesSpec[] = [
 
   // B4.2: PMI & Economic Activity Series
   {
-    seriesId: "NAPM",
-    displayName: "ISM Manufacturing PMI",
+    seriesId: "MANEMP",
+    displayName: "Manufacturing Employment",
     frequency: "monthly",
-    units: "index",
+    units: "thousands",
     role: "growth",
-    primaryTransform: "level",
+    primaryTransform: "yoy",
     secondaryTransforms: ["delta"],
     minCoverageYears: 30,
     enabledByDefault: true,
-    notes: "ISM Manufacturing PMI. 50+ = expansion, <50 = contraction.",
+    notes: "Manufacturing employment as activity proxy. YoY change indicates momentum.",
   },
 
   {
@@ -300,8 +300,21 @@ export const MACRO_SERIES_REGISTRY: MacroSeriesSpec[] = [
 
   // B4.3: Credit & Financial Stress Series
   {
-    seriesId: "BAMLH0A0HYM2",
-    displayName: "High Yield Spread (ICE BofA)",
+    seriesId: "BAA10Y",
+    displayName: "Moody's Baa Corporate Spread",
+    frequency: "daily",
+    units: "percent",
+    role: "credit",
+    primaryTransform: "level",
+    secondaryTransforms: ["delta"],
+    minCoverageYears: 30,
+    enabledByDefault: true,
+    notes: "Credit stress proxy. High spreads = stress = USD supportive.",
+  },
+
+  {
+    seriesId: "TEDRATE",
+    displayName: "TED Spread",
     frequency: "daily",
     units: "percent",
     role: "credit",
@@ -309,20 +322,20 @@ export const MACRO_SERIES_REGISTRY: MacroSeriesSpec[] = [
     secondaryTransforms: ["delta"],
     minCoverageYears: 20,
     enabledByDefault: true,
-    notes: "High yield corporate spread. Rising = stress = USD supportive.",
+    notes: "TED spread (3m LIBOR - 3m T-Bill). Banking stress indicator.",
   },
 
   {
-    seriesId: "STLFSI4",
-    displayName: "Financial Stress Index (St. Louis Fed)",
-    frequency: "weekly",
+    seriesId: "VIXCLS",
+    displayName: "VIX (Volatility Index)",
+    frequency: "daily",
     units: "index",
     role: "credit",
     primaryTransform: "level",
     secondaryTransforms: [],
-    minCoverageYears: 15,
+    minCoverageYears: 20,
     enabledByDefault: true,
-    notes: "Financial stress index. >0 = above average stress.",
+    notes: "VIX volatility index. High = fear = USD safe-haven bid.",
   },
 ];
 
