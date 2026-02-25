@@ -12,7 +12,7 @@ import {
   calcNoveltyMultiplier,
   calcScenarioMultiplier,
   GUARD_CAPS,
-} from '../spx_cascade.rules.js';
+} from './spx_cascade.rules.js';
 
 // ═══════════════════════════════════════════════════════════════
 // PERIODS
