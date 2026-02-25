@@ -162,12 +162,13 @@ KNN cosine distance (K=20):
 ## Next Steps
 
 ### Immediate (D-Track)
-1. **D1** — SPX Cascade Integration (DXY → SPX)
-2. **D2** — BTC Cascade Integration (DXY → SPX → BTC)
+1. **C7** — Regime Clustering (k-means on state vectors) — Optional
+2. **D1** — SPX Cascade Integration (DXY → SPX)
+3. **D2** — BTC Cascade Integration (DXY → SPX → BTC)
 
 ### Backlog
 - Hysteresis — Reduce guard flaps (median 21d → 30d)
-- Historical backfill — Snapshot state vectors for 2000-2025
+- Regime Transition Matrix — probability of regime switches
 - B4.4 — Energy & Commodity (optional)
 
 ---
