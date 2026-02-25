@@ -199,9 +199,50 @@ export const MACRO_SERIES_REGISTRY: MacroSeriesSpec[] = [
     units: "thousands",
     role: "housing",
     primaryTransform: "yoy",
-    secondaryTransforms: [],
-    enabledByDefault: false,
+    secondaryTransforms: ["delta"],
+    minCoverageYears: 30,
+    enabledByDefault: true,  // B4.1: Enabled
     notes: "Rate-sensitive sector; good early-cycle signal.",
+  },
+
+  // B4.1: Housing & Real Estate Series
+  {
+    seriesId: "MORTGAGE30US",
+    displayName: "30Y Fixed Mortgage Rate",
+    frequency: "weekly",
+    units: "percent",
+    role: "housing",
+    primaryTransform: "level",
+    secondaryTransforms: ["delta"],
+    minCoverageYears: 30,
+    enabledByDefault: true,
+    notes: "Mortgage rate directly affects housing affordability and DXY correlation.",
+  },
+
+  {
+    seriesId: "PERMIT",
+    displayName: "Building Permits",
+    frequency: "monthly",
+    units: "thousands",
+    role: "housing",
+    primaryTransform: "yoy",
+    secondaryTransforms: ["delta"],
+    minCoverageYears: 30,
+    enabledByDefault: true,
+    notes: "Leading indicator for housing starts.",
+  },
+
+  {
+    seriesId: "CSUSHPISA",
+    displayName: "Case-Shiller Home Price Index",
+    frequency: "monthly",
+    units: "index",
+    role: "housing",
+    primaryTransform: "yoy",
+    secondaryTransforms: [],
+    minCoverageYears: 20,
+    enabledByDefault: true,
+    notes: "National home price index; wealth effect indicator.",
   },
 
   {
