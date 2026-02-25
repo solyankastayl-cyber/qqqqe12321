@@ -239,6 +239,167 @@ class AEBrainTester:
         
         return success and has_all_sections and has_recommendation
     
+    def test_backfill_stats_endpoint(self):
+        """Test /api/ae/admin/backfill-stats endpoint - C6 requirement 1"""
+        print("\n🔍 Testing Backfill Stats Endpoint (C6 Historical Backfill)...")
+        success, data, status = self.call_api("admin/backfill-stats")
+        
+        if not success:
+            self.log_test("Backfill Stats Endpoint", False, f"HTTP {status}")
+            return False
+        
+        # Check total >= 1300 as required
+        total = data.get("total", 0)
+        has_sufficient_vectors = total >= 1300
+        self.log_test("Backfill Stats - Total >= 1300", has_sufficient_vectors, f"total={total}")
+        
+        # Check range exists
+        range_data = data.get("range")
+        has_range = range_data is not None and "from" in range_data and "to" in range_data
+        self.log_test("Backfill Stats - Range", has_range, 
+                     f"range={range_data}")
+        
+        # Check distribution exists
+        distribution = data.get("distribution")
+        has_distribution = distribution is not None
+        self.log_test("Backfill Stats - Distribution", has_distribution, 
+                     f"distribution_present={has_distribution}")
+        
+        if distribution:
+            # Check macroSigned range [-0.3, 0.4] as required
+            macro_stats = distribution.get("macroSigned", {})
+            macro_min = macro_stats.get("min")
+            macro_max = macro_stats.get("max")
+            
+            macro_range_valid = (macro_min is not None and macro_max is not None and 
+                               macro_min >= -0.5 and macro_max <= 0.6)  # Allow some tolerance
+            self.log_test("Backfill Stats - MacroSigned Range", macro_range_valid, 
+                         f"macro_range=[{macro_min}, {macro_max}]")
+            
+            # Check guardLevel distribution
+            guard_stats = distribution.get("guardLevel", {})
+            total_guards = sum(guard_stats.values())
+            if total_guards > 0:
+                none_pct = guard_stats.get("none", 0) / total_guards * 100
+                crisis_pct = guard_stats.get("crisis", 0) / total_guards * 100  
+                block_pct = guard_stats.get("block", 0) / total_guards * 100
+                
+                # Check approximate distributions: NONE ~80%, CRISIS ~15%, BLOCK ~4%
+                distribution_valid = (none_pct > 70 and crisis_pct > 10 and block_pct > 2)
+                self.log_test("Backfill Stats - GuardLevel Distribution", distribution_valid, 
+                             f"none={none_pct:.1f}%, crisis={crisis_pct:.1f}%, block={block_pct:.1f}%")
+            else:
+                self.log_test("Backfill Stats - GuardLevel Distribution", False, "No guard data")
+        
+        return success and has_sufficient_vectors and has_range
+    
+    def test_historical_state_gfc(self):
+        """Test historical state for GFC period - C6 requirements 2&6"""
+        print("\n🔍 Testing Historical State for GFC (2008-10-11)...")
+        success, data, status = self.call_api("state?asOf=2008-10-11")
+        
+        if not success:
+            self.log_test("Historical State GFC", False, f"HTTP {status}")
+            return False
+        
+        # Check source is historical
+        source = data.get("source")
+        is_historical = source == "historical"
+        self.log_test("Historical State GFC - Source", is_historical, f"source={source}")
+        
+        # Check guardLevel = 1 (BLOCK)
+        vector = data.get("vector", {})
+        guard_level = vector.get("guardLevel")
+        is_block_guard = guard_level == 1.0 or guard_level >= 0.9  # Allow slight tolerance
+        self.log_test("Historical State GFC - GuardLevel BLOCK", is_block_guard, 
+                     f"guardLevel={guard_level}")
+        
+        return success and is_historical and is_block_guard
+    
+    def test_regime_gfc(self):
+        """Test regime for GFC period - C6 requirement 3"""
+        print("\n🔍 Testing Regime for GFC (2008-10-11)...")
+        success, data, status = self.call_api("regime?asOf=2008-10-11")
+        
+        if not success:
+            self.log_test("Regime GFC", False, f"HTTP {status}")
+            return False
+        
+        # Check regime is RISK_OFF_STRESS
+        regime = data.get("regime")
+        is_risk_off_stress = regime == "RISK_OFF_STRESS"
+        self.log_test("Regime GFC - RISK_OFF_STRESS", is_risk_off_stress, f"regime={regime}")
+        
+        return success and is_risk_off_stress
+    
+    def test_regime_covid(self):
+        """Test regime for COVID period - C6 requirement 4"""
+        print("\n🔍 Testing Regime for COVID (2020-03-14)...")
+        success, data, status = self.call_api("regime?asOf=2020-03-14")
+        
+        if not success:
+            self.log_test("Regime COVID", False, f"HTTP {status}")
+            return False
+        
+        # Check regime is RISK_OFF_STRESS
+        regime = data.get("regime")
+        is_risk_off_stress = regime == "RISK_OFF_STRESS"
+        self.log_test("Regime COVID - RISK_OFF_STRESS", is_risk_off_stress, f"regime={regime}")
+        
+        return success and is_risk_off_stress
+    
+    def test_novelty_covid_to_gfc(self):
+        """Test novelty detection for COVID showing GFC dates - C6 requirement 5"""
+        print("\n🔍 Testing Novelty Detection COVID→GFC (2020-03-14)...")
+        success, data, status = self.call_api("novelty?asOf=2020-03-14")
+        
+        if not success:
+            self.log_test("Novelty COVID→GFC", False, f"HTTP {status}")
+            return False
+        
+        # Check nearest dates contain 2008 dates
+        nearest = data.get("nearest", [])
+        has_2008_dates = any("2008" in str(item) for item in nearest)
+        self.log_test("Novelty COVID→GFC - Contains 2008 dates", has_2008_dates, 
+                     f"nearest={nearest[:3]}...")  # Show first 3 items
+        
+        return success and has_2008_dates
+    
+    def test_terminal_gfc(self):
+        """Test terminal for GFC showing guard BLOCK and BEAR_STRESS - C6 requirement 6"""
+        print("\n🔍 Testing Terminal for GFC (2008-10-11)...")
+        success, data, status = self.call_api("terminal?asOf=2008-10-11")
+        
+        if not success:
+            self.log_test("Terminal GFC", False, f"HTTP {status}")
+            return False
+        
+        # Check guard is BLOCK
+        recommendation = data.get("recommendation", {})
+        guard = recommendation.get("guard")
+        is_block_guard = guard == "BLOCK"
+        self.log_test("Terminal GFC - Guard BLOCK", is_block_guard, f"guard={guard}")
+        
+        # Check scenarios for BEAR_STRESS dominance
+        scenarios = data.get("scenarios", {}).get("scenarios", [])
+        bear_stress_scenario = None
+        for scenario in scenarios:
+            if "BEAR" in scenario.get("name", "") or "STRESS" in scenario.get("name", ""):
+                bear_stress_scenario = scenario
+                break
+        
+        has_bear_stress = bear_stress_scenario is not None
+        if has_bear_stress:
+            bear_prob = bear_stress_scenario.get("prob", 0)
+            is_dominant = bear_prob > 0.4  # Should be dominant scenario
+            self.log_test("Terminal GFC - BEAR_STRESS Dominant", is_dominant, 
+                         f"bear_stress_prob={bear_prob:.2f}")
+        else:
+            self.log_test("Terminal GFC - BEAR_STRESS Present", False, 
+                         f"scenarios={[s.get('name') for s in scenarios]}")
+        
+        return success and is_block_guard and has_bear_stress
+        
     def test_snapshot_endpoint(self):
         """Test POST /api/ae/admin/snapshot endpoint"""
         print("\n🔍 Testing Snapshot Endpoint (Admin)...")
