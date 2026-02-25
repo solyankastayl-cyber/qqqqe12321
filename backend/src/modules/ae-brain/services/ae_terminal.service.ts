@@ -56,6 +56,48 @@ export async function buildAeTerminal(asOf?: string): Promise<AeTerminal> {
     // C5: Compute Novelty (using current state)
     const novelty = await computeNovelty(today, state);
     
+    // C7: Get Cluster info
+    let cluster: AeClusterInfo | undefined;
+    try {
+      const clusterResult = await getCurrentCluster(today);
+      if (clusterResult) {
+        cluster = {
+          clusterId: clusterResult.clusterId,
+          label: clusterResult.label,
+          distance: clusterResult.distance,
+        };
+      }
+    } catch (e) {
+      console.warn('[AE Terminal] Cluster unavailable:', (e as Error).message);
+    }
+    
+    // C8: Get Transition info
+    let transition: AeTransitionInfo | undefined;
+    try {
+      const transitionPack = await getTransitionPack(cluster?.label);
+      if (transitionPack && transitionPack.derived) {
+        const d = transitionPack.derived;
+        const currentDuration = transitionPack.durations.find(
+          dur => dur.label === d.currentLabel
+        );
+        
+        transition = {
+          currentLabel: d.currentLabel,
+          mostLikelyNext: d.mostLikelyNext,
+          mostLikelyNextProb: d.mostLikelyNextProb,
+          selfTransitionProb: d.selfTransitionProb,
+          riskToStress: {
+            p1w: d.riskToStress.p1w,
+            p2w: d.riskToStress.p2w,
+            p4w: d.riskToStress.p4w,
+          },
+          medianDurationWeeks: currentDuration?.medianWeeks || 0,
+        };
+      }
+    } catch (e) {
+      console.warn('[AE Terminal] Transition unavailable:', (e as Error).message);
+    }
+    
     // Recommendation
     const sizeMultiplier = clamp(1 - 0.6 * state.vector.guardLevel, 0, 1);
     const guardMode = getGuardMode(state.vector.guardLevel);
