@@ -1,58 +1,58 @@
 {
-  "timestamp": "2026-02-25T16:51:25.731338",
+  "timestamp": "2026-02-25T16:52:14.522955",
   "summary": {
-    "passed": 0,
+    "passed": 8,
     "total": 8,
-    "success_rate": "0.0%"
+    "success_rate": "100.0%"
   },
   "tests": [
     {
       "test_name": "GET /api/health - should return ok: true",
-      "passed": false,
-      "details": "Status: 404, Response: 404 page not found\n",
-      "timestamp": "2026-02-25T16:51:14.725926"
+      "passed": true,
+      "details": "Status: 200, ok: True",
+      "timestamp": "2026-02-25T16:51:51.025527"
     },
     {
       "test_name": "GET /api/ae/health - AE Brain module health",
-      "passed": false,
-      "details": "Status: 404, Response: 404 page not found\n",
-      "timestamp": "2026-02-25T16:51:16.120801"
+      "passed": true,
+      "details": "Status: 200, module: ae-brain, ok: True, version: C1-C5, components: 5 [state, regime, causal, scenarios, novelty]",
+      "timestamp": "2026-02-25T16:51:52.238967"
     },
     {
       "test_name": "GET /api/ae/terminal - full AE terminal pack with C1-C8",
-      "passed": false,
-      "details": "Status: 404, Response: 404 page not found\n",
-      "timestamp": "2026-02-25T16:51:17.520442"
+      "passed": true,
+      "details": "Status: 200, ok: True, required_components: 5/5, optional_components: ['transition'], C8_transition: True",
+      "timestamp": "2026-02-25T16:52:07.821651"
     },
     {
       "test_name": "POST /api/ae/admin/transition/compute - compute matrix",
-      "passed": false,
-      "details": "Status: 404, Response: 404 page not found\n",
-      "timestamp": "2026-02-25T16:51:19.248286"
+      "passed": true,
+      "details": "Status: 200, ok: True, labels: 3 ['LIQUIDITY_EXPANSION', 'RISK_OFF_STRESS', 'TIGHTENING_USD_SUPPORTIVE'], matrix_size: 3x3, samples: 312",
+      "timestamp": "2026-02-25T16:52:09.025512"
     },
     {
       "test_name": "GET /api/ae/transition/current - matrix with derived metrics",
-      "passed": false,
-      "details": "Status: 404, Response: 404 page not found\n",
-      "timestamp": "2026-02-25T16:51:20.818648"
+      "passed": true,
+      "details": "Status: 200, ok: True, matrix: True, derived: True, durations: True, currentLabel: LIQUIDITY_EXPANSION, stressLabels: 1, riskToStress_periods: True, p1w: 0.0167, p2w: 0.0258, p4w: 0.0331",
+      "timestamp": "2026-02-25T16:52:10.219543"
     },
     {
       "test_name": "GET /api/ae/transition/matrix - raw matrix with 3 labels & row sums ~1.0",
-      "passed": false,
-      "details": "Status: 404, Response: 404 page not found\n",
-      "timestamp": "2026-02-25T16:51:22.252179"
+      "passed": true,
+      "details": "Status: 200, ok: True, labels: 3 ['LIQUIDITY_EXPANSION', 'RISK_OFF_STRESS', 'TIGHTENING_USD_SUPPORTIVE'], expected_labels_present: True, matrix_size: 3x3, row_sums_valid (~1.0): True, row_sums: ['1.0001', '1.0000', '1.0000']",
+      "timestamp": "2026-02-25T16:52:11.325019"
     },
     {
       "test_name": "GET /api/ae/transition/durations - regime duration stats",
-      "passed": false,
-      "details": "Status: 404, Response: 404 page not found\n",
-      "timestamp": "2026-02-25T16:51:23.727780"
+      "passed": true,
+      "details": "Status: 200, ok: True, duration_stats: 3, regime_durations: RISK_OFF_STRESS: 4w median (22 episodes); LIQUIDITY_EXPANSION: 4w median (17 episodes); TIGHTENING_USD_SUPPORTIVE: 6w median (14 episodes)",
+      "timestamp": "2026-02-25T16:52:12.522220"
     },
     {
       "test_name": "Transition Matrix Validation - matrix properties",
-      "passed": false,
-      "details": "No matrix data available from compute test",
-      "timestamp": "2026-02-25T16:51:24.730269"
+      "passed": true,
+      "details": "expected_labels: True, row_sums_valid: True, square_matrix: True, valid_probabilities: True, labels: ['LIQUIDITY_EXPANSION', 'RISK_OFF_STRESS', 'TIGHTENING_USD_SUPPORTIVE'], matrix_size: 3x3, row_sums: ['1.0001', '1.0000', '1.0000']",
+      "timestamp": "2026-02-25T16:52:13.522648"
     }
   ]
 }
