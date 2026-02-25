@@ -445,6 +445,12 @@ async function main() {
   await registerSpxCascadeRoutes(app);
   console.log('[Fractal] ✅ SPX Cascade D1 registered at /api/fractal/spx/cascade');
   
+  // BLOCK D2: Register BTC Cascade Module (DXY/AE/SPX → BTC)
+  console.log('[Fractal] Registering BTC Cascade Module (D2)...');
+  const { registerBtcCascadeRoutes } = await import('./modules/btc-cascade/btc_cascade.routes.js');
+  await registerBtcCascadeRoutes(app);
+  console.log('[Fractal] ✅ BTC Cascade D2 registered at /api/fractal/btc/cascade');
+  
   // NOTE: SPX Phase routes already registered via spx-core module
   
   // BLOCK C: Register Combined Terminal (Building)
