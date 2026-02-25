@@ -110,6 +110,12 @@ export interface EpisodeStats {
   housingAvg: number;
   fedAvg: number;
   topDriver: string;
+  // B6: Crisis Guard stats
+  guard: {
+    NONE: number;
+    WARN: number;
+    BLOCK: number;
+  };
 }
 
 export interface Episode {
