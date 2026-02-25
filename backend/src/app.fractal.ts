@@ -445,6 +445,12 @@ async function main() {
   await registerSpxCascadeRoutes(app);
   console.log('[Fractal] ✅ SPX Cascade D1 registered at /api/fractal/spx/cascade');
   
+  // BLOCK D1.1: Register SPX Cascade Validation
+  console.log('[Fractal] Registering SPX Cascade Validation (D1.1)...');
+  const { registerSpxValidationRoutes } = await import('./modules/spx-cascade/spx_validation.routes.js');
+  await registerSpxValidationRoutes(app);
+  console.log('[Fractal] ✅ SPX Validation D1.1 registered at /api/forward/spx/admin/validate/cascade');
+  
   // BLOCK D2: Register BTC Cascade Module (DXY/AE/SPX → BTC)
   console.log('[Fractal] Registering BTC Cascade Module (D2)...');
   const { registerBtcCascadeRoutes } = await import('./modules/btc-cascade/btc_cascade.routes.js');
