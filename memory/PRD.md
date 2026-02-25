@@ -239,13 +239,69 @@ KNN cosine distance (K=20):
 ## Next Steps
 
 ### Immediate
-1. **D1** — SPX Cascade Integration (DXY → SPX)
-2. **D2** — BTC Cascade Integration (DXY → SPX → BTC)
+1. **D2** — BTC Cascade Integration (DXY → SPX → BTC)
 
 ### Backlog
 - Hysteresis — Reduce guard flaps (median 21d → 30d)
 - C8.2 — Rolling Transition Matrix (evolving window)
 - B4.4 — Energy & Commodity (optional)
+- Fix public URL routing for API access
+
+---
+
+## D-Track: Asset Cascade — IN PROGRESS
+
+### D1 SPX Cascade — VALIDATED ✅ NEW
+
+**Purpose:** DXY/AE → SPX overlay. Cascade NEVER changes SPX direction, only scales exposure.
+
+**Architecture:**
+```
+DXY Terminal → ┐
+               ├→ SPX Cascade → Adjusted Decision
+AE Brain     → ┘
+```
+
+**Module:** `/modules/spx-cascade/`
+- `spx_cascade.contract.ts` — Types and interfaces
+- `spx_cascade.rules.ts` — Pure functions for multiplier calculations
+- `spx_cascade.service.ts` — Service fetching DXY/AE and building cascade pack
+- `spx_cascade.routes.ts` — API endpoints
+
+**Guard Policy (hard caps):**
+| Guard Level | Size Cap | Action |
+|-------------|----------|--------|
+| BLOCK | 0.0 | Full block |
+| CRISIS | 0.4 | Scale down |
+| WARN | 0.75 | Soft cap |
+| NONE | 1.0 | No cap |
+
+**Multiplier Formula:**
+```
+confidenceMultiplier = mStress * mPersist * mNovel * mScenario
+sizeMultiplier = min(guardCap, confidenceMultiplier)
+```
+
+**Individual Factors:**
+- `mStress = 1 - 1.2 * pStress4w` (+ 0.85 if in stress regime)
+- `mPersist = 1 - 0.5 * selfTransition` (for stress regimes)
+- `mNovel = 0.85` if novelty score > 0.12
+- `mScenario = 1 - 0.25 * max(bear - bull, 0)`
+
+**API Endpoints:**
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/fractal/spx/terminal?focus=30d` | Full SPX + cascade |
+| GET | `/api/fractal/spx/cascade?focus=30d` | Cascade only |
+| GET | `/api/fractal/spx/cascade/health` | Health check |
+| POST | `/api/fractal/spx/admin/cascade/validate` | Test guard policies |
+
+**Acceptance Tests:** All passed
+- BLOCK → size=0 ✅
+- CRISIS → size≤0.4 ✅
+- Direction preserved ✅
+- No NaN ✅
+- Deterministic ✅
 
 ---
 
