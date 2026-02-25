@@ -118,34 +118,57 @@ async function fetchAeTerminal(): Promise<{
 }
 
 /**
- * Fetch SPX Cascade data.
+ * Fetch SPX Cascade data with timeout and retry.
  * Returns SPX adjusted size multiplier.
  */
 async function fetchSpxCascade(): Promise<{ spxAdj: number }> {
-  try {
-    const response = await fetch('http://127.0.0.1:8002/api/fractal/spx/cascade?focus=30d');
-    
-    if (!response.ok) {
-      console.warn('[BTC Cascade] SPX cascade unavailable, using defaults');
-      return { spxAdj: 0.8 }; // Default: neutral
+  const maxRetries = 2;
+  const timeoutMs = 5000;
+  
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      
+      const response = await fetch('http://127.0.0.1:8002/api/fractal/spx/cascade?focus=30d', {
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        if (attempt < maxRetries) continue;
+        console.warn('[BTC Cascade] SPX cascade unavailable, using defaults');
+        return { spxAdj: 0.8 };
+      }
+      
+      const data = await response.json();
+      
+      if (!data.ok || !data.cascade) {
+        return { spxAdj: 0.8 };
+      }
+      
+      // Get SPX adjusted size multiplier
+      const spxAdj = data.cascade.multipliers?.sizeMultiplier ?? 
+                     data.cascade.decisionAdjusted?.sizeMultiplier ?? 
+                     0.8;
+      
+      return { spxAdj: Math.max(0, Math.min(1, spxAdj)) };
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.warn(`[BTC Cascade] SPX cascade timeout (attempt ${attempt + 1}/${maxRetries + 1})`);
+      } else {
+        console.warn(`[BTC Cascade] SPX cascade error (attempt ${attempt + 1}):`, error.message);
+      }
+      if (attempt === maxRetries) {
+        return { spxAdj: 0.8 };
+      }
+      // Small delay before retry
+      await new Promise(r => setTimeout(r, 100));
     }
-    
-    const data = await response.json();
-    
-    if (!data.ok || !data.cascade) {
-      return { spxAdj: 0.8 };
-    }
-    
-    // Get SPX adjusted size multiplier
-    const spxAdj = data.cascade.multipliers?.sizeMultiplier ?? 
-                   data.cascade.decisionAdjusted?.sizeMultiplier ?? 
-                   0.8;
-    
-    return { spxAdj: Math.max(0, Math.min(1, spxAdj)) };
-  } catch (error) {
-    console.warn('[BTC Cascade] Error fetching SPX cascade:', error);
-    return { spxAdj: 0.8 };
   }
+  
+  return { spxAdj: 0.8 };
 }
 
 /**
