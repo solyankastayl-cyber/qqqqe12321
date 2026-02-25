@@ -162,10 +162,15 @@ export interface EpisodeReport {
 const RISK_OFF_BELOW = -0.10;
 const RISK_ON_ABOVE = 0.10;
 
-// B6: Crisis Guard Thresholds
-const BLOCK_CREDIT_THRESHOLD = 0.5;
+// B6: Crisis Guard Thresholds (2-Stage)
+// Stage 2: BLOCK (пик паники)
+const BLOCK_CREDIT_THRESHOLD = 0.55;
 const BLOCK_VIX_THRESHOLD = 35;
-const WARN_CREDIT_THRESHOLD = 0.4;
+// Stage 1: CRISIS (системный стресс)
+const CRISIS_CREDIT_THRESHOLD = 0.4;
+const CRISIS_VIX_THRESHOLD = 25;
+// Stage 3: WARN (tightening / conflict)
+const WARN_CREDIT_THRESHOLD = 0.35;
 const WARN_MACRO_SCORE_THRESHOLD = 0.2;
 
 // Fixed episodes
