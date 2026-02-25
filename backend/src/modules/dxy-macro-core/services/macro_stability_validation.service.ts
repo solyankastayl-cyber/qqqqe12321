@@ -436,9 +436,30 @@ async function buildHistoricalScoreTimeSeries(
     
     const scoreSigned = totalWeight > 0 ? weightedSum / totalWeight : 0;
     
+    // B6: Compute credit composite for guard calculation
+    // creditComposite = average of BAA z-score and VIX normalized
+    let creditComposite = 0;
+    let creditParts = 0;
+    
+    if (baaVal !== null) {
+      const baaZ = computeZScore(baaVal, pointsBySeriesId.get('BAA10Y') || [], date);
+      creditComposite += clamp((baaZ + 1) / 4, 0, 1);  // Map z-score to 0-1
+      creditParts++;
+    }
+    if (vixVal !== null) {
+      creditComposite += clamp((vixVal - 12) / 40, 0, 1);  // Map VIX 12-52 to 0-1
+      creditParts++;
+    }
+    
+    if (creditParts > 0) {
+      creditComposite = creditComposite / creditParts;
+    }
+    
     samples.push({
       date,
       scoreSigned,
+      creditComposite,  // B6: For guard calculation
+      vix: vixVal ?? 20,  // B6: For guard calculation
       components,
     });
   }
