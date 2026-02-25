@@ -8,7 +8,7 @@
  * ISOLATION: No imports from DXY/BTC/SPX fractal modules
  */
 
-import { MacroPointModel } from '../storage/macro_point.model.js';
+import { MacroPointModel } from '../storage/macro_points.model.js';
 import { computeMacroScore } from './macro_score.service.js';
 import type { MacroScore, MacroScoreComponent } from '../contracts/macro.contracts.js';
 
