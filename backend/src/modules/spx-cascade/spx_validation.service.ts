@@ -4,7 +4,7 @@
  * Compares baseline SPX vs SPX cascade on OOS period 2021-2025.
  */
 
-import { getMongoDb } from '../../../db/mongoose.js';
+import { getMongoDb } from '../../db/mongoose.js';
 import type { ValidationResult, ValidationMetrics, MetricsDelta, AcceptanceCriteria, PeriodBreakdown, ExposureDistribution } from '../../btc-cascade/validation/btc_validation.contract.js';
 import {
   calcStressMultiplier,
