@@ -220,10 +220,10 @@ function calcTcuPressure(value: number): number {
 // BUILD SINGLE SERIES CONTEXT
 // ═══════════════════════════════════════════════════════════════
 
-async function buildPmiContext(): Promise<ActivitySeriesContext> {
-  const seriesId = 'NAPM';
+async function buildManempContext(): Promise<ActivitySeriesContext> {
+  const seriesId = 'MANEMP';
   const spec = getMacroSeriesSpec(seriesId);
-  const displayName = spec?.displayName ?? 'ISM Manufacturing PMI';
+  const displayName = spec?.displayName ?? 'Manufacturing Employment';
   
   try {
     const points = await getMacroSeriesPoints(seriesId);
@@ -237,21 +237,21 @@ async function buildPmiContext(): Promise<ActivitySeriesContext> {
     const currentDate = latestPoint.date;
     
     const delta3m = computeDelta(points, current, 3);
-    const delta12m = computeDelta(points, current, 12);
+    const yoy = computeYoY(points, current);
     const stats = compute5YearStats(points, current);
     
-    const trend = classifyTrend(delta3m, 2);  // PMI moves in larger increments
-    const regime = classifyPmiRegime(current);
-    const pressure = calcPmiPressure(current);
+    const trend = classifyTrend(delta3m, stats?.std5y ?? 50);
+    const regime = classifyManempRegime(yoy);
+    const pressure = calcManempPressure(yoy);
     
     return {
       seriesId,
       displayName,
       available: true,
-      current: { value: Math.round(current * 100) / 100, date: currentDate },
+      current: { value: Math.round(current), date: currentDate },
       deltas: {
-        delta3m: delta3m !== null ? Math.round(delta3m * 100) / 100 : null,
-        delta12m: delta12m !== null ? Math.round(delta12m * 100) / 100 : null,
+        delta3m: delta3m !== null ? Math.round(delta3m) : null,
+        delta12m: yoy !== null ? Math.round(yoy * 10000) / 10000 : null,
       },
       stats,
       trend,
@@ -259,7 +259,7 @@ async function buildPmiContext(): Promise<ActivitySeriesContext> {
       pressure: Math.round(pressure * 1000) / 1000,
     };
   } catch (error: any) {
-    console.error(`[Activity] Failed to build PMI context:`, error.message);
+    console.error(`[Activity] Failed to build MANEMP context:`, error.message);
     return buildEmptyContext(seriesId, displayName);
   }
 }
