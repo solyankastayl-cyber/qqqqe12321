@@ -34,13 +34,13 @@ export async function buildAeState(asOf?: string): Promise<AeStateVector> {
   
   // 1. Get Macro Score
   try {
-    const macroResult = await computeMacroScore();
-    console.log('[AE State] Macro result ok:', macroResult.ok, 'score:', macroResult.score?.scoreSigned);
-    if (macroResult.ok && macroResult.score) {
-      vector.macroSigned = clamp(safeNumber(macroResult.score.scoreSigned), -1, 1);
+    const macroScore = await computeMacroScore();
+    console.log('[AE State] Macro score:', macroScore?.scoreSigned);
+    if (macroScore && macroScore.scoreSigned !== undefined) {
+      vector.macroSigned = clamp(safeNumber(macroScore.scoreSigned), -1, 1);
       
       // confidence может быть строкой (LOW/MEDIUM/HIGH) или числом
-      const confValue = macroResult.score.confidence;
+      const confValue = macroScore.confidence;
       if (typeof confValue === 'string') {
         // Map string to numeric
         const confMap: Record<string, number> = { 'LOW': 0.3, 'MEDIUM': 0.6, 'HIGH': 0.9 };
