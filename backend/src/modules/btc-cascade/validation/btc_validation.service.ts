@@ -147,10 +147,14 @@ async function loadAeStateVectors(from: string, to: string): Promise<Map<string,
       .sort({ asOf: 1 })
       .toArray();
     
+    console.log(`[BTC Validation] Loaded ${vectors.length} AE state vectors`);
+    
     for (const v of vectors) {
+      // Extract from nested vector structure
+      const vec = v.vector || {};
       map.set(v.asOf, {
-        guardLevel: v.guardLevel ?? 0,
-        pStress4w: 0.06, // Default, will be enriched from transition data
+        guardLevel: vec.guardLevel ?? v.guardLevel ?? 0,
+        pStress4w: 0.06, // Will be enriched from transition data below
         bearProb: 0.25,
         bullProb: 0.25,
         noveltyScore: v.noveltyScore ?? 0,
@@ -158,26 +162,94 @@ async function loadAeStateVectors(from: string, to: string): Promise<Map<string,
       });
     }
   } catch (e) {
-    console.warn('[BTC Validation] No AE state vectors found');
+    console.warn('[BTC Validation] No AE state vectors found:', e);
   }
   
-  // Try to load transition data for stress probabilities
+  // Enrich with transition probabilities if available
   try {
-    const transitions = await db.collection('ae_transition_matrices')
-      .find({})
-      .sort({ computedAt: -1 })
-      .limit(1)
-      .toArray();
+    const matrix = await db.collection('ae_transition_matrices')
+      .findOne({}, { sort: { computedAt: -1 } });
     
-    if (transitions.length > 0) {
-      // Use latest matrix for stress probabilities
-      // In production, would need as-of query
+    if (matrix && matrix.derived) {
+      const riskToStress = matrix.derived.riskToStress || {};
+      const pStress4w = riskToStress.p4w ?? 0.06;
+      
+      // Apply to all vectors (simplified - in production would be as-of)
+      for (const [date, data] of map) {
+        data.pStress4w = pStress4w;
+      }
     }
   } catch (e) {
     // Continue with defaults
   }
   
+  // If no vectors found, create synthetic data based on macro series
+  if (map.size === 0) {
+    console.log('[BTC Validation] No AE vectors, using synthetic guard data');
+    await loadSyntheticGuardData(from, to, map);
+  }
+  
   return map;
+}
+
+/**
+ * Load synthetic guard data from macro series when AE vectors not available.
+ */
+async function loadSyntheticGuardData(
+  from: string, 
+  to: string, 
+  map: Map<string, any>
+): Promise<void> {
+  const db = getMongoDb();
+  
+  // Load VIX data for stress proxy
+  try {
+    const macroPoints = await db.collection('macro_series_points')
+      .find({
+        seriesId: { $in: ['VIXCLS', 'BAA10Y', 'FEDFUNDS'] },
+        date: { $gte: from, $lte: to }
+      })
+      .sort({ date: 1 })
+      .toArray();
+    
+    // Group by date
+    const dateMap = new Map<string, any>();
+    for (const p of macroPoints) {
+      if (!dateMap.has(p.date)) {
+        dateMap.set(p.date, {});
+      }
+      dateMap.get(p.date)[p.seriesId] = p.value;
+    }
+    
+    // Create synthetic guard levels
+    for (const [date, data] of dateMap) {
+      const vix = data.VIXCLS ?? 20;
+      const spread = data.BAA10Y ?? 2;
+      
+      // Simple guard model:
+      // VIX > 35 or spread > 4 → CRISIS
+      // VIX > 25 or spread > 3 → WARN
+      let guardLevel = 0;
+      if (vix > 35 || spread > 4) guardLevel = 2; // CRISIS
+      else if (vix > 25 || spread > 3) guardLevel = 1; // WARN
+      
+      // Stress probability from VIX
+      const pStress4w = Math.min(0.25, (vix - 15) / 100);
+      
+      map.set(date, {
+        guardLevel,
+        pStress4w: Math.max(0.02, pStress4w),
+        bearProb: vix > 25 ? 0.4 : 0.25,
+        bullProb: vix < 18 ? 0.4 : 0.25,
+        noveltyScore: vix > 40 ? 0.15 : 0,
+        regime: guardLevel >= 2 ? 'RISK_OFF_STRESS' : 'NEUTRAL',
+      });
+    }
+    
+    console.log(`[BTC Validation] Created ${map.size} synthetic guard entries`);
+  } catch (e) {
+    console.warn('[BTC Validation] Failed to create synthetic guard data:', e);
+  }
 }
 
 /**
