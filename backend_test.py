@@ -38,14 +38,18 @@ class C7ClusteringTester:
     def api_call(self, method: str, endpoint: str, params: Optional[Dict] = None, data: Optional[Dict] = None) -> Dict:
         """Make API call and return JSON response"""
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
-        headers = {'Content-Type': 'application/json'}
         
         self.log(f"API {method} {url}")
         
         try:
             if method == 'GET':
+                headers = {'Content-Type': 'application/json'}
                 response = requests.get(url, headers=headers, params=params, timeout=30)
             elif method == 'POST':
+                # For POST without data, don't set Content-Type
+                headers = {}
+                if data:
+                    headers['Content-Type'] = 'application/json'
                 response = requests.post(url, headers=headers, params=params, json=data, timeout=120)
             else:
                 raise ValueError(f"Unsupported method: {method}")
