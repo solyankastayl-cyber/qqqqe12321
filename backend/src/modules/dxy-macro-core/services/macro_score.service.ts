@@ -1,14 +1,18 @@
 /**
- * MACRO SCORE SERVICE — B1 + B4.1 (Housing)
+ * MACRO SCORE SERVICE — B1 + B4.1 (Housing) + B4.2 (Activity) + B4.3 (Credit)
  * 
  * Computes composite macro score from all series.
- * B4.1: Added housing component (MORTGAGE30US, HOUST, PERMIT, CSUSHPISA)
+ * B4.1: Housing component (MORTGAGE30US, HOUST, PERMIT, CSUSHPISA)
+ * B4.2: Activity component (NAPM, INDPRO, TCU)
+ * B4.3: Credit component (BAA10Y, BAMLH0A0HYM2, STLFSI4)
  * 
  * ISOLATION: No imports from DXY/BTC/SPX modules
  */
 
 import { buildAllMacroContexts, buildMacroContext } from './macro_context.service.js';
 import { getHousingScoreComponent } from './housing_context.service.js';
+import { getActivityScoreComponent } from './activity_context.service.js';
+import { getCreditScoreComponent } from './credit_context.service.js';
 import { getEnabledMacroSeries, MacroRole } from '../data/macro_sources.registry.js';
 import {
   MacroScore,
@@ -18,36 +22,41 @@ import {
 } from '../contracts/macro.contracts.js';
 
 // ═══════════════════════════════════════════════════════════════
-// WEIGHTS BY ROLE
+// WEIGHTS BY ROLE (Core7 = 55%, Extensions = 45%)
 // ═══════════════════════════════════════════════════════════════
 
 const ROLE_WEIGHTS: Record<MacroRole, number> = {
-  rates: 0.22,        // Fed policy is primary driver (reduced from 0.25 for housing)
-  inflation: 0.18,    // Split between headline and core
-  labor: 0.14,        // Employment matters for policy
-  liquidity: 0.14,    // M2 affects risk appetite
-  curve: 0.14,        // Yield curve is leading indicator
-  growth: 0.05,       // Secondary (not in B1 core)
-  housing: 0.10,      // B4.1: Housing & Real Estate
-  credit: 0.03,       // Secondary
+  rates: 0.18,        // Fed policy
+  inflation: 0.14,    // CPI/PPI
+  labor: 0.10,        // Employment
+  liquidity: 0.10,    // M2
+  curve: 0.10,        // Yield curve
+  growth: 0.03,       // Other growth
+  housing: 0.00,      // Handled via composite
+  credit: 0.00,       // Handled via composite
 };
 
-// Housing weight (separate calculation)
-const HOUSING_COMPOSITE_WEIGHT = 0.15;  // 15% of total score
+// Extended component weights
+const HOUSING_COMPOSITE_WEIGHT = 0.15;   // B4.1
+const ACTIVITY_COMPOSITE_WEIGHT = 0.15;  // B4.2
+const CREDIT_COMPOSITE_WEIGHT = 0.15;    // B4.3
 
 // Per-series weight adjustments (within role)
 const SERIES_WEIGHT_MULTIPLIERS: Record<string, number> = {
   'FEDFUNDS': 1.0,
-  'CPIAUCSL': 0.4,    // Headline CPI
-  'CPILFESL': 0.6,    // Core CPI (more important)
+  'CPIAUCSL': 0.4,
+  'CPILFESL': 0.6,
   'UNRATE': 1.0,
-  'PPIACO': 0.3,      // PPI is part of inflation role
+  'PPIACO': 0.3,
   'M2SL': 1.0,
   'T10Y2Y': 1.0,
 };
 
-// B4.1: Housing series to exclude from standard processing
+// Series to exclude from standard processing (handled via composites)
 const HOUSING_SERIES = ['MORTGAGE30US', 'HOUST', 'PERMIT', 'CSUSHPISA'];
+const ACTIVITY_SERIES = ['NAPM', 'INDPRO', 'TCU'];
+const CREDIT_SERIES = ['BAA10Y', 'BAMLH0A0HYM2', 'STLFSI4'];
+const EXCLUDED_SERIES = [...HOUSING_SERIES, ...ACTIVITY_SERIES, ...CREDIT_SERIES];
 
 // ═══════════════════════════════════════════════════════════════
 // COMPUTE COMPOSITE SCORE
