@@ -297,6 +297,8 @@ async function buildScoreTimeSeries(
     samples.push({
       date,
       scoreSigned: currentScore.scoreSigned,
+      creditComposite: 0.3,  // Default neutral
+      vix: 20,               // Default neutral
       components: currentScore.components,
     });
   }
