@@ -53,7 +53,32 @@ async function loadBtcCandles(from: string, to: string): Promise<Array<{
 }>> {
   const db = getMongoDb();
   
-  // Try different collection names
+  // Convert string dates to Date for comparison
+  const fromDate = new Date(from);
+  const toDate = new Date(to);
+  
+  // Try fractal_canonical_ohlcv first (main BTC source)
+  try {
+    const candles = await db.collection('fractal_canonical_ohlcv')
+      .find({
+        'meta.symbol': 'BTC',
+        ts: { $gte: fromDate, $lte: toDate }
+      })
+      .sort({ ts: 1 })
+      .toArray();
+    
+    if (candles.length > 0) {
+      console.log(`[BTC Validation] Loaded ${candles.length} candles from fractal_canonical_ohlcv`);
+      return candles.map(c => ({
+        date: c.ts.toISOString().split('T')[0],
+        close: c.ohlcv?.c ?? c.close ?? 0,
+      })).filter(c => c.close > 0);
+    }
+  } catch (e) {
+    console.warn('[BTC Validation] Error loading fractal_canonical_ohlcv:', e);
+  }
+  
+  // Try other collection names as fallback
   const collections = ['btc_candles', 'candles', 'canonical_candles'];
   
   for (const collName of collections) {
@@ -69,6 +94,7 @@ async function loadBtcCandles(from: string, to: string): Promise<Array<{
         .toArray();
       
       if (candles.length > 0) {
+        console.log(`[BTC Validation] Loaded ${candles.length} candles from ${collName}`);
         return candles.map(c => ({
           date: c.date,
           close: c.close || c.c || c.price,
@@ -87,6 +113,7 @@ async function loadBtcCandles(from: string, to: string): Promise<Array<{
       .toArray();
     
     if (candles.length > 0) {
+      console.log(`[BTC Validation] Loaded ${candles.length} candles from ohlc`);
       return candles.map(c => ({
         date: c.date,
         close: c.close || c.c,
@@ -96,6 +123,7 @@ async function loadBtcCandles(from: string, to: string): Promise<Array<{
     // Continue
   }
   
+  console.warn('[BTC Validation] No BTC candles found');
   return [];
 }
 
