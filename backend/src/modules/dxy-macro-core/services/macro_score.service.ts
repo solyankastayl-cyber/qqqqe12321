@@ -65,8 +65,8 @@ const EXCLUDED_SERIES = [...HOUSING_SERIES, ...ACTIVITY_SERIES, ...CREDIT_SERIES
 export async function computeMacroScore(): Promise<MacroScore> {
   const allContexts = await buildAllMacroContexts();
   
-  // B4.1: Filter out housing series (handled separately)
-  const contexts = allContexts.filter(c => !HOUSING_SERIES.includes(c.seriesId));
+  // Filter out series handled via composites
+  const contexts = allContexts.filter(c => !EXCLUDED_SERIES.includes(c.seriesId));
   
   if (contexts.length === 0) {
     return buildEmptyScore();
