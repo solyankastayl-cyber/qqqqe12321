@@ -35,6 +35,7 @@ export async function buildAeState(asOf?: string): Promise<AeStateVector> {
   // 1. Get Macro Score
   try {
     const macroResult = await computeMacroScore();
+    console.log('[AE State] Macro result ok:', macroResult.ok, 'score:', macroResult.score?.scoreSigned);
     if (macroResult.ok && macroResult.score) {
       vector.macroSigned = clamp(safeNumber(macroResult.score.scoreSigned), -1, 1);
       
