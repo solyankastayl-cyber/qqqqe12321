@@ -7,78 +7,57 @@
 | **30d** | - | - | **56.1% hit, equity 1.22** | **✅ PRODUCTION** |
 | **90d** | 57% hit, equity 1.49 | 57% hit, equity 1.39 | **38% hit, equity 0.56** | **❌ REGIME ONLY** |
 
-## B4 Extended Drivers Complete ✅
+## B5 Historical Validation Complete ✅
 
-### B4.1 Housing & Real Estate
-| Series | Name | Points | Regime |
-|--------|------|--------|--------|
-| MORTGAGE30US | 30Y Mortgage Rate | 2,865 | NEUTRAL |
-| HOUST | Housing Starts | 804 | CONTRACTION |
-| PERMIT | Building Permits | 792 | NEUTRAL |
-| CSUSHPISA | Case-Shiller Index | 468 | NEUTRAL |
-| **Composite** | | | **score=0.025, regime=NEUTRAL** |
+### B5.1 Stability Metrics (2000-2025)
+| Metric | Value | Threshold | Status |
+|--------|-------|-----------|--------|
+| Regime flips/year | **1.04** | < 12 | ✅ |
+| Median duration (days) | **329** | > 20 | ✅ |
+| Score std | **0.167** | 0.03-0.25 | ✅ |
+| Score range | [-0.41, +0.57] | - | - |
 
-### B4.2 Economic Activity
-| Series | Name | Points | Regime |
-|--------|------|--------|--------|
-| MANEMP | Manufacturing Employment | 913 | NEUTRAL |
-| INDPRO | Industrial Production | 913 | EXPANSION |
-| TCU | Capacity Utilization | 709 | NEUTRAL |
-| **Composite** | | | **score=0.002, regime=EXPANSION** |
+### Driver Dominance
+| Driver | Share | Avg Contribution |
+|--------|-------|------------------|
+| HOUSING | 43.6% | 0.40 |
+| CREDIT | 32.9% | 0.34 |
+| ACTIVITY | 13.0% | 0.29 |
+| FED | 10.6% | 0.18 |
 
-### B4.3 Credit & Financial Stress
-| Series | Name | Points | Regime |
-|--------|------|--------|--------|
-| BAA10Y | Moody's Baa Spread | 10,035 | NEUTRAL |
-| TEDRATE | TED Spread | 8,853 | NEUTRAL |
-| VIXCLS | VIX Volatility | 9,129 | NEUTRAL |
-| **Composite** | | | **score=0.134, regime=NEUTRAL** |
+### B5.2 Episode Validation
+| Episode | Period | Risk-Off | Credit | Fed | Status |
+|---------|--------|----------|--------|-----|--------|
+| GFC | 2008-2009 | **68%** | +0.58 | -0.35 | ✅ |
+| COVID | Feb-Jun 2020 | **100%** | +0.53 | -0.56 | ✅ |
+| Tightening | 2022-2023 | 0% | +0.13 | **+0.60** | ✅ |
+| Low Vol | 2017 | 0% | **-0.56** | +0.13 | ✅ |
 
-### Macro Score Integration
+## B4 Extended Drivers
+
+### Macro Score Weights
 ```
-Core7 = 55%
-Housing = 15%
-Activity = 15%
-Credit = 15%
+Core7 = 55% (Fed, CPI, UNRATE, M2, T10Y2Y, PPI)
+Housing = 15% (Mortgage, Starts, Permits, Case-Shiller)
+Activity = 15% (MANEMP, INDPRO, TCU)
+Credit = 15% (BAA10Y, TEDRATE, VIX)
 ```
-
-**Current Score**: -0.035 (slightly USD bearish, driven by Fed easing)
-
-## D1 Macro Overlay Validation ✅
-
-| Metric | Mode A (Pure) | Mode B (Macro) | Delta |
-|--------|---------------|----------------|-------|
-| Trades | 79 | 79 | 0 |
-| HitRate | 37.97% | 37.97% | 0% |
-| Equity | 1.034 | 1.030 | -0.4% |
-| MaxDD | 10.56% | 9.14% | **-13.5%** |
 
 ## API Endpoints
 
-### Extended Drivers (B4)
-- `GET /api/dxy-macro-core/housing` — Housing context
-- `GET /api/dxy-macro-core/activity` — Activity context
-- `GET /api/dxy-macro-core/credit` — Credit context
+### B5 Validation
+- `GET /api/dxy-macro-core/validate/stability` — Stability report
+- `GET /api/dxy-macro-core/validate/episodes` — Episode validation
+
+### B4 Extended Drivers
+- `GET /api/dxy-macro-core/housing`
+- `GET /api/dxy-macro-core/activity`
+- `GET /api/dxy-macro-core/credit`
 
 ### Core
-- `GET /api/dxy-macro-core/score` — Full macro score
-- `GET /api/research/dxy/terminal` — Research terminal
-- `GET /api/fractal/dxy/terminal` — DXY terminal
-
-## Macro Series Registry (17 total)
-
-| Series | Role | Weight |
-|--------|------|--------|
-| FEDFUNDS | rates | 18% |
-| CPILFESL | inflation | 14% |
-| CPIAUCSL | inflation | 14% |
-| UNRATE | labor | 10% |
-| M2SL | liquidity | 10% |
-| T10Y2Y | curve | 10% |
-| PPIACO | inflation | 5% |
-| HOUSING | composite | 15% |
-| ACTIVITY | composite | 15% |
-| CREDIT | composite | 15% |
+- `GET /api/dxy-macro-core/score`
+- `GET /api/research/dxy/terminal`
+- `GET /api/fractal/dxy/terminal`
 
 ## Implementation Status
 
@@ -91,6 +70,8 @@ Credit = 15%
 - B4.1 — Housing & Real Estate
 - B4.2 — Economic Activity
 - B4.3 — Credit & Financial Stress
+- **B5.1 — Stability Validation**
+- **B5.2 — Episode Validation**
 
 ### Frozen ❄️
 - SPX Module
@@ -98,6 +79,6 @@ Credit = 15%
 - Frontend
 
 ## Next Steps
-1. B5 — Historical Research Stability
-2. B4.4 — Energy & Commodity (optional)
-3. Cascade — DXY → SPX → BTC (after DXY complete)
+1. **Crisis Guard** — Auto-trigger при VIX > 35 + Credit spike
+2. **B4.4** — Energy & Commodity (optional)
+3. **Cascade** — DXY → SPX → BTC
