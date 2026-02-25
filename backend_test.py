@@ -11,7 +11,7 @@ from typing import Dict, Any, List
 from datetime import datetime
 
 class AEBrainTester:
-    def __init__(self, base_url: str = "http://localhost:8001"):
+    def __init__(self, base_url: str = "https://dxy-risk-overlay.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
