@@ -1,21 +1,24 @@
 #!/usr/bin/env python3
 """
-AE Brain Module Backend API Testing
-Tests all C1-C5 components and endpoints
+C7 Regime Clustering Backend API Testing
+Tests k-means clustering on historical state vectors
 """
 
 import requests
 import json
 import sys
-from typing import Dict, Any, List
+import time
+from typing import Dict, Any, List, Optional
 from datetime import datetime
 
-class AEBrainTester:
-    def __init__(self, base_url: str = "http://localhost:8001"):
-        self.base_url = base_url
+class C7ClusteringTester:
+    def __init__(self, base_url: str = "https://dxy-risk-overlay.preview.emergentagent.com"):
+        self.base_url = base_url.rstrip('/')
         self.tests_run = 0
         self.tests_passed = 0
         self.failures: List[str] = []
+        self.results = {}
+        self.determinism_data = {}
         
     def log_test(self, name: str, success: bool, details: str = ""):
         """Log test result"""
