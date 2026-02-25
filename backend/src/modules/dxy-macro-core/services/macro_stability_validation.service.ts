@@ -702,7 +702,7 @@ export async function validateStability(params: StabilityParams): Promise<Stabil
     topDriversTimeline.push({ date: sample.date, driver: topDriver });
   }
   
-  // B6: Compute Crisis Guard levels for each sample
+  // B6: Compute Crisis Guard levels for each sample (2-Stage)
   const guardLevels: GuardLevel[] = samples.map(s => 
     classifyGuardLevel(s.creditComposite, s.vix, s.scoreSigned)
   );
@@ -710,12 +710,14 @@ export async function validateStability(params: StabilityParams): Promise<Stabil
   const guardCounts = {
     NONE: guardLevels.filter(l => l === 'NONE').length,
     WARN: guardLevels.filter(l => l === 'WARN').length,
+    CRISIS: guardLevels.filter(l => l === 'CRISIS').length,
     BLOCK: guardLevels.filter(l => l === 'BLOCK').length,
   };
   
   const guardPercentages = {
     NONE: Math.round((guardCounts.NONE / guardLevels.length) * 1000) / 1000,
     WARN: Math.round((guardCounts.WARN / guardLevels.length) * 1000) / 1000,
+    CRISIS: Math.round((guardCounts.CRISIS / guardLevels.length) * 1000) / 1000,
     BLOCK: Math.round((guardCounts.BLOCK / guardLevels.length) * 1000) / 1000,
   };
   
