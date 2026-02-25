@@ -232,7 +232,7 @@ KNN cosine distance (K=20):
 - **D1.1 — SPX OOS Validation** ✅
 - **D2 — BTC Cascade** ✅
 - **D2.1 — BTC OOS Validation** ✅
-- **P1.3 — Guard Hysteresis** ✅ NEW
+- **P1.4 — Fix Intermittent Test** ✅ FIXED (2026-02-25)
 
 ### Frozen ❄️
 - SPX Module
@@ -244,7 +244,7 @@ KNN cosine distance (K=20):
 ## Next Steps
 
 ### Immediate
-1. **P1.4** — Deterministic Backend (11/11 tests, fix timing)
+1. **P1.4** — Deterministic Backend (11/11 tests) ✅ FIXED
 2. **P2** — Liquidity Engine (WALCL, RRP, TGA)
 
 ### Backlog
