@@ -136,27 +136,31 @@ async function loadHistoricalInputs(from: string, to: string): Promise<GuardInpu
     const guardLevel = v.guardLevel ?? 0;
     const macroSigned = v.macroSigned ?? 0;
     
-    // Map guardLevel to synthetic credit/vix
+    // Map guardLevel to synthetic credit/vix (deterministic)
     // guardLevel: 0 = normal, 1 = warn, 2 = crisis, 3+ = block
     let creditComposite = 0.15;
     let vix = 15;
     
+    // Use hash of date for deterministic "noise"
+    const dateHash = date.split('-').reduce((a, b) => a + parseInt(b), 0) / 100;
+    const noise = (dateHash % 1) * 0.1;
+    
     if (guardLevel >= 3) {
       // BLOCK conditions
-      creditComposite = 0.55 + Math.random() * 0.1;
-      vix = 35 + Math.random() * 10;
+      creditComposite = 0.55 + noise;
+      vix = 35 + noise * 50;
     } else if (guardLevel >= 2) {
       // CRISIS conditions
-      creditComposite = 0.30 + Math.random() * 0.1;
-      vix = 22 + Math.random() * 8;
+      creditComposite = 0.30 + noise;
+      vix = 22 + noise * 40;
     } else if (guardLevel >= 1) {
       // WARN conditions
-      creditComposite = 0.32 + Math.random() * 0.05;
-      vix = 16 + Math.random() * 4;
+      creditComposite = 0.32 + noise * 0.5;
+      vix = 16 + noise * 20;
     } else {
       // NONE - use macro as tightening signal
       creditComposite = 0.15 + Math.abs(macroSigned) * 0.1;
-      vix = 14 + Math.random() * 6;
+      vix = 14 + noise * 30;
     }
     
     inputs.push({
