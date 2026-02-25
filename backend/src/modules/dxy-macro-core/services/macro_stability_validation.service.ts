@@ -683,6 +683,46 @@ export async function validateStability(params: StabilityParams): Promise<Stabil
     topDriversTimeline.push({ date: sample.date, driver: topDriver });
   }
   
+  // B6: Compute Crisis Guard levels for each sample
+  const guardLevels: GuardLevel[] = samples.map(s => 
+    classifyGuardLevel(s.creditComposite, s.vix, s.scoreSigned)
+  );
+  
+  const guardCounts = {
+    NONE: guardLevels.filter(l => l === 'NONE').length,
+    WARN: guardLevels.filter(l => l === 'WARN').length,
+    BLOCK: guardLevels.filter(l => l === 'BLOCK').length,
+  };
+  
+  const guardPercentages = {
+    NONE: Math.round((guardCounts.NONE / guardLevels.length) * 1000) / 1000,
+    WARN: Math.round((guardCounts.WARN / guardLevels.length) * 1000) / 1000,
+    BLOCK: Math.round((guardCounts.BLOCK / guardLevels.length) * 1000) / 1000,
+  };
+  
+  // Count guard flips
+  let guardFlips = 0;
+  for (let i = 1; i < guardLevels.length; i++) {
+    if (guardLevels[i] !== guardLevels[i - 1]) guardFlips++;
+  }
+  const guardFlipsPerYear = Math.round((guardFlips / years) * 100) / 100;
+  
+  // Compute guard durations
+  const guardDurations: number[] = [];
+  let currentGuardDuration = 1;
+  for (let i = 1; i < guardLevels.length; i++) {
+    if (guardLevels[i] === guardLevels[i - 1]) {
+      currentGuardDuration++;
+    } else {
+      guardDurations.push(currentGuardDuration * stepDays);
+      currentGuardDuration = 1;
+    }
+  }
+  guardDurations.push(currentGuardDuration * stepDays);
+  const guardMedianDuration = guardDurations.length > 0 
+    ? Math.round(percentile(guardDurations, 0.5))
+    : 0;
+  
   // Acceptance checks
   const checks = [
     {
@@ -708,6 +748,18 @@ export async function validateStability(params: StabilityParams): Promise<Stabil
       value: smoothedStats.std,
       threshold: 0.25,
       pass: smoothedStats.std <= 0.25,
+    },
+    {
+      key: 'GUARD_FLIPS_PER_YEAR',
+      value: guardFlipsPerYear,
+      threshold: 4,
+      pass: guardFlipsPerYear <= 4,
+    },
+    {
+      key: 'GUARD_MEDIAN_DURATION_DAYS',
+      value: guardMedianDuration,
+      threshold: 30,
+      pass: guardMedianDuration >= 30,
     },
   ];
   
@@ -750,9 +802,18 @@ export async function validateStability(params: StabilityParams): Promise<Stabil
         p90: Math.round(percentile(durations, 0.9)),
       },
     },
+    guard: {
+      counts: guardCounts,
+      percentages: guardPercentages,
+      flips: {
+        total: guardFlips,
+        perYear: guardFlipsPerYear,
+      },
+      medianDurationDays: guardMedianDuration,
+    },
     drivers: {
       dominanceShare,
-      topDriversTimeline: topDriversTimeline.slice(0, 50),  // Limit to 50
+      topDriversTimeline: topDriversTimeline.slice(0, 50),
     },
     acceptance: {
       pass: allPass,
@@ -761,6 +822,7 @@ export async function validateStability(params: StabilityParams): Promise<Stabil
     notes: [
       'Stability validation uses macro score only; does NOT touch fractal core.',
       'Use smoothed score for regime classification to avoid daily noise.',
+      'B6: Guard flip rate <= 4/year and median duration >= 30 days.',
     ],
   };
 }
