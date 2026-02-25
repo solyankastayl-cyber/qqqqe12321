@@ -1,6 +1,6 @@
 /**
  * AE Terminal Contract — Main output
- * Aggregates all C1-C5 components
+ * Aggregates all C1-C8 components
  */
 
 import type { AeStateVector } from './ae_state.contract.js';
@@ -23,6 +23,27 @@ export interface AeExplanation {
   limits: string[];
 }
 
+// C7 Cluster info
+export interface AeClusterInfo {
+  clusterId: number;
+  label: string;
+  distance: number;
+}
+
+// C8 Transition info
+export interface AeTransitionInfo {
+  currentLabel: string;
+  mostLikelyNext: string;
+  mostLikelyNextProb: number;
+  selfTransitionProb: number;
+  riskToStress: {
+    p1w: number;
+    p2w: number;
+    p4w: number;
+  };
+  medianDurationWeeks: number;
+}
+
 export interface AeTerminal {
   ok: boolean;
   asOf: string;
@@ -31,6 +52,8 @@ export interface AeTerminal {
   causal: AeCausalGraph;
   scenarios: AeScenarioPack;
   novelty: AeNovelty;
+  cluster?: AeClusterInfo;           // C7
+  transition?: AeTransitionInfo;     // C8
   recommendation: AeRecommendation;
   explain: AeExplanation;
   computedAt: string;
