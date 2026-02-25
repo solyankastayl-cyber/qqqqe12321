@@ -253,8 +253,76 @@ export const MACRO_SERIES_REGISTRY: MacroSeriesSpec[] = [
     role: "credit",
     primaryTransform: "level",
     secondaryTransforms: ["delta"],
-    enabledByDefault: false,
-    notes: "Credit stress proxy. (If not available, use alternative spreads.)",
+    minCoverageYears: 30,
+    enabledByDefault: true,  // B4.3: Enabled
+    notes: "Credit stress proxy. High spreads = stress = USD supportive.",
+  },
+
+  // B4.2: PMI & Economic Activity Series
+  {
+    seriesId: "NAPM",
+    displayName: "ISM Manufacturing PMI",
+    frequency: "monthly",
+    units: "index",
+    role: "growth",
+    primaryTransform: "level",
+    secondaryTransforms: ["delta"],
+    minCoverageYears: 30,
+    enabledByDefault: true,
+    notes: "ISM Manufacturing PMI. 50+ = expansion, <50 = contraction.",
+  },
+
+  {
+    seriesId: "INDPRO",
+    displayName: "Industrial Production",
+    frequency: "monthly",
+    units: "index",
+    role: "growth",
+    primaryTransform: "yoy",
+    secondaryTransforms: ["delta"],
+    minCoverageYears: 30,
+    enabledByDefault: true,
+    notes: "Industrial production index. YoY change indicates economic momentum.",
+  },
+
+  {
+    seriesId: "TCU",
+    displayName: "Capacity Utilization",
+    frequency: "monthly",
+    units: "percent",
+    role: "growth",
+    primaryTransform: "level",
+    secondaryTransforms: ["delta"],
+    minCoverageYears: 30,
+    enabledByDefault: true,
+    notes: "Capacity utilization rate. High = tight capacity = inflation pressure.",
+  },
+
+  // B4.3: Credit & Financial Stress Series
+  {
+    seriesId: "BAMLH0A0HYM2",
+    displayName: "High Yield Spread (ICE BofA)",
+    frequency: "daily",
+    units: "percent",
+    role: "credit",
+    primaryTransform: "level",
+    secondaryTransforms: ["delta"],
+    minCoverageYears: 20,
+    enabledByDefault: true,
+    notes: "High yield corporate spread. Rising = stress = USD supportive.",
+  },
+
+  {
+    seriesId: "STLFSI4",
+    displayName: "Financial Stress Index (St. Louis Fed)",
+    frequency: "weekly",
+    units: "index",
+    role: "credit",
+    primaryTransform: "level",
+    secondaryTransforms: [],
+    minCoverageYears: 15,
+    enabledByDefault: true,
+    notes: "Financial stress index. >0 = above average stress.",
   },
 ];
 
