@@ -241,82 +241,53 @@ KNN cosine distance (K=20):
 ## Next Steps
 
 ### Immediate
-1. **D2.1** — OOS Validation BTC 2021-2025 (baseline vs cascade)
+1. **P1.3** — Flap Control / Hysteresis (guard + overlay)
+2. **P1.4** — Fix intermittent timing test (11/11)
+3. **P2** — Liquidity Engine (WALCL, RRP, TGA)
 
 ### Backlog
-- Hysteresis — Reduce guard flaps (median 21d → 30d)
-- C8.2 — Rolling Transition Matrix (evolving window)
-- Fix public URL routing for API access
+- C8.2 — Rolling Transition Matrix
+- P3 — As-Of / Lagged Reality (honest backtest)
+- P4 — Evidence / Explainability Contracts
 
 ---
 
-## D-Track: Asset Cascade — COMPLETE ✅
+## D-Track: Asset Cascade — VALIDATED ✅
 
-### D1 SPX Cascade — VALIDATED ✅
+### D1 SPX Cascade + D1.1 Validation — PASSED ✅
 
-**Purpose:** DXY/AE → SPX overlay. Cascade NEVER changes SPX direction, only scales exposure.
+**OOS Results (2021-2025):**
+| Metric | Baseline | Cascade | Delta |
+|--------|----------|---------|-------|
+| Equity | 1.0818 | 1.0798 | -0.18% |
+| MaxDD | 15.8% | 14.5% | **-7.8%** |
+| Volatility | - | - | **-7.2%** |
+| Hit Rate | 52.9% | 52.9% | 0% |
 
-**Guard Caps (SPX):**
-| Guard Level | Size Cap |
-|-------------|----------|
-| BLOCK | 0.0 |
-| CRISIS | 0.4 |
-| WARN | 0.75 |
-
-**Multipliers:** mStress * mPersist * mNovel * mScenario
+**Verdict:** Cascade reduces risk (DD, Vol) with minimal equity sacrifice.
 
 ---
 
-### D2 BTC Cascade — VALIDATED ✅ NEW
+### D2 BTC Cascade + D2.1 Validation — PASSED ✅
 
-**Purpose:** DXY/AE/SPX → BTC overlay. Complete cascade chain.
+**OOS Results (2021-2025):**
+| Metric | Baseline | Cascade | Delta |
+|--------|----------|---------|-------|
+| Equity | 1.3775 | 1.4177 | **+2.9%** |
+| MaxDD | 57.3% | 53.3% | **-6.9%** |
+| Volatility | 3.11% | 2.83% | **-9.0%** |
+| Hit Rate | 48.6% | 48.6% | 0% |
 
-**Architecture:**
-```
-DXY → AE Brain → SPX Cascade → BTC Cascade
-```
+**Period Breakdown:**
+| Period | DD Improvement |
+|--------|----------------|
+| 2021 Bull | -7.7% |
+| 2022 Tightening | -7.0% |
+| 2023 Sideways | -8.7% |
+| 2024 Recovery | -7.0% |
+| 2025 Current | -7.9% |
 
-**BTC receives:**
-- pStress4w (from AE transition matrix)
-- bearProb, bullProb (from AE scenarios)
-- noveltyLabel (from AE novelty)
-- spxAdj (from SPX cascade multiplier)
-- guardLevel (from AE state)
-
-**Guard Caps (BTC — tighter due to volatility):**
-| Guard Level | Size Cap |
-|-------------|----------|
-| BLOCK | 0.0 |
-| CRISIS | 0.35 |
-| WARN | 0.70 |
-
-**Multiplier Formula:**
-```
-mStress   = clamp(1 - 1.5 * pStress4w, 0.10, 1.00)
-mScenario = bear>=0.40 → 0.80 | bull>=0.40 → 1.05 | else 1.00
-mNovel    = RARE/UNSEEN → 0.85 | else 1.00
-mSPX      = spxAdj<0.40 → 0.75 | spxAdj>0.80 → 1.05 | else 1.00
-
-mTotal    = min(guardCap, mStress * mScenario * mNovel * mSPX)
-```
-
-**API Endpoints:**
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/fractal/btc/cascade?focus=30d` | Cascade only |
-| GET | `/api/fractal/btc/cascade/debug` | Debug with timing |
-| GET | `/api/fractal/btc/cascade/health` | Health check |
-| POST | `/api/fractal/btc/admin/cascade/validate` | Test guard policies |
-
-**Acceptance Tests:** All passed
-- BLOCK → size=0 ✅
-- CRISIS → size≤0.35 ✅
-- WARN → size≤0.70 ✅
-- Monotonic: stress↑ → size↓ ✅
-- Bear scenario: mScenario=0.80 ✅
-- SPX coupling: spxAdj<0.40 → mSPX=0.75 ✅
-- No NaN ✅
-- Deterministic ✅
+**Verdict:** Cascade consistently reduces drawdowns across all market regimes while preserving/improving equity.
 
 ---
 
