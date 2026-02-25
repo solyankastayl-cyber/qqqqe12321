@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend API Testing for Fractal Module
-Tests all endpoints related to the fractal overlay functionality
+Comprehensive Backend API Testing for DXY Macro Platform - B6 2-Stage Guard
+Tests all endpoints related to the DXY Macro Core and Crisis Guard functionality
 """
 
 import requests
@@ -10,7 +10,7 @@ import sys
 import time
 from datetime import datetime
 
-class FractalBackendTester:
+class DXYMacroBackendTester:
     def __init__(self, base_url="https://dxy-risk-overlay.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
