@@ -1,70 +1,64 @@
 {
-  "timestamp": "2026-02-24T11:59:33.532091",
+  "timestamp": "2026-02-25T14:34:41.114490",
   "summary": {
-    "passed": 10,
-    "total": 10,
-    "success_rate": "100.0%"
+    "passed": 0,
+    "total": 9,
+    "success_rate": "0.0%"
   },
   "tests": [
     {
-      "test_name": "Health Check",
-      "passed": true,
-      "details": "Status: 200, Response: {\"ok\":true,\"mode\":\"FRACTAL_ONLY\",\"timestamp\":\"2026-02-24T11:59:23.259Z\"}",
-      "timestamp": "2026-02-24T11:59:23.284333"
+      "test_name": "/api/health returns ok: true",
+      "passed": false,
+      "details": "Status: 404, Response: 404 page not found\n",
+      "timestamp": "2026-02-25T14:34:35.224197"
     },
     {
-      "test_name": "SPX Forward Summary Endpoint",
-      "passed": true,
-      "details": "Hit Rate: 60.0%, Samples: 40, Horizons: 6",
-      "timestamp": "2026-02-24T11:59:24.020552"
+      "test_name": "/api/dxy-macro-core/health returns module: dxy-macro-core",
+      "passed": false,
+      "details": "Status: 404, Response: 404 page not found\n",
+      "timestamp": "2026-02-25T14:34:35.895713"
     },
     {
-      "test_name": "SPX Forward Equity Endpoint",
-      "passed": true,
-      "details": "Trades: 40, Win Rate: 60.0%, Max DD: 9.1%, Final: 0.959, Points: 40",
-      "timestamp": "2026-02-24T11:59:24.746858"
+      "test_name": "Episodes validation - 4 episodes with guard criteria",
+      "passed": false,
+      "details": "Status: 404, Response: 404 page not found\n",
+      "timestamp": "2026-02-25T14:34:36.550959"
     },
     {
-      "test_name": "Strategy Endpoint (All Modes)",
-      "passed": true,
-      "details": "conservative: OK; balanced: OK; aggressive: OK",
-      "timestamp": "2026-02-24T11:59:26.148794"
+      "test_name": "Stability validation - guard flips <= 4 per year",
+      "passed": false,
+      "details": "Status: 404, Response: 404 page not found\n",
+      "timestamp": "2026-02-25T14:34:37.212026"
     },
     {
-      "test_name": "Forward Equity Endpoint (All Params)",
-      "passed": true,
-      "details": "BALANCED-7D: 0 points; CONSERVATIVE-14D: 0 points; AGGRESSIVE-30D: 0 points",
-      "timestamp": "2026-02-24T11:59:27.370579"
+      "test_name": "Macro score endpoint",
+      "passed": false,
+      "details": "Status: 404, Response: 404 page not found\n",
+      "timestamp": "2026-02-25T14:34:37.832611"
     },
     {
-      "test_name": "Fractal Overlay Basic",
-      "passed": true,
-      "details": "Symbol: BTC, Matches: 10",
-      "timestamp": "2026-02-24T11:59:29.059051"
+      "test_name": "Credit context endpoint",
+      "passed": false,
+      "details": "Status: 404, Response: 404 page not found\n",
+      "timestamp": "2026-02-25T14:34:38.548235"
     },
     {
-      "test_name": "Fractal Overlay 30D Horizon",
-      "passed": true,
-      "details": "Matches: 10, Aftermath length: 30",
-      "timestamp": "2026-02-24T11:59:30.252148"
+      "test_name": "Housing context endpoint",
+      "passed": false,
+      "details": "Status: 404, Response: 404 page not found\n",
+      "timestamp": "2026-02-25T14:34:39.252148"
     },
     {
-      "test_name": "Fractal Overlay 180D Horizon",
-      "passed": true,
-      "details": "Matches: 10, Aftermath length: 180",
-      "timestamp": "2026-02-24T11:59:31.187518"
+      "test_name": "Activity context endpoint",
+      "passed": false,
+      "details": "Status: 404, Response: 404 page not found\n",
+      "timestamp": "2026-02-25T14:34:39.905134"
     },
     {
-      "test_name": "Fractal Overlay 365D Horizon",
-      "passed": true,
-      "details": "Matches: 10, Aftermath length: 365, Distribution series length: 365",
-      "timestamp": "2026-02-24T11:59:32.193960"
-    },
-    {
-      "test_name": "Admin Endpoint Accessibility",
-      "passed": true,
-      "details": "https://dxy-risk-overlay.preview.emergentagent.com/admin/fractal: HTTP 200; https://dxy-risk-overlay.preview.emergentagent.com/api/admin/fractal: HTTP 404; ",
-      "timestamp": "2026-02-24T11:59:33.031343"
+      "test_name": "Macro series list endpoint",
+      "passed": false,
+      "details": "Status: 404, Response: 404 page not found\n",
+      "timestamp": "2026-02-25T14:34:40.613677"
     }
   ]
 }
