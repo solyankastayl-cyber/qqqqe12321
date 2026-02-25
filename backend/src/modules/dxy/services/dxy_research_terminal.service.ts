@@ -152,6 +152,29 @@ function buildDrivers(macroScore: MacroScore): ResearchDriver[] {
             ? `Easing housing cycle → USD pressure`
             : `Housing conditions neutral`;
         break;
+      // B4.2: Activity / B4.3: Credit (composite components)
+      case 'growth':
+        if (c.seriesId === 'ACTIVITY') {
+          note = c.regime === 'EXPANSION'
+            ? `Economic activity expanding → USD tailwind from growth`
+            : c.regime === 'CONTRACTION'
+              ? `Economic activity contracting → USD headwind`
+              : `Economic activity neutral`;
+        } else {
+          note = `${c.displayName}: ${direction}`;
+        }
+        break;
+      case 'credit':
+        if (c.seriesId === 'CREDIT') {
+          note = c.regime === 'STRESS'
+            ? `Rising spreads / financial stress → USD safe-haven bid`
+            : c.regime === 'CALM'
+              ? `Compressed spreads / low stress → USD tailwind reduced`
+              : `Credit conditions neutral`;
+        } else {
+          note = `${c.displayName}: ${direction}`;
+        }
+        break;
       default:
         note = `${c.displayName}: ${direction}`;
     }
