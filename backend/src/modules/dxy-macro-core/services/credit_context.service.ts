@@ -175,12 +175,22 @@ function classifySpreadRegime(z5y: number | null): CreditRegime {
 }
 
 /**
- * Financial Stress Index regime: based on level
- * > +1 = HIGH_STRESS, < -1 = LOW_STRESS, else NEUTRAL
+ * VIX regime: based on level
+ * > 25 = HIGH_STRESS, < 15 = LOW_STRESS, else NEUTRAL
  */
-function classifyFsiRegime(value: number): CreditRegime {
-  if (value > 1) return 'HIGH_STRESS';
-  if (value < -1) return 'LOW_STRESS';
+function classifyVixRegime(value: number): CreditRegime {
+  if (value > 25) return 'HIGH_STRESS';
+  if (value < 15) return 'LOW_STRESS';
+  return 'NEUTRAL';
+}
+
+/**
+ * TED Spread regime: based on level
+ * > 0.5 = STRESS, < 0.2 = CALM, else NEUTRAL
+ */
+function classifyTedRegime(value: number): CreditRegime {
+  if (value > 0.5) return 'STRESS';
+  if (value < 0.2) return 'CALM';
   return 'NEUTRAL';
 }
 
