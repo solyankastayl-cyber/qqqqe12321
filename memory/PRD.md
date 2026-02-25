@@ -7,6 +7,35 @@
 | **30d** | - | - | **56.1% hit, equity 1.22** | **✅ PRODUCTION** |
 | **90d** | 57% hit, equity 1.49 | 57% hit, equity 1.39 | **38% hit, equity 0.56** | **❌ REGIME ONLY** |
 
+## B6 2-Stage Guard — VALIDATED ✅
+
+### Guard Hierarchy
+1. **BLOCK** (peak panic): `credit > 0.50 AND VIX > 32`
+   - Trading Disabled, Size = 0%, Confidence = 50%
+2. **CRISIS** (systemic stress): `credit > 0.25 AND VIX > 18`
+   - Trading Allowed, Size = 40%, Confidence = 65%
+3. **WARN** (soft tightening): `credit > 0.30 AND macroScore > 0.15`
+   - Trading Allowed, Size = 60%, Confidence = 75%
+4. **NONE** — normal operation
+
+### Episode Validation Results (2026-02-25)
+
+| Episode | Period | CRISIS+BLOCK | Target | Status |
+|---------|--------|--------------|--------|--------|
+| GFC | 2008-2009 | **80%** | ≥60% | ✅ |
+| COVID | Feb-Jun 2020 | **82%** | ≥80% | ✅ |
+| Tightening | 2022-2023 | 21% (CRISIS only) | BLOCK ≤10% | ✅ |
+| Low Vol | 2017 | 0% (NONE=100%) | NONE ≥80% | ✅ |
+
+### Stability Metrics (2000-2025)
+| Metric | Value | Threshold | Status |
+|--------|-------|-----------|--------|
+| Guard flips/year | **3.65** | < 4 | ✅ |
+| Median duration | **21 days** | > 30 | ⚠️ |
+| NONE % | 76.9% | - | - |
+| CRISIS % | 18.1% | - | - |
+| BLOCK % | 5.0% | - | - |
+
 ## B5 Historical Validation Complete ✅
 
 ### B5.1 Stability Metrics (2000-2025)
@@ -45,6 +74,10 @@ Credit = 15% (BAA10Y, TEDRATE, VIX)
 
 ## API Endpoints
 
+### B6 Crisis Guard
+- `GET /api/dxy-macro-core/validate/episodes` — Episode validation with guard stats
+- `GET /api/dxy-macro-core/validate/stability` — Stability report with guard metrics
+
 ### B5 Validation
 - `GET /api/dxy-macro-core/validate/stability` — Stability report
 - `GET /api/dxy-macro-core/validate/episodes` — Episode validation
@@ -72,6 +105,7 @@ Credit = 15% (BAA10Y, TEDRATE, VIX)
 - B4.3 — Credit & Financial Stress
 - **B5.1 — Stability Validation**
 - **B5.2 — Episode Validation**
+- **B6 — 2-Stage Crisis Guard** ✅ NEW
 
 ### Frozen ❄️
 - SPX Module
@@ -79,6 +113,13 @@ Credit = 15% (BAA10Y, TEDRATE, VIX)
 - Frontend
 
 ## Next Steps
-1. **Crisis Guard** — Auto-trigger при VIX > 35 + Credit spike
-2. **B4.4** — Energy & Commodity (optional)
-3. **Cascade** — DXY → SPX → BTC
+1. ~~**Crisis Guard** — Auto-trigger при VIX > 35 + Credit spike~~ **DONE**
+2. **Hysteresis** — Reduce guard duration flaps (median 21d → 30d target)
+3. **B4.4** — Energy & Commodity (optional)
+4. **Cascade** — DXY → SPX → BTC
+
+## Tech Stack
+- Backend: TypeScript + Fastify (port 8001)
+- Database: MongoDB
+- Data Source: FRED API
+- Module: `dxy-macro-core`
