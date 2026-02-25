@@ -433,6 +433,12 @@ async function main() {
   await registerClusterRoutes(app);
   console.log('[Fractal] ✅ AE Cluster registered at /api/ae/cluster/*');
   
+  // BLOCK C8: Register AE Transition Module
+  console.log('[Fractal] Registering AE Transition Module (C8)...');
+  const { registerTransitionRoutes } = await import('./modules/ae-brain/transition/api/transition.routes.js');
+  await registerTransitionRoutes(app);
+  console.log('[Fractal] ✅ AE Transition registered at /api/ae/transition/*');
+  
   // NOTE: SPX Phase routes already registered via spx-core module
   
   // BLOCK C: Register Combined Terminal (Building)
