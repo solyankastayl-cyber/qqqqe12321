@@ -66,8 +66,8 @@ export interface CreditContext {
 
 const WEIGHTS = {
   BAA10Y: 0.40,
-  BAMLH0A0HYM2: 0.35,
-  STLFSI4: 0.25,
+  TEDRATE: 0.30,
+  VIXCLS: 0.30,
 };
 
 // ═══════════════════════════════════════════════════════════════
