@@ -124,6 +124,54 @@ export async function computeMacroScore(): Promise<MacroScore> {
     console.warn('[Macro Score] Housing component unavailable:', (e as Error).message);
   }
   
+  // B4.2: Add activity composite component
+  try {
+    const activity = await getActivityScoreComponent();
+    
+    if (activity.available) {
+      const activityNormalized = activity.scoreSigned * ACTIVITY_COMPOSITE_WEIGHT;
+      
+      components.push({
+        seriesId: activity.key,
+        displayName: activity.displayName,
+        role: 'growth',
+        weight: ACTIVITY_COMPOSITE_WEIGHT,
+        rawPressure: activity.scoreSigned,
+        normalizedPressure: Math.round(activityNormalized * 1000) / 1000,
+        regime: activity.regime,
+      });
+      
+      totalWeight += ACTIVITY_COMPOSITE_WEIGHT;
+      weightedSum += activityNormalized;
+    }
+  } catch (e) {
+    console.warn('[Macro Score] Activity component unavailable:', (e as Error).message);
+  }
+  
+  // B4.3: Add credit composite component
+  try {
+    const credit = await getCreditScoreComponent();
+    
+    if (credit.available) {
+      const creditNormalized = credit.scoreSigned * CREDIT_COMPOSITE_WEIGHT;
+      
+      components.push({
+        seriesId: credit.key,
+        displayName: credit.displayName,
+        role: 'credit',
+        weight: CREDIT_COMPOSITE_WEIGHT,
+        rawPressure: credit.scoreSigned,
+        normalizedPressure: Math.round(creditNormalized * 1000) / 1000,
+        regime: credit.regime,
+      });
+      
+      totalWeight += CREDIT_COMPOSITE_WEIGHT;
+      weightedSum += creditNormalized;
+    }
+  } catch (e) {
+    console.warn('[Macro Score] Credit component unavailable:', (e as Error).message);
+  }
+  
   // Normalize to -1..+1
   const scoreSigned = totalWeight > 0 ? weightedSum / totalWeight : 0;
   
