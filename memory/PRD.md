@@ -9,7 +9,7 @@
 
 ---
 
-## C-Track: AE Brain — IMPLEMENTED ✅ NEW
+## C-Track: AE Brain — IMPLEMENTED ✅
 
 ### Architecture
 AE Brain is the intelligence layer aggregating all system state:
@@ -21,6 +21,7 @@ AE Brain is the intelligence layer aggregating all system state:
 | **C3** | Causal Graph | ✅ |
 | **C4** | Scenario Engine | ✅ |
 | **C5** | Novelty Detection | ✅ |
+| **C6** | Historical Backfill | ✅ NEW |
 
 ### C1 State Vector
 Normalized state from macro + guard + DXY terminal:
