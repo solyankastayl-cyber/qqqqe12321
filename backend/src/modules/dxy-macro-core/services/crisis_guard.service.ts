@@ -60,9 +60,9 @@ export interface CrisisGuardResult {
 const BLOCK_CREDIT_THRESHOLD = 0.50;
 const BLOCK_VIX_THRESHOLD = 32;
 
-// Stage 1: CRISIS (системный стресс)
-const CRISIS_CREDIT_THRESHOLD = 0.30;
-const CRISIS_VIX_THRESHOLD = 20;
+// Stage 1: CRISIS (системный стресс)  
+const CRISIS_CREDIT_THRESHOLD = 0.25;
+const CRISIS_VIX_THRESHOLD = 18;
 
 // Stage 3: WARN (tightening / conflict)
 const WARN_CREDIT_THRESHOLD = 0.30;
