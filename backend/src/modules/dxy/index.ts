@@ -15,6 +15,7 @@ import { registerDxyAdminRoutes } from './api/dxy.admin.routes.js';
 import { registerDxyFractalRoutes } from './api/dxy.fractal.routes.js';
 import { registerDxyForwardRoutes } from './api/dxy.forward.routes.js';
 import { registerDxyTerminalRoutes } from './api/dxy.terminal.routes.js';
+import { registerDxyResearchTerminalRoutes } from './api/dxy.research_terminal.routes.js';
 import { checkDxyIntegrity, ingestFromLocalCsv } from './services/dxy-ingest.service.js';
 import fs from 'fs';
 
