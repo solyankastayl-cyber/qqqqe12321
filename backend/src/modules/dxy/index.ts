@@ -70,7 +70,10 @@ export async function registerDxyModule(fastify: FastifyInstance): Promise<void>
   // A4: Terminal route (unified API)
   await registerDxyTerminalRoutes(fastify);
   
-  console.log('[DXY] ✅ DXY Module v1.1.0 registered successfully');
+  // B3: Research Terminal route
+  await registerDxyResearchTerminalRoutes(fastify);
+  
+  console.log('[DXY] ✅ DXY Module v1.2.0 (B3 Research Terminal) registered successfully');
   console.log('[DXY] ═══════════════════════════════════════════════════════');
 }
 
