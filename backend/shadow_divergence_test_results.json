@@ -1,0 +1,288 @@
+{
+  "timestamp": "2026-02-17T16:14:07.316065",
+  "success": false,
+  "tests_run": 3,
+  "tests_passed": 1,
+  "results": [
+    {
+      "test": "Fractal Module Health Check",
+      "success": true,
+      "timestamp": "2026-02-17T16:14:06.876037",
+      "status_code": 200,
+      "response_data": {
+        "ok": true,
+        "enabled": true,
+        "bootstrapDone": true,
+        "bootstrapFileExists": true,
+        "bootstrapFilePath": "/app/backend/data/fractal/bootstrap/BTCUSD_daily.csv",
+        "legacyFileExists": true,
+        "lastCanonicalTs": "2026-02-15T00:00:00.000Z",
+        "candleCount": 5692,
+        "gaps": 0,
+        "dataIntegrity": "OK",
+        "lagDays": 1,
+        "sources": {
+          "primary": "kraken_csv",
+          "fallback": [
+            "coinbase"
+          ]
+        }
+      },
+      "headers": {
+        "Date": "Tue, 17 Feb 2026 16:14:06 GMT",
+        "Content-Type": "application/json; charset=utf-8",
+        "Transfer-Encoding": "chunked",
+        "Connection": "keep-alive",
+        "Content-Encoding": "gzip",
+        "CF-Ray": "9cf6936b9fb2acb1-ORD",
+        "CF-Cache-Status": "DYNAMIC",
+        "Access-Control-Allow-Origin": "*",
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+        "Vary": "Origin, Accept-Encoding",
+        "Via": "1.1 google",
+        "Access-Control-Allow-Headers": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, HEAD, PATCH",
+        "Access-Control-Max-Age": "300",
+        "access-control-allow-credentials": "true",
+        "Set-Cookie": "__cf_bm=6NImESSKD0hgMsJvT5gq4Xrd2qDBA4g4v_JDqJXoISk-1771344846-1.0.1.1-_bLfvZuHwRehECyoVJ.ipUoRrJGwA6les7iWXtI8OMcHBeOgPbwCWSsPnZqve1Lkg5RtTqmBgNCpYY6HFBcYYg4x_4F5W1UAjgqxSPW0Z8I; path=/; expires=Tue, 17-Feb-26 16:44:06 GMT; domain=.preview.emergentagent.com; HttpOnly; Secure; SameSite=None",
+        "Server": "cloudflare"
+      }
+    },
+    {
+      "test": "Admin Overview API (/api/fractal/v2.1/admin/overview)",
+      "success": false,
+      "timestamp": "2026-02-17T16:14:07.046506",
+      "status_code": 200,
+      "response_data": {
+        "meta": {
+          "symbol": "BTC",
+          "asOf": "2026-02-17T16:14:07.018Z",
+          "version": "v2.1-frozen-7-14-30-2026",
+          "contract": {
+            "horizonsDays": [
+              7,
+              14,
+              30
+            ]
+          }
+        },
+        "governance": {
+          "mode": "NORMAL",
+          "protectionMode": false,
+          "frozenOnly": false,
+          "activePreset": "v2.1_entropy_final",
+          "freeze": {
+            "isFrozen": true,
+            "frozenAt": "2026-02-10T09:12:00.000Z",
+            "reason": "CERT_STAMP"
+          },
+          "guardrails": {
+            "valid": true,
+            "violations": []
+          }
+        },
+        "health": {
+          "state": "HEALTHY",
+          "score": 0.96,
+          "headline": "All systems nominal",
+          "topRisks": [
+            {
+              "key": "DRIFT",
+              "severity": "OK",
+              "value": 0.1,
+              "threshold": 0.25
+            },
+            {
+              "key": "TAIL_RISK",
+              "severity": "OK",
+              "value": 0.25,
+              "threshold": 0.35
+            },
+            {
+              "key": "CALIBRATION",
+              "severity": "OK",
+              "value": 0.05,
+              "threshold": 0.1
+            },
+            {
+              "key": "RELIABILITY",
+              "severity": "OK",
+              "value": 0.75,
+              "threshold": 0.7
+            }
+          ]
+        },
+        "guard": {
+          "state": "OK",
+          "degenerationScore": 0.04,
+          "subscores": {
+            "reliability": 0,
+            "drift": 0.2,
+            "calibration": 0,
+            "tailRisk": 0,
+            "performance": 0
+          },
+          "latch": {
+            "active": false,
+            "until": null,
+            "windowDays": 14
+          },
+          "lastEvents": []
+        },
+        "telemetry": {
+          "health": "HEALTHY",
+          "anomalies": [],
+          "lastCheck": "2026-02-17T16:14:07.018Z"
+        },
+        "model": {
+          "reliability": {
+            "score": 0.75,
+            "badge": "WARN",
+            "policy": "NORMAL",
+            "modifier": 1,
+            "breakdown": {
+              "drift": 0.9,
+              "calibration": 0.9,
+              "rolling": 0.75,
+              "mcTail": 0.75
+            }
+          },
+          "calibration": {
+            "ece": 0.05,
+            "brier": 0.15,
+            "badge": "OK",
+            "updatedAt": "2026-02-17T16:14:07.018Z"
+          },
+          "mc": {
+            "method": "daily_block_bootstrap",
+            "p95MaxDD": 0.25,
+            "p05CAGR": 0.05,
+            "p10Sharpe": 0.51,
+            "updatedAt": "2026-02-17T16:14:07.018Z"
+          }
+        },
+        "performance": {
+          "windows": {
+            "d30": {
+              "sharpe": 0.5,
+              "maxDD": 0.11,
+              "hitRate": 0.55
+            },
+            "d60": {
+              "sharpe": 0.4,
+              "maxDD": 0.12,
+              "hitRate": 0.56
+            },
+            "d90": {
+              "sharpe": 0.64,
+              "maxDD": 0.21,
+              "hitRate": 0.55
+            }
+          }
+        },
+        "recommendation": {
+          "playbook": "NO_ACTION",
+          "priority": 6,
+          "reasonCodes": [
+            "System operating normally",
+            "No action required at this time"
+          ],
+          "suggestedActions": [
+            {
+              "action": "NO_ACTION",
+              "endpoint": "/api/fractal/v2.1/admin/playbook/apply"
+            }
+          ],
+          "requiresConfirm": false
+        },
+        "recent": {
+          "snapshots": [
+            {
+              "date": "2026-02-17",
+              "reliability": 0.8409359295866313,
+              "health": "HEALTHY"
+            },
+            {
+              "date": "2026-02-16",
+              "reliability": 0.8288732605769269,
+              "health": "HEALTHY"
+            },
+            {
+              "date": "2026-02-15",
+              "reliability": 0.8095958557767586,
+              "health": "WATCH"
+            },
+            {
+              "date": "2026-02-14",
+              "reliability": 0.7832163932009782,
+              "health": "WATCH"
+            },
+            {
+              "date": "2026-02-13",
+              "reliability": 0.8316052927374937,
+              "health": "WATCH"
+            },
+            {
+              "date": "2026-02-12",
+              "reliability": 0.7631896572252698,
+              "health": "WATCH"
+            },
+            {
+              "date": "2026-02-11",
+              "reliability": 0.7931487872903097,
+              "health": "WATCH"
+            }
+          ],
+          "audit": []
+        }
+      },
+      "headers": {
+        "Date": "Tue, 17 Feb 2026 16:14:07 GMT",
+        "Content-Type": "application/json; charset=utf-8",
+        "Transfer-Encoding": "chunked",
+        "Connection": "keep-alive",
+        "Content-Encoding": "gzip",
+        "CF-Ray": "9cf6936d4fc8a6ee-ORD",
+        "CF-Cache-Status": "DYNAMIC",
+        "Access-Control-Allow-Origin": "*",
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+        "Vary": "Origin, Accept-Encoding",
+        "Via": "1.1 google",
+        "Access-Control-Allow-Headers": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, HEAD, PATCH",
+        "Access-Control-Max-Age": "300",
+        "access-control-allow-credentials": "true",
+        "Set-Cookie": "__cf_bm=.h_A.8QeaxLd1nkr2CxFPmS5ewMJRahbix5R9cBF6_Y-1771344847-1.0.1.1-ts_KnZnSGJodej5qI3uQuKcT8HHPsGxugb_c5tV1bM79Ui6jyl1XNMr3DhLokAQMeNWUU9SY2nJXPaPvzSfyRrFhbqLFnA7kT1Bl.l.fr8g; path=/; expires=Tue, 17-Feb-26 16:44:07 GMT; domain=.preview.emergentagent.com; HttpOnly; Secure; SameSite=None",
+        "Server": "cloudflare"
+      },
+      "error": "Missing governance.status"
+    },
+    {
+      "test": "Shadow Divergence API (/api/fractal/v2.1/admin/shadow-divergence)",
+      "success": false,
+      "timestamp": "2026-02-17T16:14:07.315704",
+      "status_code": 520,
+      "response_data": {
+        "raw_response": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class=\"no-js ie7 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 8]>    <html class=\"no-js ie8 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if gt IE 8]><!--> <html class=\"no-js\" lang=\"en-US\"> <!--<![endif]-->\n<head>\n\n\n<title>mongo-admin-dev.cluster-12.preview.emergentcf.cloud | 520: Web server is returning an unknown error</title>\n<meta charset=\"UTF-8\" />\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" />\n<meta name=\"robots\" content=\"noindex, nofollow\" />\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\" />\n<link rel=\"stylesheet\" id=\"cf_styles-css\" href=\"/cdn-cgi/styles/main.css\" />\n\n\n</head>\n<body>\n<div id=\"cf-wrapper\">\n    <div id=\"cf-error-details\" class=\"p-0\">\n        <header class=\"mx-auto pt-10 lg:pt-6 lg:px-8 w-240 lg:w-full mb-8\">\n            <h1 class=\"inline-block sm:block sm:mb-2 font-light text-60 lg:text-4xl text-black-dark leading-tight mr-2\">\n              <span class=\"inline-block\">Web server is returning an unknown error</span>\n              <span class=\"code-label\">Error code 520</span>\n            </h1>\n            <div>\n               Visit <a href=\"https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_520&utm_campaign=mongo-admin-dev.cluster-12.preview.emergentcf.cloud\" target=\"_blank\" rel=\"noopener noreferrer\">cloudflare.com</a> for more information.\n            </div>\n            <div class=\"mt-3\">2026-02-17 16:14:07 UTC</div>\n        </header>\n        <div class=\"my-8 bg-gradient-gray\">\n            <div class=\"w-240 lg:w-full mx-auto\">\n                <div class=\"clearfix md:px-8\">\n                  \n<div id=\"cf-browser-status\" class=\" relative w-1/3 md:w-full py-15 md:p-0 md:py-8 md:text-left md:border-solid md:border-0 md:border-b md:border-gray-400 overflow-hidden float-left md:float-none text-center\">\n  <div class=\"relative mb-10 md:m-0\">\n    \n    <span class=\"cf-icon-browser block md:hidden h-20 bg-center bg-no-repeat\"></span>\n    <span class=\"cf-icon-ok w-12 h-12 absolute left-1/2 md:left-auto md:right-0 md:top-0 -ml-6 -bottom-4\"></span>\n    \n  </div>\n  <span class=\"md:block w-full truncate\">You</span>\n  <h3 class=\"md:inline-block mt-3 md:mt-0 text-2xl text-gray-600 font-light leading-1.3\">\n    \n    Browser\n    \n  </h3>\n  <span class=\"leading-1.3 text-2xl text-green-success\">Working</span>\n</div>\n\n<div id=\"cf-cloudflare-status\" class=\" relative w-1/3 md:w-full py-15 md:p-0 md:py-8 md:text-left md:border-solid md:border-0 md:border-b md:border-gray-400 overflow-hidden float-left md:float-none text-center\">\n  <div class=\"relative mb-10 md:m-0\">\n    <a href=\"https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_520&utm_campaign=mongo-admin-dev.cluster-12.preview.emergentcf.cloud\" target=\"_blank\" rel=\"noopener noreferrer\">\n    <span class=\"cf-icon-cloud block md:hidden h-20 bg-center bg-no-repeat\"></span>\n    <span class=\"cf-icon-ok w-12 h-12 absolute left-1/2 md:left-auto md:right-0 md:top-0 -ml-6 -bottom-4\"></span>\n    </a>\n  </div>\n  <span class=\"md:block w-full truncate\">Chicago</span>\n  <h3 class=\"md:inline-block mt-3 md:mt-0 text-2xl text-gray-600 font-light leading-1.3\">\n    <a href=\"https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_520&utm_campaign=mongo-admin-dev.cluster-12.preview.emergentcf.cloud\" target=\"_blank\" rel=\"noopener noreferrer\">\n    Cloudflare\n    </a>\n  </h3>\n  <span class=\"leading-1.3 text-2xl text-green-success\">Working</span>\n</div>\n\n<div id=\"cf-host-status\" class=\"cf-error-source relative w-1/3 md:w-full py-15 md:p-0 md:py-8 md:text-left md:border-solid md:border-0 md:border-b md:border-gray-400 overflow-hidden float-left md:float-none text-center\">\n  <div class=\"relative mb-10 md:m-0\">\n    \n    <span class=\"cf-icon-server block md:hidden h-20 bg-center bg-no-repeat\"></span>\n    <span class=\"cf-icon-error w-12 h-12 absolute left-1/2 md:left-auto md:right-0 md:top-0 -ml-6 -bottom-4\"></span>\n    \n  </div>\n  <span class=\"md:block w-full truncate\">mongo-admin-dev.cluster-12.preview.emergentcf.cloud</span>\n  <h3 class=\"md:inline-block mt-3 md:mt-0 text-2xl text-gray-600 font-light leading-1.3\">\n    \n    Host\n    \n  </h3>\n  <span class=\"leading-1.3 text-2xl text-red-error\">Error</span>\n</div>\n\n                </div>\n            </div>\n        </div>\n\n        <div class=\"w-240 lg:w-full mx-auto mb-8 lg:px-8\">\n            <div class=\"clearfix\">\n                <div class=\"w-1/2 md:w-full float-left pr-6 md:pb-10 md:pr-0 leading-relaxed\">\n                    <h2 class=\"text-3xl font-normal leading-1.3 mb-4\">What happened?</h2>\n                    <p>There is an unknown connection issue between Cloudflare and the origin web server. As a result, the web page can not be displayed.</p>\n                </div>\n                <div class=\"w-1/2 md:w-full float-left leading-relaxed\">\n                    <h2 class=\"text-3xl font-normal leading-1.3 mb-4\">What can I do?</h2>\n                          <h3 class=\"text-15 font-semibold mb-2\">If you are a visitor of this website:</h3>\n      <p class=\"mb-6\">Please try again in a few minutes.</p>\n\n      <h3 class=\"text-15 font-semibold mb-2\">If you are the owner of this website:</h3>\n      <p><span>There is an issue between Cloudflare's cache and your origin web server. Cloudflare monitors for these errors and automatically investigates the cause. To help support the investigation, you can pull the corresponding error log from your web server and submit it our support team.  Please include the Ray ID (which is at the bottom of this error page).</span> <a rel=\"noopener noreferrer\" href=\"https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-5xx-errors/error-520/\">Additional troubleshooting resources</a>.</p>\n                </div>\n            </div>\n        </div>\n\n        <div class=\"cf-error-footer cf-wrapper w-240 lg:w-full py-10 sm:py-4 sm:px-8 mx-auto text-center sm:text-left border-solid border-0 border-t border-gray-300\">\n  <p class=\"text-13\">\n    <span class=\"cf-footer-item sm:block sm:mb-1\">Cloudflare Ray ID: <strong class=\"font-semibold\">9cf6936e80add2ec</strong></span>\n    <span class=\"cf-footer-separator sm:hidden\">&bull;</span>\n    <span id=\"cf-footer-item-ip\" class=\"cf-footer-item hidden sm:block sm:mb-1\">\n      Your IP:\n      <button type=\"button\" id=\"cf-footer-ip-reveal\" class=\"cf-footer-ip-reveal-btn\">Click to reveal</button>\n      <span class=\"hidden\" id=\"cf-footer-ip\">104.198.214.223</span>\n      <span class=\"cf-footer-separator sm:hidden\">&bull;</span>\n    </span>\n    <span class=\"cf-footer-item sm:block sm:mb-1\"><span>Performance &amp; security by</span> <a rel=\"noopener noreferrer\" href=\"https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_520&utm_campaign=mongo-admin-dev.cluster-12.preview.emergentcf.cloud\" id=\"brand_link\" target=\"_blank\">Cloudflare</a></span>\n    \n  </p>\n  <script>(function(){function d(){var b=a.getElementById(\"cf-footer-item-ip\"),c=a.getElementById(\"cf-footer-ip-reveal\");b&&\"classList\"in b&&(b.classList.remove(\"hidden\"),c.addEventListener(\"click\",function(){c.classList.add(\"hidden\");a.getElementById(\"cf-footer-ip\").classList.remove(\"hidden\")}))}var a=document;document.addEventListener&&a.addEventListener(\"DOMContentLoaded\",d)})();</script>\n</div><!-- /.error-footer -->\n\n\n    </div>\n</div>\n</body>\n</html>\n"
+      },
+      "headers": {
+        "Date": "Tue, 17 Feb 2026 16:14:07 GMT",
+        "Content-Type": "text/html; charset=UTF-8",
+        "Content-Length": "7441",
+        "Connection": "keep-alive",
+        "Server": "cloudflare",
+        "CF-Ray": "9cf6936e6986d2ec-ORD",
+        "Access-Control-Allow-Origin": "*",
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+        "Expires": "Thu, 01 Jan 1970 00:00:01 GMT",
+        "Access-Control-Allow-Headers": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, HEAD, PATCH",
+        "Access-Control-Max-Age": "300",
+        "Referrer-Policy": "same-origin",
+        "X-Frame-Options": "SAMEORIGIN",
+        "Set-Cookie": "__cf_bm=jEVEH0X1Wkh.jrJiTqrQabm3oLUYcj7h5Bodzuy_vXY-1771344847-1.0.1.1-VoVRM9Yde_uS7KVBFIyd3BsOqrgQ5wnmyFb_m_TIXv59L7.EeSCf9JL9LdkWAL0_UqLDCivHyedgb1jpJJCnFsljH6erEHiKrltw9pY5aZ4; path=/; expires=Tue, 17-Feb-26 16:44:07 GMT; domain=.preview.emergentagent.com; HttpOnly; Secure; SameSite=None",
+        "Vary": "Accept-Encoding"
+      }
+    }
+  ]
+}

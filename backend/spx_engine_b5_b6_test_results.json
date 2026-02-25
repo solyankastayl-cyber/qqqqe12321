@@ -1,0 +1,65 @@
+{
+  "timestamp": "2026-02-21T08:31:22.424207",
+  "summary": {
+    "total_tests": 9,
+    "passed_tests": 9,
+    "success_rate": 100.0
+  },
+  "results": [
+    {
+      "name": "B5.4 Phase Engine - Basic Functionality",
+      "passed": true,
+      "details": "Phase: SIDEWAYS_RANGE, Flags: [], Coverage: 75.2 years",
+      "error": null
+    },
+    {
+      "name": "B5.4 Phase Segments - Functionality",
+      "passed": true,
+      "details": "Found 204 segments in date range",
+      "error": null
+    },
+    {
+      "name": "B6.1 Memory Stats - Functionality",
+      "passed": true,
+      "details": "Snapshots: 0, Outcomes: 0",
+      "error": null
+    },
+    {
+      "name": "B6.1 Memory Write - Dry Run",
+      "passed": true,
+      "details": "Dry run successful: {'ok': True, 'writtenCount': 2, 'totalRequested': 2, 'written': [{'horizon': '30d', 'tier': 'TACTICAL', 'ok': True}, {'horizon': '90d', 'tier': 'TACTICAL', 'ok': True}]}",
+      "error": null
+    },
+    {
+      "name": "B6.1 Memory Write - Validation",
+      "passed": true,
+      "details": "Correctly rejected request without asOfDate",
+      "error": null
+    },
+    {
+      "name": "B6.1 Memory Snapshots - Filters & Limits",
+      "passed": true,
+      "details": "Filter test passed, returned 0 items",
+      "error": null
+    },
+    {
+      "name": "B6.1 Memory Snapshots - Basic List",
+      "passed": true,
+      "details": "Total: 0, Returned: 0",
+      "error": null
+    },
+    {
+      "name": "SPX Focus Pack - Compatibility",
+      "passed": true,
+      "details": "Processing time: 423ms",
+      "error": null
+    },
+    {
+      "name": "Cross-Module Integration - Phase Data",
+      "passed": true,
+      "details": "Terminal phase: DISTRIBUTION, Engine phase: SIDEWAYS_RANGE",
+      "error": null
+    }
+  ],
+  "critical_failures": []
+}

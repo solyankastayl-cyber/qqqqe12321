@@ -1,0 +1,58 @@
+{
+  "summary": "Backend testing completed for DXY Fractal module A3.8 implementation. Critical issues identified with deployed version.",
+  "backend_issues": {
+    "critical_bugs": [
+      {
+        "endpoint": "/api/fractal/dxy",
+        "issue": "A3.8 meta fields missing - running DXY_V1.0.0 instead of expected DXY_V1.1.0",
+        "impact": "Missing mode, tradingEnabled, configUsed, and warnings fields",
+        "fix_priority": "CRITICAL"
+      },
+      {
+        "endpoint": "/api/fractal/dxy?focus=90d",
+        "issue": "Regime mode not working - returns action='SHORT' instead of 'HOLD'",
+        "impact": "90d regime horizon allows trading when it should be disabled",
+        "fix_priority": "CRITICAL"
+      },
+      {
+        "endpoint": "/api/fractal/dxy/synthetic",
+        "issue": "A3.8 meta fields incomplete - missing mode, tradingEnabled, warnings",
+        "impact": "Cannot distinguish between tactical and regime modes",
+        "fix_priority": "CRITICAL"
+      }
+    ],
+    "version_mismatch": [
+      {
+        "expected_version": "DXY_V1.1.0 (A3.8)",
+        "actual_version": "DXY_V1.0.0",
+        "issue": "A3.8 implementation not deployed - code shows v1.1.0 but API returns v1.0.0",
+        "impact": "Core A3.8 features completely missing"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "passed_tests": [
+    "Health Endpoint - API accessible and responsive",
+    "DXY Data Integrity - 18413 candles available with current price data",
+    "DXY Horizons Endpoint - Returns valid horizons array with 30d and 90d",
+    "DXY Walk Status Endpoint - Returns OK status with signal metrics"
+  ],
+  "test_report_links": [
+    "/app/dxy_backend_test.py",
+    "/app/dxy_backend_test_results.json"
+  ],
+  "success_percentage": {
+    "backend": "50% - Basic endpoints work but A3.8 implementation missing",
+    "frontend": "Not tested - backend only testing requested"
+  },
+  "action_item_for_main_agent": "CRITICAL: Deploy A3.8 implementation. Current API returns DXY_V1.0.0 but code shows DXY_V1.1.0. The horizon-specific defaults, mode classification (tactical/regime), and trading controls are completely missing. Backend restart may be needed after code deployment.",
+  "updated_files": [
+    "/app/dxy_backend_test.py"
+  ],
+  "should_call_test_agent_after_fix": "true",
+  "should_main_agent_test_itself": "false"
+}

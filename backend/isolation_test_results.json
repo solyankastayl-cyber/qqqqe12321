@@ -1,0 +1,147 @@
+{
+  "summary": {
+    "total_tests": 6,
+    "passed_tests": 6,
+    "success_rate": 1.0,
+    "timestamp": "2026-02-17T19:35:18.213400"
+  },
+  "test_results": [
+    {
+      "test": "Backend Health: GET /api/health",
+      "success": true,
+      "timestamp": "2026-02-17T19:35:16.245720",
+      "status_code": 200,
+      "response_data": {
+        "ok": true,
+        "mode": "FRACTAL_ONLY",
+        "timestamp": "2026-02-17T19:35:16.192Z"
+      },
+      "headers": {
+        "Date": "Tue, 17 Feb 2026 19:35:16 GMT",
+        "Content-Type": "application/json; charset=utf-8",
+        "Transfer-Encoding": "chunked",
+        "Connection": "keep-alive",
+        "Content-Encoding": "gzip",
+        "CF-Ray": "9cf7ba14fd4cacb2-ORD",
+        "CF-Cache-Status": "DYNAMIC",
+        "Access-Control-Allow-Origin": "*",
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+        "Vary": "Origin, Accept-Encoding",
+        "Via": "1.1 google",
+        "Access-Control-Allow-Headers": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, HEAD, PATCH",
+        "Access-Control-Max-Age": "300",
+        "access-control-allow-credentials": "true",
+        "Set-Cookie": "__cf_bm=4DiB3d6t2EKxm4RqvPW_SF34jxVDGVXDMPBofjK.5ko-1771356916-1.0.1.1-ni9M95vSL1VU7oFQwHe2_DZxn3VFJ6wdNiILCXRH28xMrVxkKIi7H7xTU3n7zIsBXYhqsEFfQ2.iBoSiDCqwvIW8fBhFO1cwI6lhLOsKE8o; path=/; expires=Tue, 17-Feb-26 20:05:16 GMT; domain=.preview.emergentagent.com; HttpOnly; Secure; SameSite=None",
+        "Server": "cloudflare"
+      },
+      "note": "Health check passed with mode: FRACTAL_ONLY"
+    },
+    {
+      "test": "Fractal Health: GET /api/fractal/health",
+      "success": true,
+      "timestamp": "2026-02-17T19:35:16.757536",
+      "status_code": 200,
+      "response_data": {
+        "ok": true,
+        "enabled": true,
+        "bootstrapDone": true,
+        "bootstrapFileExists": true,
+        "bootstrapFilePath": "/app/backend/data/fractal/bootstrap/BTCUSD_daily.csv",
+        "legacyFileExists": true,
+        "lastCanonicalTs": "2026-02-15T00:00:00.000Z",
+        "candleCount": 5692,
+        "gaps": 0,
+        "dataIntegrity": "OK",
+        "lagDays": 1,
+        "sources": {
+          "primary": "kraken_csv",
+          "fallback": [
+            "coinbase"
+          ]
+        }
+      },
+      "headers": {
+        "Date": "Tue, 17 Feb 2026 19:35:16 GMT",
+        "Content-Type": "application/json; charset=utf-8",
+        "Transfer-Encoding": "chunked",
+        "Connection": "keep-alive",
+        "Content-Encoding": "gzip",
+        "CF-Ray": "9cf7ba16d90cf165-ORD",
+        "CF-Cache-Status": "DYNAMIC",
+        "Access-Control-Allow-Origin": "*",
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+        "Vary": "Origin, Accept-Encoding",
+        "Via": "1.1 google",
+        "Access-Control-Allow-Headers": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, HEAD, PATCH",
+        "Access-Control-Max-Age": "300",
+        "access-control-allow-credentials": "true",
+        "Set-Cookie": "__cf_bm=iYoTovUL.0uTOAtI6tHCHiClKzCGhGGSBQkKiyYg5Kk-1771356916-1.0.1.1-jYYflK7A3MgeYhh87wMap.5Kxx9SpiUJMJ8fPfJkrPOjN08H_GqB6KLn92F8yfmbCwbpCrX6R5EknA6ZzlViUccIXN4j47NXg12m6No97qA; path=/; expires=Tue, 17-Feb-26 20:05:16 GMT; domain=.preview.emergentagent.com; HttpOnly; Secure; SameSite=None",
+        "Server": "cloudflare"
+      },
+      "note": "Fractal health check passed with 5692 candles"
+    },
+    {
+      "test": "Freeze Status: GET /api/fractal/v2.1/admin/freeze-status",
+      "success": true,
+      "timestamp": "2026-02-17T19:35:16.989541",
+      "status_code": 200,
+      "response_data": {
+        "frozen": true,
+        "version": "v2.1.0",
+        "frozenAt": "2026-02-17T18:00:00Z",
+        "allowedSymbols": [
+          "BTC"
+        ],
+        "allowedHorizons": [
+          7,
+          14,
+          30
+        ],
+        "contractVersion": "v2.1.0",
+        "contractHash": "44de469209e4982d"
+      },
+      "headers": {
+        "Date": "Tue, 17 Feb 2026 19:35:16 GMT",
+        "Content-Type": "application/json; charset=utf-8",
+        "Transfer-Encoding": "chunked",
+        "Connection": "keep-alive",
+        "Content-Encoding": "gzip",
+        "CF-Ray": "9cf7ba1a2f197dda-ORD",
+        "CF-Cache-Status": "DYNAMIC",
+        "Access-Control-Allow-Origin": "*",
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+        "Vary": "Origin, Accept-Encoding",
+        "Via": "1.1 google",
+        "Access-Control-Allow-Headers": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, HEAD, PATCH",
+        "Access-Control-Max-Age": "300",
+        "access-control-allow-credentials": "true",
+        "Set-Cookie": "__cf_bm=OfMr8hDXY.vjVTV5.PbOV50kfhc7cOmRTaSs3GG4_Pw-1771356916-1.0.1.1-DIpZ0iXG9OIiBr_il6j1JJG3QJFy1cwjv_MeV_e1RB08azosjHG2qJp8C_fiIcgRirzCDFZEj4Q9Um1l1jBGDHlzBYQRbgXlZUnVqos8Qww; path=/; expires=Tue, 17-Feb-26 20:05:16 GMT; domain=.preview.emergentagent.com; HttpOnly; Secure; SameSite=None",
+        "Server": "cloudflare"
+      },
+      "note": "Contract frozen with version: v2.1.0"
+    },
+    {
+      "test": "Isolation Linting Script",
+      "success": true,
+      "timestamp": "2026-02-17T19:35:17.504549",
+      "output": "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\n     FRACTAL MODULE ISOLATION CHECK - BLOCK B.4\n\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\n\n\ud83d\udcc1 Scanning 208 TypeScript files...\n\n\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\n\ud83d\udcca Summary: 208 files | 0 errors | 0 warnings\n\u2705 ISOLATION CHECK PASSED\n\ud83d\udcdd Report: tmp/isolation-report.json\n\n",
+      "note": "Isolation linting passed with no violations"
+    },
+    {
+      "test": "Isolation Tests (Vitest)",
+      "success": true,
+      "timestamp": "2026-02-17T19:35:18.213278",
+      "output": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/app/backend\u001b[39m\n\n \u001b[32m\u2713\u001b[39m src/modules/fractal/isolation/__tests__/isolation.test.ts \u001b[2m(\u001b[22m\u001b[2m15 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 22\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m15 passed\u001b[39m\u001b[22m\u001b[90m (15)\u001b[39m\n\u001b[2m   Start at \u001b[22m 19:35:17\n\u001b[2m   Duration \u001b[22m 181ms\u001b[2m (transform 49ms, setup 0ms, import 61ms, tests 22ms, environment 0ms)\u001b[22m\n\n",
+      "note": "Isolation tests passed: \u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m15 passed\u001b[39m\u001b[22m\u001b[90m (15)\u001b[39m"
+    },
+    {
+      "test": "Frontend Accessibility (Skipped)",
+      "success": true,
+      "timestamp": "2026-02-17T19:35:18.213305",
+      "note": "Testing type is 'backend only' - skipping frontend accessibility test"
+    }
+  ]
+}

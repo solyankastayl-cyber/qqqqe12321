@@ -1,0 +1,93 @@
+{
+  "summary": "SPX Drift Intelligence Backend Testing",
+  "tests_passed": 13,
+  "tests_total": 14,
+  "success_rate": "92.9%",
+  "timestamp": "2026-02-21T15:37:23.347597",
+  "test_details": [
+    {
+      "test_name": "Drift Intelligence API (30d)",
+      "passed": true,
+      "details": "API returns ok=true with required fields",
+      "timestamp": "2026-02-21T15:37:21.961594"
+    },
+    {
+      "test_name": "Drift Intelligence API (60d)",
+      "passed": true,
+      "details": "API returns ok=true with required fields",
+      "timestamp": "2026-02-21T15:37:22.159760"
+    },
+    {
+      "test_name": "Drift Intelligence API (90d)",
+      "passed": true,
+      "details": "API returns ok=true with required fields",
+      "timestamp": "2026-02-21T15:37:22.350410"
+    },
+    {
+      "test_name": "CRITICAL Severity (LIVE=0)",
+      "passed": false,
+      "details": "LIVE samples: 0, Severity: OK, Expected: CRITICAL",
+      "timestamp": "2026-02-21T15:37:22.351001"
+    },
+    {
+      "test_name": "Cohort Comparisons",
+      "passed": true,
+      "details": "Found cohorts: ['ALL_VINTAGE', 'V1950', 'V2020']",
+      "timestamp": "2026-02-21T15:37:22.351028"
+    },
+    {
+      "test_name": "Delta Matrix Structure",
+      "passed": true,
+      "details": "Found metrics: ['expectancy', 'hitRate', 'maxDD', 'sharpe']",
+      "timestamp": "2026-02-21T15:37:22.351039"
+    },
+    {
+      "test_name": "Delta Matrix expectancy Data",
+      "passed": true,
+      "details": "Cohorts: ['ALL_VINTAGE', 'V1950', 'V2020']",
+      "timestamp": "2026-02-21T15:37:22.351047"
+    },
+    {
+      "test_name": "Delta Matrix maxDD Data",
+      "passed": true,
+      "details": "Cohorts: ['ALL_VINTAGE', 'V1950', 'V2020']",
+      "timestamp": "2026-02-21T15:37:22.351054"
+    },
+    {
+      "test_name": "Delta Matrix hitRate Data",
+      "passed": true,
+      "details": "Cohorts: ['ALL_VINTAGE', 'V1950', 'V2020']",
+      "timestamp": "2026-02-21T15:37:22.351061"
+    },
+    {
+      "test_name": "Delta Matrix sharpe Data",
+      "passed": true,
+      "details": "Cohorts: ['ALL_VINTAGE', 'V1950', 'V2020']",
+      "timestamp": "2026-02-21T15:37:22.351067"
+    },
+    {
+      "test_name": "Drift Intelligence API (180d)",
+      "passed": true,
+      "details": "API returns ok=true with required fields",
+      "timestamp": "2026-02-21T15:37:22.549798"
+    },
+    {
+      "test_name": "Drift Intelligence API (365d)",
+      "passed": true,
+      "details": "API returns ok=true with required fields",
+      "timestamp": "2026-02-21T15:37:22.744535"
+    },
+    {
+      "test_name": "Drift Intelligence API (all)",
+      "passed": true,
+      "details": "API returns ok=true with required fields",
+      "timestamp": "2026-02-21T15:37:23.222132"
+    },
+    {
+      "test_name": "Invalid Window Validation",
+      "passed": true,
+      "details": "Correctly rejected invalid window",
+      "timestamp": "2026-02-21T15:37:23.346707"
+    }
+  ]
+}

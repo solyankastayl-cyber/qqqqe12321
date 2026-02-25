@@ -1,0 +1,7 @@
+{
+  "ok": false,
+  "error": "No samples available",
+  "cv_acc": 0.5,
+  "cv_logloss": 1.0,
+  "samples": 0
+}

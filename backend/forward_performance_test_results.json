@@ -1,0 +1,52 @@
+{
+  "timestamp": "2026-02-23T12:47:31.980684",
+  "summary": {
+    "passed": 7,
+    "total": 7,
+    "success_rate": "100.0%"
+  },
+  "tests": [
+    {
+      "test_name": "Health Check",
+      "passed": true,
+      "details": "Status: 200, Response: {\"status\":\"healthy\",\"ts\":\"2026-02-23T12:47:24.726Z\",\"services\":{},\"metrics\":{\"bootstrap\":{}},\"notes\"",
+      "timestamp": "2026-02-23T12:47:24.727435"
+    },
+    {
+      "test_name": "Generate Snapshots Endpoint",
+      "passed": true,
+      "details": "Generated: 30 snapshots (expected: 30)",
+      "timestamp": "2026-02-23T12:47:25.776267"
+    },
+    {
+      "test_name": "Snapshot Stats Endpoint",
+      "passed": true,
+      "details": "Total: 210, Resolved: 210, Presets: 6",
+      "timestamp": "2026-02-23T12:47:26.784271"
+    },
+    {
+      "test_name": "Forward Equity Response Structure",
+      "passed": true,
+      "details": "Equity points: 40, Ledger: 40, Resolved: 40",
+      "timestamp": "2026-02-23T12:47:27.790754"
+    },
+    {
+      "test_name": "Forward Equity All Presets",
+      "passed": true,
+      "details": "CONSERVATIVE-7D: CAGR=-7481.0%, Resolved=40; CONSERVATIVE-14D: CAGR=12948.0%, Resolved=40; CONSERVATIVE-30D: CAGR=-4914.0%, Resolved=40; BALANCED-7D: CAGR=7518.0%, Resolved=40; BALANCED-14D: CAGR=926.0%, Resolved=40 ... and 4 more",
+      "timestamp": "2026-02-23T12:47:28.832607"
+    },
+    {
+      "test_name": "Preset Mode Calculations Differ",
+      "passed": true,
+      "details": "Conservative CAGR: -7481.0%, Balanced CAGR: 7518.0%, Aggressive CAGR: -10000.0%",
+      "timestamp": "2026-02-23T12:47:29.845985"
+    },
+    {
+      "test_name": "Clear Snapshots Endpoint (Test Symbol)",
+      "passed": true,
+      "details": "Deleted: 0 snapshots for BTC_TEST",
+      "timestamp": "2026-02-23T12:47:30.980516"
+    }
+  ]
+}

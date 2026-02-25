@@ -1,0 +1,29 @@
+{
+  "test_type": "FP6_Equity_Curve",
+  "timestamp": "2026-02-24T10:35:59.969596",
+  "summary": {
+    "passed": 3,
+    "total": 3,
+    "success_rate": "100.0%"
+  },
+  "tests": [
+    {
+      "test_name": "Backend Health Check",
+      "passed": true,
+      "details": "Status: 200, Mode: FRACTAL_ONLY",
+      "timestamp": "2026-02-24T10:35:59.962466"
+    },
+    {
+      "test_name": "SPX Forward Summary (FP5)",
+      "passed": true,
+      "details": "Hit Rate: 60.0%, Samples: 40, Horizons: 6",
+      "timestamp": "2026-02-24T10:35:59.964973"
+    },
+    {
+      "test_name": "SPX Forward Equity Curve (FP6)",
+      "passed": true,
+      "details": "Trades: 40, Win Rate: 60.0%, Max DD: 9.1%, Final: 0.959, Points: 40",
+      "timestamp": "2026-02-24T10:35:59.969505"
+    }
+  ]
+}

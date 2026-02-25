@@ -1,0 +1,1011 @@
+{
+  "summary": "L4.1 Daily Run Orchestrator Backend Testing",
+  "tests_passed": 34,
+  "tests_total": 34,
+  "success_rate": "100.0%",
+  "timestamp": "2026-02-22T11:38:31.685547",
+  "test_details": [
+    {
+      "test_name": "Daily Run Pipeline (BTC)",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:30.688293",
+      "details": "RunId: run-1771760310662-wmxmr5, Steps: 11/11, Duration: 7ms, AUTO_WARMUP: Skipped (Already in APPLIED)",
+      "error": null,
+      "response_data": {
+        "ok": true,
+        "data": {
+          "ok": true,
+          "runId": "run-1771760310662-wmxmr5",
+          "asset": "BTC",
+          "mode": "PROD",
+          "durationMs": 7,
+          "steps": [
+            {
+              "name": "SNAPSHOT_WRITE",
+              "ok": true,
+              "ms": 0,
+              "details": {
+                "written": 0,
+                "skipped": 0,
+                "note": "Delegated to asset-specific service"
+              }
+            },
+            {
+              "name": "OUTCOME_RESOLVE",
+              "ok": true,
+              "ms": 0,
+              "details": {
+                "resolved": 0,
+                "note": "Delegated to asset-specific service"
+              }
+            },
+            {
+              "name": "LIVE_SAMPLE_UPDATE",
+              "ok": true,
+              "ms": 1,
+              "details": {
+                "before": 66,
+                "after": 66,
+                "delta": 0
+              }
+            },
+            {
+              "name": "DRIFT_CHECK",
+              "ok": true,
+              "ms": 2,
+              "details": {
+                "severity": "OK",
+                "revoked": false,
+                "recovered": false
+              }
+            },
+            {
+              "name": "AUTO_WARMUP",
+              "ok": true,
+              "ms": 0,
+              "details": {
+                "started": false,
+                "reason": "Already in APPLIED"
+              }
+            },
+            {
+              "name": "LIFECYCLE_HOOKS",
+              "ok": true,
+              "ms": 1,
+              "details": {
+                "statusBefore": "APPLIED",
+                "statusAfter": "APPLIED",
+                "transition": null,
+                "events": []
+              }
+            },
+            {
+              "name": "WARMUP_PROGRESS_WRITE",
+              "ok": true,
+              "ms": 0,
+              "details": {
+                "before": 3,
+                "after": 3,
+                "status": "APPLIED"
+              }
+            },
+            {
+              "name": "AUTO_PROMOTE",
+              "ok": true,
+              "ms": 1,
+              "details": {
+                "promoted": false,
+                "blocked": false,
+                "reason": "Not in WARMUP (current: APPLIED)"
+              }
+            },
+            {
+              "name": "INTEL_TIMELINE_WRITE",
+              "ok": true,
+              "ms": 0,
+              "details": {
+                "written": false,
+                "note": "Delegated to intel module"
+              }
+            },
+            {
+              "name": "ALERTS_DISPATCH",
+              "ok": true,
+              "ms": 0,
+              "details": {
+                "sent": 0,
+                "blocked": 0,
+                "note": "Delegated to alerts module"
+              }
+            },
+            {
+              "name": "INTEGRITY_GUARD",
+              "ok": true,
+              "ms": 1,
+              "details": {
+                "valid": true,
+                "fixes": []
+              }
+            }
+          ],
+          "lifecycle": {
+            "before": {
+              "status": "APPLIED",
+              "systemMode": "PROD",
+              "liveSamples": 66,
+              "warmupProgress": 3,
+              "driftSeverity": "OK",
+              "constitutionHash": "new_constitution_hash_123"
+            },
+            "after": {
+              "status": "APPLIED",
+              "systemMode": "PROD",
+              "liveSamples": 66,
+              "warmupProgress": 3,
+              "driftSeverity": "OK",
+              "constitutionHash": "new_constitution_hash_123"
+            },
+            "transition": null
+          },
+          "metrics": {
+            "snapshotsWritten": 0,
+            "outcomesResolved": 0,
+            "liveSamplesBefore": 66,
+            "liveSamplesAfter": 66,
+            "driftSeverity": "OK",
+            "warmupProgressBefore": 3,
+            "warmupProgressAfter": 3
+          },
+          "warnings": [],
+          "errors": []
+        }
+      }
+    },
+    {
+      "test_name": "Daily Run Pipeline (SPX)",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:30.824064",
+      "details": "RunId: run-1771760310799-trcxok, Steps: 11/11, Duration: 7ms, AUTO_WARMUP: Skipped (Not in PROD mode (DEV never auto-starts warmup))",
+      "error": null,
+      "response_data": {
+        "ok": true,
+        "data": {
+          "ok": true,
+          "runId": "run-1771760310799-trcxok",
+          "asset": "SPX",
+          "mode": "DEV",
+          "durationMs": 7,
+          "steps": [
+            {
+              "name": "SNAPSHOT_WRITE",
+              "ok": true,
+              "ms": 0,
+              "details": {
+                "written": 0,
+                "skipped": 0,
+                "note": "Delegated to asset-specific service"
+              }
+            },
+            {
+              "name": "OUTCOME_RESOLVE",
+              "ok": true,
+              "ms": 0,
+              "details": {
+                "resolved": 0,
+                "note": "Delegated to asset-specific service"
+              }
+            },
+            {
+              "name": "LIVE_SAMPLE_UPDATE",
+              "ok": true,
+              "ms": 0,
+              "details": {
+                "before": 10,
+                "after": 10,
+                "delta": 0
+              }
+            },
+            {
+              "name": "DRIFT_CHECK",
+              "ok": true,
+              "ms": 2,
+              "details": {
+                "severity": "OK",
+                "revoked": false,
+                "recovered": false
+              }
+            },
+            {
+              "name": "AUTO_WARMUP",
+              "ok": true,
+              "ms": 0,
+              "details": {
+                "started": false,
+                "reason": "Not in PROD mode (DEV never auto-starts warmup)"
+              }
+            },
+            {
+              "name": "LIFECYCLE_HOOKS",
+              "ok": true,
+              "ms": 1,
+              "details": {
+                "statusBefore": "SIMULATION",
+                "statusAfter": "SIMULATION",
+                "transition": null,
+                "events": []
+              }
+            },
+            {
+              "name": "WARMUP_PROGRESS_WRITE",
+              "ok": true,
+              "ms": 1,
+              "details": {
+                "before": 0,
+                "after": 0,
+                "status": "SIMULATION"
+              }
+            },
+            {
+              "name": "AUTO_PROMOTE",
+              "ok": true,
+              "ms": 0,
+              "details": {
+                "promoted": false,
+                "blocked": false,
+                "reason": "Not in PROD mode"
+              }
+            },
+            {
+              "name": "INTEL_TIMELINE_WRITE",
+              "ok": true,
+              "ms": 0,
+              "details": {
+                "written": false,
+                "note": "Delegated to intel module"
+              }
+            },
+            {
+              "name": "ALERTS_DISPATCH",
+              "ok": true,
+              "ms": 0,
+              "details": {
+                "sent": 0,
+                "blocked": 0,
+                "note": "Delegated to alerts module"
+              }
+            },
+            {
+              "name": "INTEGRITY_GUARD",
+              "ok": true,
+              "ms": 1,
+              "details": {
+                "valid": true,
+                "fixes": []
+              }
+            }
+          ],
+          "lifecycle": {
+            "before": {
+              "status": "SIMULATION",
+              "systemMode": "DEV",
+              "liveSamples": 10,
+              "warmupProgress": 0,
+              "driftSeverity": "OK",
+              "constitutionHash": "test_hash_spx"
+            },
+            "after": {
+              "status": "SIMULATION",
+              "systemMode": "DEV",
+              "liveSamples": 10,
+              "warmupProgress": 0,
+              "driftSeverity": "OK",
+              "constitutionHash": "test_hash_spx"
+            },
+            "transition": null
+          },
+          "metrics": {
+            "snapshotsWritten": 0,
+            "outcomesResolved": 0,
+            "liveSamplesBefore": 10,
+            "liveSamplesAfter": 10,
+            "driftSeverity": "OK",
+            "warmupProgressBefore": 0,
+            "warmupProgressAfter": 0
+          },
+          "warnings": [],
+          "errors": []
+        }
+      }
+    },
+    {
+      "test_name": "Step Timing - SNAPSHOT_WRITE",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:30.825723",
+      "details": "0ms",
+      "error": null
+    },
+    {
+      "test_name": "Step Timing - OUTCOME_RESOLVE",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:30.825737",
+      "details": "0ms",
+      "error": null
+    },
+    {
+      "test_name": "Step Timing - LIVE_SAMPLE_UPDATE",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:30.825743",
+      "details": "1ms",
+      "error": null
+    },
+    {
+      "test_name": "Step Timing - DRIFT_CHECK",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:30.825749",
+      "details": "2ms",
+      "error": null
+    },
+    {
+      "test_name": "Step Timing - AUTO_WARMUP",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:30.825753",
+      "details": "0ms",
+      "error": null
+    },
+    {
+      "test_name": "Step Timing - LIFECYCLE_HOOKS",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:30.825760",
+      "details": "1ms",
+      "error": null
+    },
+    {
+      "test_name": "Step Timing - WARMUP_PROGRESS_WRITE",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:30.825766",
+      "details": "0ms",
+      "error": null
+    },
+    {
+      "test_name": "Step Timing - AUTO_PROMOTE",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:30.825773",
+      "details": "1ms",
+      "error": null
+    },
+    {
+      "test_name": "Step Timing - INTEL_TIMELINE_WRITE",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:30.825777",
+      "details": "0ms",
+      "error": null
+    },
+    {
+      "test_name": "Step Timing - ALERTS_DISPATCH",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:30.825783",
+      "details": "0ms",
+      "error": null
+    },
+    {
+      "test_name": "Step Timing - INTEGRITY_GUARD",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:30.825787",
+      "details": "1ms",
+      "error": null
+    },
+    {
+      "test_name": "Step Timing - SNAPSHOT_WRITE",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:30.825792",
+      "details": "0ms",
+      "error": null
+    },
+    {
+      "test_name": "Step Timing - OUTCOME_RESOLVE",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:30.825796",
+      "details": "0ms",
+      "error": null
+    },
+    {
+      "test_name": "Step Timing - LIVE_SAMPLE_UPDATE",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:30.825800",
+      "details": "0ms",
+      "error": null
+    },
+    {
+      "test_name": "Step Timing - DRIFT_CHECK",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:30.825804",
+      "details": "2ms",
+      "error": null
+    },
+    {
+      "test_name": "Step Timing - AUTO_WARMUP",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:30.825808",
+      "details": "0ms",
+      "error": null
+    },
+    {
+      "test_name": "Step Timing - LIFECYCLE_HOOKS",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:30.825813",
+      "details": "1ms",
+      "error": null
+    },
+    {
+      "test_name": "Step Timing - WARMUP_PROGRESS_WRITE",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:30.825817",
+      "details": "1ms",
+      "error": null
+    },
+    {
+      "test_name": "Step Timing - AUTO_PROMOTE",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:30.825821",
+      "details": "0ms",
+      "error": null
+    },
+    {
+      "test_name": "Step Timing - INTEL_TIMELINE_WRITE",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:30.825825",
+      "details": "0ms",
+      "error": null
+    },
+    {
+      "test_name": "Step Timing - ALERTS_DISPATCH",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:30.825829",
+      "details": "0ms",
+      "error": null
+    },
+    {
+      "test_name": "Step Timing - INTEGRITY_GUARD",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:30.825833",
+      "details": "1ms",
+      "error": null
+    },
+    {
+      "test_name": "Lifecycle Before Capture",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:30.825843",
+      "details": "Status: APPLIED, Samples: 66",
+      "error": null
+    },
+    {
+      "test_name": "Lifecycle After Capture",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:30.825849",
+      "details": "Status: APPLIED, Samples: 66",
+      "error": null
+    },
+    {
+      "test_name": "Lifecycle Transition Detection",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:30.825854",
+      "details": "No status change, no transition (correct)",
+      "error": null
+    },
+    {
+      "test_name": "Daily Run Status (BTC)",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:30.951653",
+      "details": "Found last run: DAILY_RUN_COMPLETED at 2026-02-22T11:38:30.662Z, RunId: run-1771760310662-wmxmr5",
+      "error": null,
+      "response_data": {
+        "ok": true,
+        "data": {
+          "lastRun": {
+            "_id": "699aeab6c109ec94b62173ae",
+            "modelId": "BTC",
+            "engineVersion": "v2.1",
+            "ts": "2026-02-22T11:38:30.662Z",
+            "type": "DAILY_RUN_COMPLETED",
+            "actor": "SYSTEM",
+            "meta": {
+              "runId": "run-1771760310662-wmxmr5",
+              "durationMs": 7,
+              "ok": true,
+              "stepsOk": 11,
+              "stepsTotal": 11,
+              "transition": null,
+              "warnings": [],
+              "errors": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "test_name": "Daily Run Status (SPX)",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:31.050870",
+      "details": "Found last run: DAILY_RUN_COMPLETED at 2026-02-22T11:38:30.799Z, RunId: run-1771760310799-trcxok",
+      "error": null,
+      "response_data": {
+        "ok": true,
+        "data": {
+          "lastRun": {
+            "_id": "699aeab6c109ec94b62173af",
+            "modelId": "SPX",
+            "engineVersion": "v2.1",
+            "ts": "2026-02-22T11:38:30.799Z",
+            "type": "DAILY_RUN_COMPLETED",
+            "actor": "SYSTEM",
+            "meta": {
+              "runId": "run-1771760310799-trcxok",
+              "durationMs": 7,
+              "ok": true,
+              "stepsOk": 11,
+              "stepsTotal": 11,
+              "transition": null,
+              "warnings": [],
+              "errors": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "test_name": "Daily Run History (BTC)",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:31.189191",
+      "details": "Found 3 historical runs, Latest: 2026-02-22T11:38:30.662Z",
+      "error": null,
+      "response_data": {
+        "ok": true,
+        "data": [
+          {
+            "_id": "699aeab6c109ec94b62173ae",
+            "modelId": "BTC",
+            "engineVersion": "v2.1",
+            "ts": "2026-02-22T11:38:30.662Z",
+            "type": "DAILY_RUN_COMPLETED",
+            "actor": "SYSTEM",
+            "meta": {
+              "runId": "run-1771760310662-wmxmr5",
+              "durationMs": 7,
+              "ok": true,
+              "stepsOk": 11,
+              "stepsTotal": 11,
+              "transition": null,
+              "warnings": [],
+              "errors": []
+            }
+          },
+          {
+            "_id": "699ae9b8c109ec94b621736c",
+            "modelId": "BTC",
+            "engineVersion": "v2.1",
+            "ts": "2026-02-22T11:34:16.814Z",
+            "type": "DAILY_RUN_COMPLETED",
+            "actor": "SYSTEM",
+            "meta": {
+              "runId": "run-1771760056814-kc8do6",
+              "durationMs": 18,
+              "ok": true,
+              "stepsOk": 11,
+              "stepsTotal": 11,
+              "transition": "SIMULATION \u2192 APPLIED",
+              "warnings": [
+                "BTC auto-started warmup (PROD mode)",
+                "Model BTC auto-promoted to APPLIED!"
+              ],
+              "errors": []
+            }
+          },
+          {
+            "_id": "699ae99fc109ec94b6217368",
+            "modelId": "BTC",
+            "engineVersion": "v2.1",
+            "ts": "2026-02-22T11:33:51.606Z",
+            "type": "DAILY_RUN_COMPLETED",
+            "actor": "SYSTEM",
+            "meta": {
+              "runId": "run-1771760031606-ufiwq0",
+              "durationMs": 16,
+              "ok": true,
+              "stepsOk": 11,
+              "stepsTotal": 11,
+              "transition": null,
+              "warnings": [],
+              "errors": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "test_name": "Daily Run History (SPX)",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:31.328114",
+      "details": "Found 3 historical runs, Latest: 2026-02-22T11:38:30.799Z",
+      "error": null,
+      "response_data": {
+        "ok": true,
+        "data": [
+          {
+            "_id": "699aeab6c109ec94b62173af",
+            "modelId": "SPX",
+            "engineVersion": "v2.1",
+            "ts": "2026-02-22T11:38:30.799Z",
+            "type": "DAILY_RUN_COMPLETED",
+            "actor": "SYSTEM",
+            "meta": {
+              "runId": "run-1771760310799-trcxok",
+              "durationMs": 7,
+              "ok": true,
+              "stepsOk": 11,
+              "stepsTotal": 11,
+              "transition": null,
+              "warnings": [],
+              "errors": []
+            }
+          },
+          {
+            "_id": "699ae2569d5ee4b075ff688a",
+            "modelId": "SPX",
+            "engineVersion": "v2.1",
+            "ts": "2026-02-22T11:02:46.117Z",
+            "type": "DAILY_RUN_COMPLETED",
+            "actor": "SYSTEM",
+            "meta": {
+              "runId": "run-1771758166117-l1n2ff",
+              "durationMs": 8,
+              "ok": true,
+              "stepsOk": 10,
+              "stepsTotal": 10,
+              "transition": null,
+              "warnings": [],
+              "errors": []
+            }
+          },
+          {
+            "_id": "699ae1a89d5ee4b075ff6865",
+            "modelId": "SPX",
+            "engineVersion": "v2.1",
+            "ts": "2026-02-22T10:59:52.153Z",
+            "type": "DAILY_RUN_COMPLETED",
+            "actor": "SYSTEM",
+            "meta": {
+              "runId": "run-1771757992153-v0t3lz",
+              "durationMs": 7,
+              "ok": true,
+              "stepsOk": 10,
+              "stepsTotal": 10,
+              "transition": null,
+              "warnings": [],
+              "errors": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "test_name": "Invalid Asset Validation",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:31.469418",
+      "details": "Correctly rejected invalid asset",
+      "error": null
+    },
+    {
+      "test_name": "AUTO_WARMUP Step (BTC)",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:31.582410",
+      "details": "Started: False, Reason: Already in APPLIED",
+      "error": null,
+      "response_data": {
+        "ok": true,
+        "data": {
+          "ok": true,
+          "runId": "run-1771760311557-bklnjp",
+          "asset": "BTC",
+          "mode": "PROD",
+          "durationMs": 7,
+          "steps": [
+            {
+              "name": "SNAPSHOT_WRITE",
+              "ok": true,
+              "ms": 0,
+              "details": {
+                "written": 0,
+                "skipped": 0,
+                "note": "Delegated to asset-specific service"
+              }
+            },
+            {
+              "name": "OUTCOME_RESOLVE",
+              "ok": true,
+              "ms": 0,
+              "details": {
+                "resolved": 0,
+                "note": "Delegated to asset-specific service"
+              }
+            },
+            {
+              "name": "LIVE_SAMPLE_UPDATE",
+              "ok": true,
+              "ms": 1,
+              "details": {
+                "before": 66,
+                "after": 66,
+                "delta": 0
+              }
+            },
+            {
+              "name": "DRIFT_CHECK",
+              "ok": true,
+              "ms": 1,
+              "details": {
+                "severity": "OK",
+                "revoked": false,
+                "recovered": false
+              }
+            },
+            {
+              "name": "AUTO_WARMUP",
+              "ok": true,
+              "ms": 1,
+              "details": {
+                "started": false,
+                "reason": "Already in APPLIED"
+              }
+            },
+            {
+              "name": "LIFECYCLE_HOOKS",
+              "ok": true,
+              "ms": 1,
+              "details": {
+                "statusBefore": "APPLIED",
+                "statusAfter": "APPLIED",
+                "transition": null,
+                "events": []
+              }
+            },
+            {
+              "name": "WARMUP_PROGRESS_WRITE",
+              "ok": true,
+              "ms": 0,
+              "details": {
+                "before": 3,
+                "after": 3,
+                "status": "APPLIED"
+              }
+            },
+            {
+              "name": "AUTO_PROMOTE",
+              "ok": true,
+              "ms": 1,
+              "details": {
+                "promoted": false,
+                "blocked": false,
+                "reason": "Not in WARMUP (current: APPLIED)"
+              }
+            },
+            {
+              "name": "INTEL_TIMELINE_WRITE",
+              "ok": true,
+              "ms": 0,
+              "details": {
+                "written": false,
+                "note": "Delegated to intel module"
+              }
+            },
+            {
+              "name": "ALERTS_DISPATCH",
+              "ok": true,
+              "ms": 0,
+              "details": {
+                "sent": 0,
+                "blocked": 0,
+                "note": "Delegated to alerts module"
+              }
+            },
+            {
+              "name": "INTEGRITY_GUARD",
+              "ok": true,
+              "ms": 0,
+              "details": {
+                "valid": true,
+                "fixes": []
+              }
+            }
+          ],
+          "lifecycle": {
+            "before": {
+              "status": "APPLIED",
+              "systemMode": "PROD",
+              "liveSamples": 66,
+              "warmupProgress": 3,
+              "driftSeverity": "OK",
+              "constitutionHash": "new_constitution_hash_123"
+            },
+            "after": {
+              "status": "APPLIED",
+              "systemMode": "PROD",
+              "liveSamples": 66,
+              "warmupProgress": 3,
+              "driftSeverity": "OK",
+              "constitutionHash": "new_constitution_hash_123"
+            },
+            "transition": null
+          },
+          "metrics": {
+            "snapshotsWritten": 0,
+            "outcomesResolved": 0,
+            "liveSamplesBefore": 66,
+            "liveSamplesAfter": 66,
+            "driftSeverity": "OK",
+            "warmupProgressBefore": 3,
+            "warmupProgressAfter": 3
+          },
+          "warnings": [],
+          "errors": []
+        }
+      }
+    },
+    {
+      "test_name": "AUTO_WARMUP Step (SPX)",
+      "passed": true,
+      "timestamp": "2026-02-22T11:38:31.684371",
+      "details": "Started: False, Reason: Not in PROD mode (DEV never auto-starts warmup)",
+      "error": null,
+      "response_data": {
+        "ok": true,
+        "data": {
+          "ok": true,
+          "runId": "run-1771760311660-no5mqq",
+          "asset": "SPX",
+          "mode": "DEV",
+          "durationMs": 7,
+          "steps": [
+            {
+              "name": "SNAPSHOT_WRITE",
+              "ok": true,
+              "ms": 0,
+              "details": {
+                "written": 0,
+                "skipped": 0,
+                "note": "Delegated to asset-specific service"
+              }
+            },
+            {
+              "name": "OUTCOME_RESOLVE",
+              "ok": true,
+              "ms": 0,
+              "details": {
+                "resolved": 0,
+                "note": "Delegated to asset-specific service"
+              }
+            },
+            {
+              "name": "LIVE_SAMPLE_UPDATE",
+              "ok": true,
+              "ms": 1,
+              "details": {
+                "before": 10,
+                "after": 10,
+                "delta": 0
+              }
+            },
+            {
+              "name": "DRIFT_CHECK",
+              "ok": true,
+              "ms": 1,
+              "details": {
+                "severity": "OK",
+                "revoked": false,
+                "recovered": false
+              }
+            },
+            {
+              "name": "AUTO_WARMUP",
+              "ok": true,
+              "ms": 1,
+              "details": {
+                "started": false,
+                "reason": "Not in PROD mode (DEV never auto-starts warmup)"
+              }
+            },
+            {
+              "name": "LIFECYCLE_HOOKS",
+              "ok": true,
+              "ms": 1,
+              "details": {
+                "statusBefore": "SIMULATION",
+                "statusAfter": "SIMULATION",
+                "transition": null,
+                "events": []
+              }
+            },
+            {
+              "name": "WARMUP_PROGRESS_WRITE",
+              "ok": true,
+              "ms": 0,
+              "details": {
+                "before": 0,
+                "after": 0,
+                "status": "SIMULATION"
+              }
+            },
+            {
+              "name": "AUTO_PROMOTE",
+              "ok": true,
+              "ms": 1,
+              "details": {
+                "promoted": false,
+                "blocked": false,
+                "reason": "Not in PROD mode"
+              }
+            },
+            {
+              "name": "INTEL_TIMELINE_WRITE",
+              "ok": true,
+              "ms": 0,
+              "details": {
+                "written": false,
+                "note": "Delegated to intel module"
+              }
+            },
+            {
+              "name": "ALERTS_DISPATCH",
+              "ok": true,
+              "ms": 0,
+              "details": {
+                "sent": 0,
+                "blocked": 0,
+                "note": "Delegated to alerts module"
+              }
+            },
+            {
+              "name": "INTEGRITY_GUARD",
+              "ok": true,
+              "ms": 0,
+              "details": {
+                "valid": true,
+                "fixes": []
+              }
+            }
+          ],
+          "lifecycle": {
+            "before": {
+              "status": "SIMULATION",
+              "systemMode": "DEV",
+              "liveSamples": 10,
+              "warmupProgress": 0,
+              "driftSeverity": "OK",
+              "constitutionHash": "test_hash_spx"
+            },
+            "after": {
+              "status": "SIMULATION",
+              "systemMode": "DEV",
+              "liveSamples": 10,
+              "warmupProgress": 0,
+              "driftSeverity": "OK",
+              "constitutionHash": "test_hash_spx"
+            },
+            "transition": null
+          },
+          "metrics": {
+            "snapshotsWritten": 0,
+            "outcomesResolved": 0,
+            "liveSamplesBefore": 10,
+            "liveSamplesAfter": 10,
+            "driftSeverity": "OK",
+            "warmupProgressBefore": 0,
+            "warmupProgressAfter": 0
+          },
+          "warnings": [],
+          "errors": []
+        }
+      }
+    }
+  ],
+  "failed_tests": []
+}

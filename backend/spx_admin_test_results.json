@@ -1,0 +1,39 @@
+{
+  "summary": "SPX Admin Backend Testing for Russian Interface",
+  "tests_passed": 2,
+  "tests_total": 5,
+  "success_rate": "40.0%",
+  "timestamp": "2026-02-22T09:03:42.164420",
+  "test_details": [
+    {
+      "test_name": "SPX Regimes Summary API",
+      "passed": true,
+      "details": "Total days: 19061, Regimes: 14",
+      "timestamp": "2026-02-22T09:03:39.894198"
+    },
+    {
+      "test_name": "SPX Regimes Matrix API",
+      "passed": true,
+      "details": "Matrix cells: 84, Regimes: 14",
+      "timestamp": "2026-02-22T09:03:41.723544"
+    },
+    {
+      "test_name": "SPX Constitution API",
+      "passed": false,
+      "details": "Status 520",
+      "timestamp": "2026-02-22T09:03:41.906746"
+    },
+    {
+      "test_name": "SPX Governance Versions API",
+      "passed": false,
+      "details": "Status 520",
+      "timestamp": "2026-02-22T09:03:42.047066"
+    },
+    {
+      "test_name": "SPX Backtest API",
+      "passed": false,
+      "details": "Status 520",
+      "timestamp": "2026-02-22T09:03:42.162785"
+    }
+  ]
+}

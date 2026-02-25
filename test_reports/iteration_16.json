@@ -1,0 +1,42 @@
+{
+  "summary": "Completed comprehensive testing of B2 Macro → DXY Terminal Integration. All 6 test scenarios passed successfully with 100% success rate.",
+  
+  "backend_issues": {
+    "critical_bugs": [],
+    "flaky_endpoints": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+
+  "passed_tests": [
+    "GET /api/fractal/dxy/terminal?focus=30d - Macro section present with score01, scoreSigned, regime, overlay",
+    "GET /api/fractal/dxy/terminal?focus=30d - decision.macroAdjustedConfidence = confidence * confidenceMultiplier (100 * 0.86 = 86)", 
+    "GET /api/fractal/dxy/terminal?focus=30d - Synthetic/hybrid paths unchanged by macro overlay (30 points each)",
+    "GET /api/fractal/dxy/terminal?focus=90d - tradingEnabled=false (regime mode) with macro still present",
+    "GET /api/fractal/dxy/macro/debug - Returns overlay calculations with regime, riskMode, agreement",
+    "No macro data scenario - Terminal works gracefully when macro is undefined"
+  ],
+
+  "test_report_links": [
+    "/app/backend_test_b2_macro.py",
+    "/app/backend_test_b2_macro_results.json"
+  ],
+
+  "success_percentage": {
+    "backend": "100% (6/6 tests passed)",
+    "frontend": "Not tested (backend-only requirement)"
+  },
+
+  "action_item_for_main_agent": "",
+
+  "updated_files": [
+    "/app/backend_test_b2_macro.py"
+  ],
+
+  "should_call_test_agent_after_fix": "false",
+  "should_main_agent_test_itself": "true"
+}

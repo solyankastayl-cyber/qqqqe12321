@@ -1,0 +1,58 @@
+{
+  "summary": {
+    "total_tests": 8,
+    "passed_tests": 8,
+    "success_rate": "100.0%",
+    "timestamp": "2026-02-21T19:26:16.732639"
+  },
+  "test_results": [
+    {
+      "test_name": "Health Endpoint",
+      "passed": true,
+      "details": "Health check passed: {'ok': True, 'mode': 'FRACTAL_ONLY', 'timestamp': '2026-02-21T19:26:15.622Z'}",
+      "timestamp": "2026-02-21T19:26:15.640306"
+    },
+    {
+      "test_name": "Guardrails Full Policy",
+      "passed": true,
+      "details": "Policy returned with 6 decisions, global status: CAUTION",
+      "timestamp": "2026-02-21T19:26:15.799507"
+    },
+    {
+      "test_name": "Guardrails Summary",
+      "passed": true,
+      "details": "Summary returned: global=CAUTION, edge=NONE, rules=ON",
+      "timestamp": "2026-02-21T19:26:15.948149"
+    },
+    {
+      "test_name": "Guardrails Horizon (7d)",
+      "passed": true,
+      "details": "Decision: status=CAUTION, samples=0, skill=0",
+      "timestamp": "2026-02-21T19:26:16.118207"
+    },
+    {
+      "test_name": "Guardrails Horizon (30d)",
+      "passed": true,
+      "details": "Decision: status=CAUTION, samples=0, skill=0",
+      "timestamp": "2026-02-21T19:26:16.287014"
+    },
+    {
+      "test_name": "Guardrails Horizon (90d)",
+      "passed": true,
+      "details": "Decision: status=CAUTION, samples=0, skill=0",
+      "timestamp": "2026-02-21T19:26:16.428778"
+    },
+    {
+      "test_name": "Guardrails Horizon (365d)",
+      "passed": true,
+      "details": "Decision: status=CAUTION, samples=0, skill=0",
+      "timestamp": "2026-02-21T19:26:16.573209"
+    },
+    {
+      "test_name": "Invalid Horizon Validation",
+      "passed": true,
+      "details": "Correctly rejected invalid horizon: Invalid horizon. Use: 7d, 14d, 30d, 90d, 180d, 365d",
+      "timestamp": "2026-02-21T19:26:16.731758"
+    }
+  ]
+}

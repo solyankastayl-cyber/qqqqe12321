@@ -114,66 +114,6 @@ function isPortalishName(name, RADIX_ROOTS) {
   return RADIX_ROOTS.has(name) || PORTAL_SUFFIX_RE.test(name);
 }
 
-const isStaticLiteralExpression = (expr, t) =>
-  t.isStringLiteral(expr) ||
-  t.isNumericLiteral(expr) ||
-  t.isBooleanLiteral(expr) ||
-  t.isNullLiteral(expr) ||
-  (t.isTemplateLiteral(expr) && expr.expressions.length === 0);
-
-const buildDynamicExpressionWrapper = (child, t) =>
-  t.jsxElement(
-    t.jsxOpeningElement(
-      t.jsxIdentifier("span"),
-      [
-        t.jsxAttribute(
-          t.jsxIdentifier("data-ve-dynamic"),
-          t.stringLiteral("true"),
-        ),
-        t.jsxAttribute(
-          t.jsxIdentifier("x-excluded"),
-          t.stringLiteral("true"),
-        ),
-        t.jsxAttribute(
-          t.jsxIdentifier("style"),
-          t.jsxExpressionContainer(
-            t.objectExpression([
-              t.objectProperty(
-                t.identifier("display"),
-                t.stringLiteral("contents"),
-              ),
-            ]),
-          ),
-        ),
-      ],
-      false,
-    ),
-    t.jsxClosingElement(t.jsxIdentifier("span")),
-    [child],
-    false,
-  );
-
-const wrapDynamicExpressionChildren = (jsxPath, t) => {
-  const children = jsxPath.node.children || [];
-  let didChange = false;
-
-  const nextChildren = children.map((child) => {
-    if (
-      t.isJSXExpressionContainer(child) &&
-      !t.isJSXEmptyExpression(child.expression) &&
-      !isStaticLiteralExpression(child.expression, t)
-    ) {
-      didChange = true;
-      return buildDynamicExpressionWrapper(child, t);
-    }
-    return child;
-  });
-
-  if (didChange) {
-    jsxPath.node.children = nextChildren;
-  }
-};
-
 // Analyze a specific exported component in a file
 function fileExportHasPortals({
   absPath,
@@ -273,14 +213,7 @@ function fileExportHasPortals({
 
   let found = false;
 
-  // Track visited paths to prevent infinite recursion with circular component dependencies
-  const visitedPaths = new WeakSet();
-
   function subtreeHasPortals(nodePath) {
-    if (!nodePath || !nodePath.node) return false;
-    if (visitedPaths.has(nodePath.node)) return false;
-    visitedPaths.add(nodePath.node);
-
     let hit = false;
     nodePath.traverse({
       JSXOpeningElement(op) {
@@ -676,7 +609,7 @@ const babelMetadataPlugin = ({ types: t }) => {
   /**
    * Analyzes a member expression like item.name or obj.prop.value
    */
-  function analyzeMemberExpression(exprPath, state, options = {}) {
+  function analyzeMemberExpression(exprPath, state) {
     const node = exprPath.node;
 
     // Build the property path (e.g., "name" or "address.city")
@@ -694,10 +627,7 @@ const babelMetadataPlugin = ({ types: t }) => {
       const rootName = rootObj.name;
 
       // Check if we're inside an array iteration (like .map())
-      // Skip if we're already analyzing the array source to prevent infinite recursion
-      const arrayContext = options.skipArrayContext
-        ? null
-        : getArrayIterationContext(exprPath, state);
+      const arrayContext = getArrayIterationContext(exprPath, state);
 
       if (arrayContext && arrayContext.itemParam === rootName) {
         // This is item.property where item comes from array.map(item => ...)
@@ -715,8 +645,7 @@ const babelMetadataPlugin = ({ types: t }) => {
       }
 
       // Analyze the root identifier
-      // Pass skipArrayContext to avoid infinite recursion when called from getArrayIterationContext
-      const rootInfo = analyzeIdentifier(rootName, exprPath, state, options);
+      const rootInfo = analyzeIdentifier(rootName, exprPath, state);
       if (rootInfo) {
         return {
           ...rootInfo,
@@ -1043,8 +972,7 @@ const babelMetadataPlugin = ({ types: t }) => {
       // Handle cases like data.items.map(...)
       const memberInfo = analyzeMemberExpression(
         callExprParent.get("callee.object"),
-        state,
-        { skipArrayContext: true }
+        state
       );
       if (memberInfo) {
         arrayVar = memberInfo.varName;
@@ -1513,10 +1441,6 @@ const babelMetadataPlugin = ({ types: t }) => {
       return DYNAMIC_COMP_CACHE.get(cacheKey);
     }
 
-    // Set sentinel value to prevent infinite recursion with circular imports
-    // This will be updated with the actual result at the end
-    DYNAMIC_COMP_CACHE.set(cacheKey, false);
-
     const ast = parseFileAst(absPath, parser);
     if (!ast) {
       DYNAMIC_COMP_CACHE.set(cacheKey, false);
@@ -1715,13 +1639,7 @@ const babelMetadataPlugin = ({ types: t }) => {
         if (!elementName) return;
 
         // Only process capitalized components (React components)
-        if (!/^[A-Z]/.test(elementName)) {
-          if (hasProp(openingElement, "data-ve-dynamic") || hasProp(openingElement, "x-excluded")) {
-            return;
-          }
-          wrapDynamicExpressionChildren(jsxPath, t);
-          return;
-        }
+        if (!/^[A-Z]/.test(elementName)) return;
 
         // Exclude components that have strict child requirements or break when wrapped
         const excludedComponents = new Set([
