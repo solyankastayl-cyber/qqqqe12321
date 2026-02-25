@@ -79,6 +79,49 @@ AE Brain is the intelligence layer aggregating all system state:
 
 ---
 
+### C8 Transition Matrix — VALIDATED ✅ NEW
+
+**Purpose:** Compute P(regime_{t+1} | regime_t) for regime switch predictions.
+
+**Configuration:**
+- Data range: 2000-01-01 → 2025-12-31
+- Step: 7 days (weekly)
+- Smoothing: Laplace alpha=1
+- Samples: 1356 transitions
+
+**Transition Matrix (3x3):**
+| From \ To | LIQUIDITY | STRESS | TIGHTENING |
+|-----------|-----------|--------|------------|
+| LIQUIDITY_EXPANSION | **97.3%** | 1.8% | 0.8% |
+| RISK_OFF_STRESS | 8.4% | **86.5%** | 5.1% |
+| TIGHTENING | 0.8% | 2.3% | **96.9%** |
+
+**Multi-Step Stress Risk (from LIQUIDITY_EXPANSION):**
+| Horizon | Risk to Stress |
+|---------|----------------|
+| 1 week | 1.8% |
+| 2 weeks | 3.4% |
+| 4 weeks | 5.8% |
+
+**Duration Stats:**
+| Regime | Median | P90 | Max |
+|--------|--------|-----|-----|
+| RISK_OFF_STRESS | 4w | 13w | 48w |
+| LIQUIDITY_EXPANSION | 4w | 120w | 282w |
+| TIGHTENING | 6w | 128w | 183w |
+
+**C8 API Endpoints:**
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/ae/admin/transition/compute` | Compute matrix |
+| GET | `/api/ae/transition/current` | Matrix + derived metrics |
+| GET | `/api/ae/transition/matrix` | Raw matrix |
+| GET | `/api/ae/transition/durations` | Duration stats |
+
+**Integration:** C8 data included in `/api/ae/terminal` response.
+
+---
+
 ### C1 State Vector
 Normalized state from macro + guard + DXY terminal:
 ```json
