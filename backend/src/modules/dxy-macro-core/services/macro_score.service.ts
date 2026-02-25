@@ -54,13 +54,16 @@ const HOUSING_SERIES = ['MORTGAGE30US', 'HOUST', 'PERMIT', 'CSUSHPISA'];
 // ═══════════════════════════════════════════════════════════════
 
 export async function computeMacroScore(): Promise<MacroScore> {
-  const contexts = await buildAllMacroContexts();
+  const allContexts = await buildAllMacroContexts();
+  
+  // B4.1: Filter out housing series (handled separately)
+  const contexts = allContexts.filter(c => !HOUSING_SERIES.includes(c.seriesId));
   
   if (contexts.length === 0) {
     return buildEmptyScore();
   }
   
-  // Build components
+  // Build components from non-housing series
   const components: MacroScoreComponent[] = [];
   let totalWeight = 0;
   let weightedSum = 0;
@@ -84,6 +87,32 @@ export async function computeMacroScore(): Promise<MacroScore> {
     
     totalWeight += weight;
     weightedSum += normalizedPressure;
+  }
+  
+  // B4.1: Add housing composite component
+  let housingComponent: MacroScoreComponent | null = null;
+  try {
+    const housing = await getHousingScoreComponent();
+    
+    if (housing.available) {
+      const housingNormalized = housing.scoreSigned * HOUSING_COMPOSITE_WEIGHT;
+      
+      housingComponent = {
+        seriesId: housing.key,
+        displayName: housing.displayName,
+        role: 'housing',
+        weight: HOUSING_COMPOSITE_WEIGHT,
+        rawPressure: housing.scoreSigned,
+        normalizedPressure: Math.round(housingNormalized * 1000) / 1000,
+        regime: housing.regime,
+      };
+      
+      components.push(housingComponent);
+      totalWeight += HOUSING_COMPOSITE_WEIGHT;
+      weightedSum += housingNormalized;
+    }
+  } catch (e) {
+    console.warn('[Macro Score] Housing component unavailable:', (e as Error).message);
   }
   
   // Normalize to -1..+1
