@@ -463,6 +463,12 @@ async function main() {
   await registerBtcValidationRoutes(app);
   console.log('[Fractal] ✅ BTC Validation D2.1 registered at /api/forward/btc/admin/validate/cascade');
   
+  // BLOCK P1.3: Register Guard Hysteresis Module
+  console.log('[Fractal] Registering Guard Hysteresis Module (P1.3)...');
+  const { registerGuardHysteresisRoutes } = await import('./modules/dxy-macro-guard/guard_hysteresis.routes.js');
+  await registerGuardHysteresisRoutes(app);
+  console.log('[Fractal] ✅ Guard Hysteresis P1.3 registered at /api/dxy-macro-core/guard/*');
+  
   // NOTE: SPX Phase routes already registered via spx-core module
   
   // BLOCK C: Register Combined Terminal (Building)
