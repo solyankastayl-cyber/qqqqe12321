@@ -36,353 +36,342 @@ class DXYMacroBackendTester:
         if details:
             print(f"    {details}")
 
-    def test_health_check(self):
-        """Test basic API health"""
+    def test_basic_health_check(self):
+        """Test /api/health endpoint returns ok: true"""
         try:
             response = requests.get(f"{self.base_url}/api/health", timeout=10)
             passed = response.status_code == 200
             details = f"Status: {response.status_code}"
-            if passed and response.text:
+            if passed:
+                data = response.json()
+                ok_status = data.get('ok', False)
+                passed = ok_status == True
+                details += f", ok: {ok_status}"
+            else:
                 details += f", Response: {response.text[:100]}"
         except Exception as e:
             passed = False
             details = f"Error: {str(e)}"
         
-        self.log_test("Health Check", passed, details)
+        self.log_test("/api/health returns ok: true", passed, details)
         return passed
 
-    def test_fractal_overlay_basic(self):
-        """Test fractal overlay endpoint with default parameters"""
+    def test_dxy_macro_core_health(self):
+        """Test /api/dxy-macro-core/health returns module: dxy-macro-core"""
         try:
-            url = f"{self.base_url}/api/fractal/v2.1/overlay"
-            response = requests.get(url, timeout=30)
-            
-            if response.status_code != 200:
-                passed = False
-                details = f"HTTP {response.status_code}: {response.text[:200]}"
-            else:
+            response = requests.get(f"{self.base_url}/api/dxy-macro-core/health", timeout=10)
+            passed = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            if passed:
                 data = response.json()
-                # Check required fields
-                required_fields = ['symbol', 'currentWindow', 'matches']
-                missing_fields = [f for f in required_fields if f not in data]
+                module = data.get('module', '')
+                passed = module == 'dxy-macro-core'
+                details += f", module: {module}"
                 
-                if missing_fields:
-                    passed = False
-                    details = f"Missing fields: {missing_fields}"
-                else:
-                    passed = True
-                    matches_count = len(data.get('matches', []))
-                    details = f"Symbol: {data.get('symbol')}, Matches: {matches_count}"
-                    
-        except Exception as e:
-            passed = False
-            details = f"Error: {str(e)}"
-        
-        self.log_test("Fractal Overlay Basic", passed, details)
-        return passed
-
-    def test_fractal_overlay_horizon_30d(self):
-        """Test fractal overlay with 30D horizon"""
-        try:
-            url = f"{self.base_url}/api/fractal/v2.1/overlay?symbol=BTC&aftermathDays=30"
-            response = requests.get(url, timeout=30)
-            
-            if response.status_code != 200:
-                passed = False
-                details = f"HTTP {response.status_code}: {response.text[:200]}"
+                # Additional checks
+                ok_status = data.get('ok', False)
+                version = data.get('version', '')
+                fred_health = data.get('fred', {})
+                details += f", ok: {ok_status}, version: {version}, FRED: {fred_health.get('status', 'N/A')}"
             else:
-                data = response.json()
-                matches = data.get('matches', [])
-                if matches:
-                    first_match = matches[0]
-                    aftermath_len = len(first_match.get('aftermathNormalized', []))
-                    passed = aftermath_len >= 20
-                    details = f"Matches: {len(matches)}, Aftermath length: {aftermath_len}"
-                else:
-                    passed = False
-                    details = "No matches returned"
-                    
+                details += f", Response: {response.text[:200]}"
         except Exception as e:
             passed = False
             details = f"Error: {str(e)}"
         
-        self.log_test("Fractal Overlay 30D Horizon", passed, details)
+        self.log_test("/api/dxy-macro-core/health returns module: dxy-macro-core", passed, details)
         return passed
 
-    def test_fractal_overlay_horizon_180d(self):
-        """Test fractal overlay with 180D horizon"""
+    def test_episodes_validation(self):
+        """Test /api/dxy-macro-core/validate/episodes returns all 4 episodes with verdict.pass = true"""
         try:
-            url = f"{self.base_url}/api/fractal/v2.1/overlay?symbol=BTC&aftermathDays=180"
-            response = requests.get(url, timeout=30)
+            response = requests.get(f"{self.base_url}/api/dxy-macro-core/validate/episodes", timeout=30)
+            passed = response.status_code == 200
+            details = f"Status: {response.status_code}"
             
-            if response.status_code != 200:
-                passed = False
-                details = f"HTTP {response.status_code}: {response.text[:200]}"
-            else:
+            if passed:
                 data = response.json()
-                matches = data.get('matches', [])
-                if matches:
-                    first_match = matches[0]
-                    aftermath_len = len(first_match.get('aftermathNormalized', []))
-                    passed = aftermath_len >= 150
-                    details = f"Matches: {len(matches)}, Aftermath length: {aftermath_len}"
-                else:
-                    passed = False
-                    details = "No matches returned"
-                    
-        except Exception as e:
-            passed = False
-            details = f"Error: {str(e)}"
-        
-        self.log_test("Fractal Overlay 180D Horizon", passed, details)
-        return passed
-
-    def test_fractal_overlay_horizon_365d(self):
-        """Test fractal overlay with 365D horizon (CRITICAL)"""
-        try:
-            url = f"{self.base_url}/api/fractal/v2.1/overlay?symbol=BTC&aftermathDays=365"
-            response = requests.get(url, timeout=30)
-            
-            if response.status_code != 200:
-                passed = False
-                details = f"HTTP {response.status_code}: {response.text[:200]}"
-            else:
-                data = response.json()
-                matches = data.get('matches', [])
-                if matches:
-                    first_match = matches[0]
-                    aftermath_len = len(first_match.get('aftermathNormalized', []))
-                    passed = aftermath_len >= 300
-                    details = f"Matches: {len(matches)}, Aftermath length: {aftermath_len}"
-                    
-                    # Also check distribution series
-                    dist_series = data.get('distributionSeries')
-                    if dist_series:
-                        p10_len = len(dist_series.get('p10', []))
-                        details += f", Distribution series length: {p10_len}"
-                else:
-                    passed = False
-                    details = "No matches returned"
-                    
-        except Exception as e:
-            passed = False
-            details = f"Error: {str(e)}"
-        
-        self.log_test("Fractal Overlay 365D Horizon", passed, details)
-        return passed
-
-    def test_strategy_endpoint(self):
-        """Test strategy endpoint with different modes"""
-        modes = ['conservative', 'balanced', 'aggressive']
-        all_passed = True
-        details_list = []
-        
-        for mode in modes:
-            try:
-                url = f"{self.base_url}/api/fractal/v2.1/strategy?symbol=BTC&preset={mode}"
-                response = requests.get(url, timeout=30)
+                episodes = data.get('episodes', [])
+                passed = len(episodes) == 4
+                details += f", Episodes count: {len(episodes)}"
                 
-                if response.status_code != 200:
-                    all_passed = False
-                    details_list.append(f"{mode}: HTTP {response.status_code}")
-                else:
-                    data = response.json()
-                    # Check required fields
-                    required_fields = ['decision', 'edge', 'diagnostics', 'regime']
-                    missing_fields = [f for f in required_fields if f not in data]
+                if passed:
+                    # Check that all episodes have verdict.pass = true
+                    all_pass = True
+                    episode_details = []
+                    for ep in episodes:
+                        verdict_pass = ep.get('verdict', {}).get('pass', False)
+                        episode_key = ep.get('key', 'Unknown')
+                        episode_details.append(f"{episode_key}: {verdict_pass}")
+                        if not verdict_pass:
+                            all_pass = False
                     
-                    if missing_fields:
-                        all_passed = False
-                        details_list.append(f"{mode}: Missing fields {missing_fields}")
-                    else:
-                        details_list.append(f"{mode}: OK")
+                    passed = all_pass
+                    details += f", All episodes pass: {all_pass}, Episodes: {', '.join(episode_details)}"
+                    
+                    # Check guard criteria for specific episodes
+                    guard_checks = []
+                    for ep in episodes:
+                        key = ep.get('key', '')
+                        guard_stats = ep.get('stats', {}).get('guard', {})
                         
-            except Exception as e:
-                all_passed = False
-                details_list.append(f"{mode}: Error {str(e)}")
-        
-        details = "; ".join(details_list)
-        self.log_test("Strategy Endpoint (All Modes)", all_passed, details)
-        return all_passed
-
-    def test_forward_equity_endpoint(self):
-        """Test forward equity endpoint with different parameters"""
-        test_cases = [
-            {'preset': 'BALANCED', 'horizon': 7, 'role': 'ACTIVE'},
-            {'preset': 'CONSERVATIVE', 'horizon': 14, 'role': 'SHADOW'},
-            {'preset': 'AGGRESSIVE', 'horizon': 30, 'role': 'ACTIVE'}
-        ]
-        
-        all_passed = True
-        details_list = []
-        
-        for case in test_cases:
-            try:
-                params = f"symbol=BTC&preset={case['preset']}&horizon={case['horizon']}&role={case['role']}"
-                url = f"{self.base_url}/api/fractal/v2.1/admin/forward-equity?{params}"
-                response = requests.get(url, timeout=30)
-                
-                if response.status_code != 200:
-                    all_passed = False
-                    details_list.append(f"{case['preset']}-{case['horizon']}D: HTTP {response.status_code}")
-                else:
-                    data = response.json()
-                    if data.get('error'):
-                        all_passed = False
-                        details_list.append(f"{case['preset']}-{case['horizon']}D: API Error {data.get('error')}")
-                    else:
-                        # Check if we have equity data or empty result
-                        equity_len = len(data.get('equity', []))
-                        details_list.append(f"{case['preset']}-{case['horizon']}D: {equity_len} points")
+                        if key == 'GFC_2008_2009':
+                            crisis_block = guard_stats.get('CRISIS', 0) + guard_stats.get('BLOCK', 0)
+                            gfc_pass = crisis_block >= 0.60
+                            guard_checks.append(f"GFC CRISIS+BLOCK {crisis_block:.2f} >= 0.60: {gfc_pass}")
+                            if not gfc_pass:
+                                passed = False
+                                
+                        elif key == 'COVID_2020_SPIKE':
+                            crisis_block = guard_stats.get('CRISIS', 0) + guard_stats.get('BLOCK', 0)
+                            covid_pass = crisis_block >= 0.80
+                            guard_checks.append(f"COVID CRISIS+BLOCK {crisis_block:.2f} >= 0.80: {covid_pass}")
+                            if not covid_pass:
+                                passed = False
+                                
+                        elif key == 'TIGHTENING_2022':
+                            block_pct = guard_stats.get('BLOCK', 0)
+                            tight_pass = block_pct <= 0.10
+                            guard_checks.append(f"Tightening BLOCK {block_pct:.2f} <= 0.10: {tight_pass}")
+                            if not tight_pass:
+                                passed = False
+                                
+                        elif key == 'LOW_VOL_2017':
+                            none_pct = guard_stats.get('NONE', 0)
+                            vol_pass = none_pct >= 0.80
+                            guard_checks.append(f"2017 NONE {none_pct:.2f} >= 0.80: {vol_pass}")
+                            if not vol_pass:
+                                passed = False
+                    
+                    if guard_checks:
+                        details += f", Guard criteria: {'; '.join(guard_checks)}"
                         
-            except Exception as e:
-                all_passed = False
-                details_list.append(f"{case['preset']}-{case['horizon']}D: Error {str(e)}")
-        
-        details = "; ".join(details_list)
-        self.log_test("Forward Equity Endpoint (All Params)", all_passed, details)
-        return all_passed
-
-    def test_spx_forward_summary_endpoint(self):
-        """Test SPX forward performance summary endpoint (FP4)"""
-        try:
-            url = f"{self.base_url}/api/fractal/spx/forward/summary"
-            response = requests.get(url, timeout=30)
-            
-            if response.status_code != 200:
-                passed = False
-                details = f"HTTP {response.status_code}: {response.text[:200]}"
             else:
+                details += f", Response: {response.text[:200]}"
+                
+        except Exception as e:
+            passed = False
+            details = f"Error: {str(e)}"
+        
+        self.log_test("Episodes validation - 4 episodes with guard criteria", passed, details)
+        return passed
+
+    def test_stability_validation(self):
+        """Test /api/dxy-macro-core/validate/stability returns guard.flips.perYear <= 4"""
+        try:
+            response = requests.get(f"{self.base_url}/api/dxy-macro-core/validate/stability", timeout=30)
+            passed = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if passed:
                 data = response.json()
-                if not data.get('ok'):
-                    passed = False 
-                    details = f"API Error: {data.get('error', 'Unknown error')}"
-                else:
-                    # Check required fields for FP5
-                    overall = data.get('overall', {})
-                    by_horizon = data.get('byHorizon', [])
+                guard_flips = data.get('guard', {}).get('flips', {})
+                flips_per_year = guard_flips.get('perYear', 999)
+                
+                passed = flips_per_year <= 4
+                details += f", Guard flips per year: {flips_per_year} (target: <= 4)"
+                
+                # Additional stability metrics
+                total_flips = guard_flips.get('total', 0)
+                median_duration = data.get('guard', {}).get('medianDurationDays', 0)
+                samples = data.get('range', {}).get('samples', 0)
+                
+                details += f", Total flips: {total_flips}, Median duration: {median_duration}d, Samples: {samples}"
+                
+                # Check acceptance criteria
+                acceptance = data.get('acceptance', {})
+                acceptance_pass = acceptance.get('pass', False)
+                if not acceptance_pass:
+                    details += f", Overall acceptance: {acceptance_pass}"
                     
-                    required_overall = ['hitRate', 'avgRealizedReturn', 'bias', 'sampleSize']
-                    missing_overall = [f for f in required_overall if f not in overall]
-                    
-                    if missing_overall or not by_horizon:
+            else:
+                details += f", Response: {response.text[:200]}"
+                
+        except Exception as e:
+            passed = False
+            details = f"Error: {str(e)}"
+        
+        self.log_test("Stability validation - guard flips <= 4 per year", passed, details)
+        return passed
+
+    def test_macro_core_score(self):
+        """Test /api/dxy-macro-core/score endpoint"""
+        try:
+            response = requests.get(f"{self.base_url}/api/dxy-macro-core/score", timeout=15)
+            passed = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if passed:
+                data = response.json()
+                score = data.get('score', {})
+                score_signed = score.get('scoreSigned', None)
+                components = score.get('components', [])
+                
+                passed = score_signed is not None and len(components) > 0
+                details += f", Score: {score_signed}, Components: {len(components)}"
+                
+                # Check component structure
+                if components:
+                    first_comp = components[0]
+                    required_fields = ['seriesId', 'weight', 'rawPressure', 'normalizedPressure']
+                    has_all_fields = all(field in first_comp for field in required_fields)
+                    if not has_all_fields:
                         passed = False
-                        details = f"Missing fields in overall: {missing_overall}, byHorizon length: {len(by_horizon)}"
-                    else:
-                        passed = True
-                        hit_rate = (overall.get('hitRate', 0) * 100)
-                        sample_size = overall.get('sampleSize', 0)
-                        details = f"Hit Rate: {hit_rate:.1f}%, Samples: {sample_size}, Horizons: {len(by_horizon)}"
+                        details += ", Missing component fields"
                         
-        except Exception as e:
-            passed = False
-            details = f"Error: {str(e)}"
-        
-        self.log_test("SPX Forward Summary Endpoint", passed, details)
-        return passed
-
-    def test_spx_forward_equity_endpoint(self):
-        """Test SPX forward equity curve endpoint (FP6)"""
-        try:
-            url = f"{self.base_url}/api/fractal/spx/forward/equity"
-            response = requests.get(url, timeout=30)
-            
-            if response.status_code != 200:
-                passed = False
-                details = f"HTTP {response.status_code}: {response.text[:200]}"
             else:
-                data = response.json()
-                if not data.get('ok'):
-                    passed = False
-                    details = f"API Error: {data.get('error', 'Unknown error')}"
-                else:
-                    # Check equity curve structure for FP6
-                    equity = data.get('equity', [])
-                    metrics = data.get('metrics', {})
-                    
-                    required_metrics = ['trades', 'winRate', 'maxDrawdown', 'finalEquity']
-                    missing_metrics = [f for f in required_metrics if f not in metrics]
-                    
-                    if missing_metrics:
-                        passed = False
-                        details = f"Missing metrics: {missing_metrics}"
-                    elif not equity:
-                        passed = False
-                        details = "No equity curve data returned"
-                    else:
-                        # Validate equity curve structure
-                        first_point = equity[0] if equity else {}
-                        required_point_fields = ['date', 'value', 'hit', 'action']
-                        missing_point_fields = [f for f in required_point_fields if f not in first_point]
-                        
-                        if missing_point_fields:
-                            passed = False
-                            details = f"Missing equity point fields: {missing_point_fields}"
-                        else:
-                            passed = True
-                            trades = metrics.get('trades', 0)
-                            win_rate = (metrics.get('winRate', 0) * 100)
-                            max_dd = (metrics.get('maxDrawdown', 0) * 100)
-                            final_equity = metrics.get('finalEquity', 0)
-                            details = f"Trades: {trades}, Win Rate: {win_rate:.1f}%, Max DD: {max_dd:.1f}%, Final: {final_equity:.3f}, Points: {len(equity)}"
-                        
-        except Exception as e:
-            passed = False
-            details = f"Error: {str(e)}"
-        
-        self.log_test("SPX Forward Equity Endpoint", passed, details)
-        return passed
-
-    def test_admin_endpoint(self):
-        """Test if admin endpoint is accessible"""
-        try:
-            endpoints = [
-                f"{self.base_url}/admin/fractal",
-                f"{self.base_url}/api/admin/fractal"
-            ]
-            
-            passed = False
-            details = ""
-            
-            for endpoint in endpoints:
-                try:
-                    response = requests.get(endpoint, timeout=10)
-                    if response.status_code in [200, 401, 403]:
-                        passed = True
-                        details += f"{endpoint}: HTTP {response.status_code}; "
-                    else:
-                        details += f"{endpoint}: HTTP {response.status_code}; "
-                except Exception as e:
-                    details += f"{endpoint}: {str(e)}; "
-                    
-            if not passed:
-                details = f"All admin endpoints failed: {details}"
+                details += f", Response: {response.text[:200]}"
                 
         except Exception as e:
             passed = False
             details = f"Error: {str(e)}"
         
-        self.log_test("Admin Endpoint Accessibility", passed, details)
+        self.log_test("Macro score endpoint", passed, details)
+        return passed
+
+    def test_credit_context(self):
+        """Test /api/dxy-macro-core/credit endpoint"""
+        try:
+            response = requests.get(f"{self.base_url}/api/dxy-macro-core/credit", timeout=15)
+            passed = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if passed:
+                data = response.json()
+                credit = data.get('credit', {})
+                composite = credit.get('composite', {})
+                
+                score_signed = composite.get('scoreSigned', None)
+                passed = score_signed is not None
+                details += f", Credit composite score: {score_signed}"
+                
+                # Check components
+                components = credit.get('components', [])
+                details += f", Components: {len(components)}"
+                
+            else:
+                details += f", Response: {response.text[:200]}"
+                
+        except Exception as e:
+            passed = False
+            details = f"Error: {str(e)}"
         
+        self.log_test("Credit context endpoint", passed, details)
+        return passed
+
+    def test_housing_context(self):
+        """Test /api/dxy-macro-core/housing endpoint"""
+        try:
+            response = requests.get(f"{self.base_url}/api/dxy-macro-core/housing", timeout=15)
+            passed = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if passed:
+                data = response.json()
+                housing = data.get('housing', {})
+                composite = housing.get('composite', {})
+                
+                score_signed = composite.get('scoreSigned', None)
+                passed = score_signed is not None
+                details += f", Housing composite score: {score_signed}"
+                
+                # Check components
+                components = housing.get('components', [])
+                details += f", Components: {len(components)}"
+                
+            else:
+                details += f", Response: {response.text[:200]}"
+                
+        except Exception as e:
+            passed = False
+            details = f"Error: {str(e)}"
+        
+        self.log_test("Housing context endpoint", passed, details)
+        return passed
+
+    def test_activity_context(self):
+        """Test /api/dxy-macro-core/activity endpoint"""
+        try:
+            response = requests.get(f"{self.base_url}/api/dxy-macro-core/activity", timeout=15)
+            passed = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if passed:
+                data = response.json()
+                activity = data.get('activity', {})
+                composite = activity.get('composite', {})
+                
+                score_signed = composite.get('scoreSigned', None)
+                passed = score_signed is not None
+                details += f", Activity composite score: {score_signed}"
+                
+                # Check components  
+                components = activity.get('components', [])
+                details += f", Components: {len(components)}"
+                
+            else:
+                details += f", Response: {response.text[:200]}"
+                
+        except Exception as e:
+            passed = False
+            details = f"Error: {str(e)}"
+        
+        self.log_test("Activity context endpoint", passed, details)
+        return passed
+
+    def test_macro_series_list(self):
+        """Test /api/dxy-macro-core/series endpoint"""
+        try:
+            response = requests.get(f"{self.base_url}/api/dxy-macro-core/series", timeout=15)
+            passed = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if passed:
+                data = response.json()
+                series = data.get('series', [])
+                total = data.get('total', 0)
+                loaded = data.get('loaded', 0)
+                
+                passed = len(series) > 0 and total > 0
+                details += f", Total series: {total}, Loaded: {loaded}, Series count: {len(series)}"
+                
+                # Check series structure
+                if series:
+                    first_series = series[0]
+                    required_fields = ['seriesId', 'displayName', 'frequency', 'role']
+                    has_all_fields = all(field in first_series for field in required_fields)
+                    if not has_all_fields:
+                        passed = False
+                        details += ", Missing series fields"
+                        
+            else:
+                details += f", Response: {response.text[:200]}"
+                
+        except Exception as e:
+            passed = False
+            details = f"Error: {str(e)}"
+        
+        self.log_test("Macro series list endpoint", passed, details)
+        return passed
+
     def run_all_tests(self):
-        """Run all fractal backend tests"""
-        print("🚀 Starting Fractal Backend API Tests")
+        """Run all DXY Macro Platform backend tests"""
+        print("🚀 Starting DXY Macro Platform Backend API Tests")
         print("=" * 60)
         print(f"Base URL: {self.base_url}")
         print()
         
         # Test order - critical tests first
         test_methods = [
-            self.test_health_check,
-            self.test_spx_forward_summary_endpoint,  # FP5 - Critical for Forward Performance
-            self.test_spx_forward_equity_endpoint,   # FP6 - Critical for Equity Curve
-            self.test_strategy_endpoint,  # NEW - Critical for Strategy Controls
-            self.test_forward_equity_endpoint,  # NEW - Critical for Forward Performance
-            self.test_fractal_overlay_basic,
-            self.test_fractal_overlay_horizon_30d,
-            self.test_fractal_overlay_horizon_180d,
-            self.test_fractal_overlay_horizon_365d,  # Critical test
-            self.test_admin_endpoint
+            self.test_basic_health_check,
+            self.test_dxy_macro_core_health,
+            self.test_episodes_validation,  # CRITICAL - B6 Guard criteria
+            self.test_stability_validation,  # CRITICAL - Guard stability
+            self.test_macro_core_score,
+            self.test_credit_context,
+            self.test_housing_context,
+            self.test_activity_context,
+            self.test_macro_series_list,
         ]
         
         for test_method in test_methods:
@@ -406,7 +395,7 @@ class DXYMacroBackendTester:
 
 def main():
     """Main test execution"""
-    tester = FractalBackendTester()
+    tester = DXYMacroBackendTester()
     passed, total, results = tester.run_all_tests()
     
     # Save detailed results
@@ -426,11 +415,18 @@ def main():
     print(f"\n📄 Detailed results saved to: /app/backend/backend_test_results.json")
     
     # Return exit code based on success
-    critical_tests = ['SPX Forward Summary Endpoint', 'SPX Forward Equity Endpoint', 'Strategy Endpoint (All Modes)', 'Forward Equity Endpoint (All Params)', 'Fractal Overlay Basic']
+    critical_tests = [
+        '/api/health returns ok: true',
+        '/api/dxy-macro-core/health returns module: dxy-macro-core',
+        'Episodes validation - 4 episodes with guard criteria',
+        'Stability validation - guard flips <= 4 per year'
+    ]
     critical_failures = [r for r in results if r['test_name'] in critical_tests and not r['passed']]
     
     if critical_failures:
         print(f"\n🚨 Critical test failures detected!")
+        for failure in critical_failures:
+            print(f"   - {failure['test_name']}")
         return 1
     
     if passed / total < 0.7:  # Less than 70% pass rate
