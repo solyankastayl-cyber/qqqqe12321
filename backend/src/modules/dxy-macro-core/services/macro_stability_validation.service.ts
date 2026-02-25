@@ -84,6 +84,24 @@ export interface StabilityReport {
     smoothed: ScoreStats;
   };
   regime: RegimeStats;
+  // B6: Crisis Guard stats
+  guard: {
+    counts: {
+      NONE: number;
+      WARN: number;
+      BLOCK: number;
+    };
+    percentages: {
+      NONE: number;
+      WARN: number;
+      BLOCK: number;
+    };
+    flips: {
+      total: number;
+      perYear: number;
+    };
+    medianDurationDays: number;
+  };
   drivers: {
     dominanceShare: DriverDominance[];
     topDriversTimeline: Array<{ date: string; driver: string }>;
