@@ -1,369 +1,545 @@
 #!/usr/bin/env python3
 """
-C7 Regime Clustering Backend API Testing
-Tests k-means clustering on historical state vectors
+BTC CASCADE BACKEND TEST SUITE
+Tests all D2 BTC Cascade module endpoints and validation logic.
+
+Key tests:
+- Health check
+- Cascade data retrieval 
+- Debug endpoint
+- Guard cap validation (BLOCK→0, CRISIS≤0.35, WARN≤0.70)
+- Monotonic stress behavior
+- Scenario tilt (BEAR→0.80)
+- SPX coupling (SPX_LOW→0.75)
+- Data integrity (no NaN/negative values)
 """
 
 import requests
-import json
 import sys
-import time
+import json
 from typing import Dict, Any, List, Optional
-from datetime import datetime
+import time
 
-class C7ClusteringTester:
-    def __init__(self, base_url: str = "http://localhost:8001"):
-        self.base_url = base_url.rstrip('/')
+class BtcCascadeAPITester:
+    def __init__(self, base_url="https://dxi-backend-module.preview.emergentagent.com"):
+        self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
-        self.failures: List[str] = []
-        self.results = {}
-        self.determinism_data = {}
+        self.results = []
         
-    def log(self, message: str, level: str = "INFO"):
-        """Log test messages"""
-        timestamp = datetime.now().strftime("%H:%M:%S")
-        print(f"[{timestamp}] {level}: {message}")
-
-    def log_test(self, name: str, success: bool, details: str = ""):
+    def log_result(self, test_name: str, passed: bool, details: str = "", data: Any = None):
         """Log test result"""
         self.tests_run += 1
-        if success:
+        if passed:
             self.tests_passed += 1
-            print(f"✅ {name}: PASSED {details}")
-        else:
-            self.failures.append(f"{name}: {details}")
-            print(f"❌ {name}: FAILED {details}")
-    
-    def api_call(self, method: str, endpoint: str, params: Optional[Dict] = None, data: Optional[Dict] = None) -> Dict:
-        """Make API call and return JSON response"""
-        url = f"{self.base_url}/{endpoint.lstrip('/')}"
         
-        self.log(f"API {method} {url}")
+        result = {
+            "test": test_name,
+            "passed": passed,
+            "details": details,
+            "data": data
+        }
+        self.results.append(result)
         
+        status = "✅ PASS" if passed else "❌ FAIL"
+        print(f"{status} {test_name}: {details}")
+        
+        return passed
+
+    def test_health_check(self) -> bool:
+        """Test BTC Cascade health endpoint"""
         try:
-            if method == 'GET':
-                headers = {'Content-Type': 'application/json'}
-                response = requests.get(url, headers=headers, params=params, timeout=30)
-            elif method == 'POST':
-                # For POST without data, don't set Content-Type
-                headers = {}
-                if data:
-                    headers['Content-Type'] = 'application/json'
-                response = requests.post(url, headers=headers, params=params, json=data, timeout=120)
-            else:
-                raise ValueError(f"Unsupported method: {method}")
-
-            self.log(f"Response: {response.status_code}")
+            url = f"{self.base_url}/api/fractal/btc/cascade/health"
+            response = requests.get(url, timeout=10)
             
-            if response.status_code >= 400:
-                self.log(f"Error response: {response.text}", "ERROR")
-                return {
-                    'ok': False, 
-                    'error': f'HTTP {response.status_code}: {response.text}',
-                    'status_code': response.status_code
-                }
+            if response.status_code != 200:
+                return self.log_result(
+                    "Health Check",
+                    False,
+                    f"HTTP {response.status_code}",
+                    response.text[:200]
+                )
             
-            return response.json()
+            data = response.json()
             
-        except requests.exceptions.Timeout:
-            return {'ok': False, 'error': 'Request timeout'}
-        except requests.exceptions.RequestException as e:
-            return {'ok': False, 'error': f'Request error: {str(e)}'}
-        except json.JSONDecodeError:
-            return {'ok': False, 'error': 'Invalid JSON response'}
-    
-    def test_cluster_stats(self) -> bool:
-        """Test /api/ae/cluster/stats shows totalRuns >= 1"""
-        response = self.api_call('GET', '/api/ae/cluster/stats')
-        
-        if not response.get('ok'):
-            self.log_test("Cluster Stats API", False, f"Error: {response.get('error')}")
-            return False
-        
-        total_runs = response.get('totalRuns', 0)
-        self.log(f"Total runs: {total_runs}")
-        
-        # Store for other tests
-        self.results['stats_response'] = response
-        
-        success = total_runs >= 1
-        self.log_test("Cluster stats shows totalRuns >= 1", success, f"totalRuns={total_runs}")
-        return success
-
-    def test_latest_returns_6_clusters(self) -> bool:
-        """Test /api/ae/cluster/latest returns 6 clusters"""
-        response = self.api_call('GET', '/api/ae/cluster/latest')
-        
-        if not response.get('ok'):
-            self.log_test("Latest Clusters API", False, f"Error: {response.get('error')}")
-            return False
-        
-        latest_run = response.get('latestRun')
-        if not latest_run:
-            self.log_test("Latest run data", False, "No latestRun found")
-            return False
-        
-        clusters = latest_run.get('clusters', [])
-        cluster_count = len(clusters)
-        self.log(f"Found {cluster_count} clusters")
-        
-        # Store for other tests
-        self.results['latest_run'] = latest_run
-        
-        success = cluster_count == 6
-        self.log_test("Latest returns 6 clusters", success, f"cluster_count={cluster_count}")
-        return success
-
-    def test_current_2008_risk_off_stress(self) -> bool:
-        """Test /api/ae/cluster/current?asOf=2008-10-11 returns RISK_OFF_STRESS"""
-        response = self.api_call('GET', '/api/ae/cluster/current', params={'asOf': '2008-10-11'})
-        
-        if not response.get('ok'):
-            self.log_test("Current 2008 API", False, f"Error: {response.get('error')}")
-            return False
-        
-        label = response.get('label')
-        cluster_id = response.get('clusterId')
-        
-        self.log(f"2008-10-11 cluster: {label} (ID: {cluster_id})")
-        
-        # Store for determinism test
-        self.determinism_data['gfc_2008'] = {
-            'clusterId': cluster_id,
-            'label': label
-        }
-        
-        success = label == 'RISK_OFF_STRESS'
-        self.log_test("2008-10-11 returns RISK_OFF_STRESS", success, f"label={label}, clusterId={cluster_id}")
-        return success
-
-    def test_current_2020_risk_off_stress(self) -> bool:
-        """Test /api/ae/cluster/current?asOf=2020-03-14 returns RISK_OFF_STRESS (same clusterId as GFC)"""
-        response = self.api_call('GET', '/api/ae/cluster/current', params={'asOf': '2020-03-14'})
-        
-        if not response.get('ok'):
-            self.log_test("Current 2020 API", False, f"Error: {response.get('error')}")
-            return False
-        
-        label = response.get('label')
-        cluster_id = response.get('clusterId')
-        
-        self.log(f"2020-03-14 cluster: {label} (ID: {cluster_id})")
-        
-        # Store for determinism test
-        self.determinism_data['covid_2020'] = {
-            'clusterId': cluster_id,
-            'label': label
-        }
-        
-        # Check if same as GFC 2008
-        gfc_cluster_id = self.determinism_data.get('gfc_2008', {}).get('clusterId')
-        same_cluster_as_gfc = cluster_id == gfc_cluster_id
-        
-        self.log(f"Same cluster as GFC 2008: {same_cluster_as_gfc}")
-        
-        success = label == 'RISK_OFF_STRESS' and same_cluster_as_gfc
-        self.log_test("2020-03-14 returns RISK_OFF_STRESS (same cluster as GFC)", success, 
-                     f"label={label}, clusterId={cluster_id}, same_as_gfc={same_cluster_as_gfc}")
-        return success
-
-    def test_current_2017_not_risk_off_stress(self) -> bool:
-        """Test /api/ae/cluster/current?asOf=2017-07-01 returns not RISK_OFF_STRESS"""
-        response = self.api_call('GET', '/api/ae/cluster/current', params={'asOf': '2017-07-01'})
-        
-        if not response.get('ok'):
-            self.log_test("Current 2017 API", False, f"Error: {response.get('error')}")
-            return False
-        
-        label = response.get('label')
-        cluster_id = response.get('clusterId')
-        
-        self.log(f"2017-07-01 cluster: {label} (ID: {cluster_id})")
-        
-        success = label != 'RISK_OFF_STRESS'
-        self.log_test("2017-07-01 returns not RISK_OFF_STRESS", success, f"label={label}")
-        return success
-
-    def test_timeline_points_count(self) -> bool:
-        """Test /api/ae/cluster/timeline returns points.length >= 1300"""
-        response = self.api_call('GET', '/api/ae/cluster/timeline')
-        
-        if not response.get('ok'):
-            self.log_test("Timeline API", False, f"Error: {response.get('error')}")
-            return False
-        
-        points = response.get('points', [])
-        points_count = len(points)
-        
-        self.log(f"Timeline points count: {points_count}")
-        
-        # Store for cluster size validation
-        self.results['timeline_points'] = points
-        
-        success = points_count >= 1300
-        self.log_test("Timeline returns points.length >= 1300", success, f"points_count={points_count}")
-        return success
-
-    def test_cluster_sizes_sum_equals_snapshots(self) -> bool:
-        """Test sum of cluster sizes = nSnapshots"""
-        latest_run = self.results.get('latest_run')
-        if not latest_run:
-            self.log_test("Cluster sizes validation", False, "No latest run data available")
-            return False
-        
-        clusters = latest_run.get('clusters', [])
-        n_snapshots = latest_run.get('nSnapshots', 0)
-        
-        total_size = sum(cluster.get('size', 0) for cluster in clusters)
-        
-        self.log(f"Total cluster sizes: {total_size}, nSnapshots: {n_snapshots}")
-        
-        success = total_size == n_snapshots
-        self.log_test("Sum of cluster sizes equals nSnapshots", success, 
-                     f"total_size={total_size}, nSnapshots={n_snapshots}")
-        return success
-
-    def test_determinism_two_runs(self) -> bool:
-        """Test two consecutive runs give identical results (determinism)"""
-        self.log("Running first clustering...")
-        
-        # Run first clustering
-        response1 = self.api_call('POST', '/api/ae/admin/cluster/run', params={'k': '6'})
-        
-        if not response1.get('ok'):
-            self.log_test("Determinism - First run", False, f"Error: {response1.get('error')}")
-            return False
-        
-        run1 = response1.get('latestRun')
-        if not run1:
-            self.log_test("Determinism - First run result", False, "No result from first run")
-            return False
-        
-        # Wait a bit
-        time.sleep(2)
-        
-        self.log("Running second clustering...")
-        
-        # Run second clustering
-        response2 = self.api_call('POST', '/api/ae/admin/cluster/run', params={'k': '6'})
-        
-        if not response2.get('ok'):
-            self.log_test("Determinism - Second run", False, f"Error: {response2.get('error')}")
-            return False
-        
-        run2 = response2.get('latestRun')
-        if not run2:
-            self.log_test("Determinism - Second run result", False, "No result from second run")
-            return False
-        
-        # Compare centroids (should be identical for deterministic algorithm)
-        clusters1 = run1.get('clusters', [])
-        clusters2 = run2.get('clusters', [])
-        
-        if len(clusters1) != len(clusters2):
-            self.log_test("Determinism - Cluster count", False, 
-                         f"Different cluster counts: {len(clusters1)} vs {len(clusters2)}")
-            return False
-        
-        # Sort by clusterId to ensure consistent comparison
-        clusters1_sorted = sorted(clusters1, key=lambda x: x.get('clusterId', 0))
-        clusters2_sorted = sorted(clusters2, key=lambda x: x.get('clusterId', 0))
-        
-        identical = True
-        details = []
-        
-        for c1, c2 in zip(clusters1_sorted, clusters2_sorted):
-            centroid1 = c1.get('centroid', [])
-            centroid2 = c2.get('centroid', [])
-            label1 = c1.get('label', '')
-            label2 = c2.get('label', '')
+            # Validate health response structure
+            required_fields = ['ok', 'module', 'version', 'status', 'components', 'guardCaps']
+            missing_fields = [f for f in required_fields if f not in data]
             
-            if label1 != label2:
-                details.append(f"Label diff cluster {c1.get('clusterId')}: {label1} vs {label2}")
-                identical = False
+            if missing_fields:
+                return self.log_result(
+                    "Health Check",
+                    False,
+                    f"Missing fields: {missing_fields}",
+                    data
+                )
             
-            # Compare centroids with small tolerance
-            if len(centroid1) != len(centroid2):
-                details.append(f"Centroid dims diff cluster {c1.get('clusterId')}")
-                identical = False
-                continue
+            # Check guard caps
+            guard_caps = data.get('guardCaps', {})
+            expected_caps = {'NONE': 1.0, 'WARN': 0.7, 'CRISIS': 0.35, 'BLOCK': 0.0}
             
-            for i, (v1, v2) in enumerate(zip(centroid1, centroid2)):
-                if abs(v1 - v2) > 1e-6:
-                    details.append(f"Centroid diff cluster {c1.get('clusterId')}, dim {i}: {v1} vs {v2}")
-                    identical = False
-                    break
-        
-        self.log_test("Two consecutive runs give identical results (determinism)", identical, 
-                     "; ".join(details[:3]) if details else "All centroids identical")
-        return identical
+            caps_correct = all(
+                guard_caps.get(level) == expected
+                for level, expected in expected_caps.items()
+            )
+            
+            if not caps_correct:
+                return self.log_result(
+                    "Health Check", 
+                    False,
+                    f"Guard caps incorrect. Got: {guard_caps}",
+                    data
+                )
+            
+            return self.log_result(
+                "Health Check",
+                data.get('ok', False) and data.get('status') == 'D2_COMPLETE',
+                f"Module: {data.get('module')}, Version: {data.get('version')}",
+                data
+            )
+            
+        except Exception as e:
+            return self.log_result("Health Check", False, f"Exception: {str(e)}")
 
-    def run_all_tests(self):
-        """Run all C7 clustering tests"""
-        self.log("=" * 60)
-        self.log("Starting C7 Regime Clustering Backend Tests")
-        self.log("=" * 60)
-        
-        # Test 1: Stats API
-        success1 = self.test_cluster_stats()
-        
-        # Test 2: Latest run has 6 clusters
-        success2 = self.test_latest_returns_6_clusters()
-        
-        # Test 3: 2008 GFC = RISK_OFF_STRESS
-        success3 = self.test_current_2008_risk_off_stress()
-        
-        # Test 4: 2020 COVID = RISK_OFF_STRESS (same as GFC)
-        success4 = self.test_current_2020_risk_off_stress()
-        
-        # Test 5: 2017 != RISK_OFF_STRESS
-        success5 = self.test_current_2017_not_risk_off_stress()
-        
-        # Test 6: Timeline has >= 1300 points
-        success6 = self.test_timeline_points_count()
-        
-        # Test 7: Cluster sizes sum = nSnapshots
-        success7 = self.test_cluster_sizes_sum_equals_snapshots()
-        
-        # Test 8: Determinism (two identical runs)
-        success8 = self.test_determinism_two_runs()
-        
-        # Print summary
-        self.print_summary()
-        
-        return all([success1, success2, success3, success4, success5, success6, success7, success8])
+    def test_cascade_data(self) -> bool:
+        """Test cascade data endpoint"""
+        try:
+            url = f"{self.base_url}/api/fractal/btc/cascade?focus=30d"
+            response = requests.get(url, timeout=15)
+            
+            if response.status_code != 200:
+                return self.log_result(
+                    "Cascade Data",
+                    False,
+                    f"HTTP {response.status_code}",
+                    response.text[:200]
+                )
+            
+            data = response.json()
+            
+            if not data.get('ok'):
+                return self.log_result(
+                    "Cascade Data",
+                    False,
+                    "Response not ok",
+                    data.get('error', 'Unknown error')
+                )
+            
+            # Validate cascade structure
+            cascade = data.get('cascade')
+            if not cascade:
+                return self.log_result(
+                    "Cascade Data",
+                    False,
+                    "No cascade data",
+                    data
+                )
+            
+            # Check required fields in cascade
+            required_sections = ['version', 'guard', 'inputs', 'multipliers', 'decisionAdjusted']
+            missing_sections = [s for s in required_sections if s not in cascade]
+            
+            if missing_sections:
+                return self.log_result(
+                    "Cascade Data",
+                    False,
+                    f"Missing cascade sections: {missing_sections}",
+                    cascade
+                )
+            
+            # Validate inputs contain required upstream data
+            inputs = cascade.get('inputs', {})
+            required_inputs = ['pStress4w', 'bearProb', 'spxAdj']
+            missing_inputs = [i for i in required_inputs if i not in inputs]
+            
+            if missing_inputs:
+                return self.log_result(
+                    "Cascade Data",
+                    False,
+                    f"Missing required inputs: {missing_inputs}",
+                    inputs
+                )
+            
+            return self.log_result(
+                "Cascade Data",
+                True,
+                f"Focus: {data.get('focus')}, Processing: {data.get('processingTimeMs')}ms",
+                cascade
+            )
+            
+        except Exception as e:
+            return self.log_result("Cascade Data", False, f"Exception: {str(e)}")
 
-    def print_summary(self):
-        """Print test summary"""
-        self.log("=" * 60)
-        self.log("TEST SUMMARY")
-        self.log("=" * 60)
+    def test_debug_endpoint(self) -> bool:
+        """Test debug endpoint"""
+        try:
+            url = f"{self.base_url}/api/fractal/btc/cascade/debug"
+            response = requests.get(url, timeout=15)
+            
+            if response.status_code != 200:
+                return self.log_result(
+                    "Debug Endpoint",
+                    False,
+                    f"HTTP {response.status_code}",
+                    response.text[:200]
+                )
+            
+            data = response.json()
+            
+            if not data.get('ok'):
+                return self.log_result(
+                    "Debug Endpoint",
+                    False,
+                    "Response not ok",
+                    data.get('error', 'Unknown error')
+                )
+            
+            # Validate debug data structure
+            required_fields = ['version', 'guardCaps', 'rawAeData', 'rawSpxData', 'timing']
+            missing_fields = [f for f in required_fields if f not in data]
+            
+            if missing_fields:
+                return self.log_result(
+                    "Debug Endpoint",
+                    False,
+                    f"Missing fields: {missing_fields}",
+                    data
+                )
+            
+            timing = data.get('timing', {})
+            total_time = timing.get('total', 0)
+            
+            return self.log_result(
+                "Debug Endpoint",
+                True,
+                f"Total time: {total_time}ms, AE: {timing.get('ae')}ms, SPX: {timing.get('spx')}ms",
+                data
+            )
+            
+        except Exception as e:
+            return self.log_result("Debug Endpoint", False, f"Exception: {str(e)}")
+
+    def test_validation_guard_caps(self) -> bool:
+        """Test guard cap validation"""
+        test_cases = [
+            ('BLOCK', 0.0, "Size must be 0 for BLOCK guard"),
+            ('CRISIS', 0.35, "Size must be ≤0.35 for CRISIS guard"),
+            ('WARN', 0.70, "Size must be ≤0.70 for WARN guard")
+        ]
         
-        success_rate = (self.tests_passed / self.tests_run * 100) if self.tests_run > 0 else 0
+        all_passed = True
         
-        self.log("-" * 60)
-        self.log(f"📊 Tests passed: {self.tests_passed}/{self.tests_run} ({success_rate:.1f}%)")
+        for test_case, max_expected, description in test_cases:
+            try:
+                url = f"{self.base_url}/api/fractal/btc/admin/cascade/validate"
+                payload = {"testCase": test_case}
+                
+                response = requests.post(url, json=payload, timeout=10)
+                
+                if response.status_code != 200:
+                    self.log_result(
+                        f"Guard Cap {test_case}",
+                        False,
+                        f"HTTP {response.status_code}",
+                        response.text[:200]
+                    )
+                    all_passed = False
+                    continue
+                
+                data = response.json()
+                cascade = data.get('cascade', {})
+                decision = cascade.get('decisionAdjusted', {})
+                size_adjusted = decision.get('sizeAdjusted', 1.0)
+                
+                # For BLOCK, size should be exactly 0
+                if test_case == 'BLOCK':
+                    passed = size_adjusted == 0.0
+                else:
+                    # For CRISIS/WARN, size should be <= cap
+                    passed = size_adjusted <= max_expected + 0.001  # Small tolerance for floating point
+                
+                self.log_result(
+                    f"Guard Cap {test_case}",
+                    passed,
+                    f"Size: {size_adjusted}, Expected: ≤{max_expected}",
+                    decision
+                )
+                
+                if not passed:
+                    all_passed = False
+                    
+            except Exception as e:
+                self.log_result(f"Guard Cap {test_case}", False, f"Exception: {str(e)}")
+                all_passed = False
         
-        if self.failures:
-            self.log(f"\n❌ Failures ({len(self.failures)}):")
-            for failure in self.failures:
-                self.log(f"  • {failure}")
+        return all_passed
+
+    def test_stress_monotonic(self) -> bool:
+        """Test monotonic stress behavior (stress↑ → size↓)"""
+        try:
+            url = f"{self.base_url}/api/fractal/btc/admin/cascade/validate"
+            payload = {"testCase": "STRESS"}
+            
+            response = requests.post(url, json=payload, timeout=10)
+            
+            if response.status_code != 200:
+                return self.log_result(
+                    "Stress Monotonic",
+                    False,
+                    f"HTTP {response.status_code}",
+                    response.text[:200]
+                )
+            
+            data = response.json()
+            cascade = data.get('cascade', {})
+            inputs = cascade.get('inputs', {})
+            multipliers = cascade.get('multipliers', {})
+            
+            # Check that high stress (0.25) leads to low stress multiplier
+            stress_prob = inputs.get('pStress4w', 0)
+            stress_mult = multipliers.get('mStress', 1.0)
+            
+            # With stress weight 1.5 and pStress4w=0.25:
+            # mStress = 1 - 1.5 * 0.25 = 1 - 0.375 = 0.625
+            expected_stress_mult = 1 - 1.5 * stress_prob
+            expected_stress_mult = max(0.10, min(1.00, expected_stress_mult))
+            
+            tolerance = 0.01
+            passed = abs(stress_mult - expected_stress_mult) < tolerance
+            
+            return self.log_result(
+                "Stress Monotonic",
+                passed,
+                f"pStress4w: {stress_prob}, mStress: {stress_mult}, Expected: ~{expected_stress_mult}",
+                multipliers
+            )
+            
+        except Exception as e:
+            return self.log_result("Stress Monotonic", False, f"Exception: {str(e)}")
+
+    def test_bear_scenario(self) -> bool:
+        """Test bear scenario tilt (mScenario=0.80)"""
+        try:
+            url = f"{self.base_url}/api/fractal/btc/admin/cascade/validate"
+            payload = {"testCase": "BEAR"}
+            
+            response = requests.post(url, json=payload, timeout=10)
+            
+            if response.status_code != 200:
+                return self.log_result(
+                    "Bear Scenario",
+                    False,
+                    f"HTTP {response.status_code}",
+                    response.text[:200]
+                )
+            
+            data = response.json()
+            cascade = data.get('cascade', {})
+            multipliers = cascade.get('multipliers', {})
+            scenario_mult = multipliers.get('mScenario', 1.0)
+            
+            # Bear scenario should result in mScenario = 0.80
+            tolerance = 0.01
+            passed = abs(scenario_mult - 0.80) < tolerance
+            
+            return self.log_result(
+                "Bear Scenario",
+                passed,
+                f"mScenario: {scenario_mult}, Expected: 0.80",
+                multipliers
+            )
+            
+        except Exception as e:
+            return self.log_result("Bear Scenario", False, f"Exception: {str(e)}")
+
+    def test_spx_coupling(self) -> bool:
+        """Test SPX coupling (SPX_LOW→0.75)"""
+        try:
+            url = f"{self.base_url}/api/fractal/btc/admin/cascade/validate"
+            payload = {"testCase": "SPX_LOW"}
+            
+            response = requests.post(url, timeout=10)
+            
+            if response.status_code != 200:
+                return self.log_result(
+                    "SPX Coupling",
+                    False,
+                    f"HTTP {response.status_code}",
+                    response.text[:200]
+                )
+            
+            data = response.json()
+            cascade = data.get('cascade', {})
+            inputs = cascade.get('inputs', {})
+            multipliers = cascade.get('multipliers', {})
+            
+            spx_adj = inputs.get('spxAdj', 0.8)
+            spx_mult = multipliers.get('mSPX', 1.0)
+            
+            # SPX_LOW test case should have spxAdj < 0.40 → mSPX = 0.75
+            tolerance = 0.01
+            passed = spx_adj < 0.40 and abs(spx_mult - 0.75) < tolerance
+            
+            return self.log_result(
+                "SPX Coupling",
+                passed,
+                f"spxAdj: {spx_adj}, mSPX: {spx_mult}, Expected mSPX: 0.75",
+                multipliers
+            )
+            
+        except Exception as e:
+            return self.log_result("SPX Coupling", False, f"Exception: {str(e)}")
+
+    def test_no_nan_negative(self) -> bool:
+        """Test for NaN or negative values"""
+        try:
+            # Test with normal case
+            url = f"{self.base_url}/api/fractal/btc/admin/cascade/validate"
+            payload = {"testCase": "NORMAL"}
+            
+            response = requests.post(url, json=payload, timeout=10)
+            
+            if response.status_code != 200:
+                return self.log_result(
+                    "No NaN/Negative",
+                    False,
+                    f"HTTP {response.status_code}",
+                    response.text[:200]
+                )
+            
+            data = response.json()
+            validation = data.get('validation', {})
+            
+            # Check validation flags
+            no_nan = validation.get('noNaN', False)
+            size_in_range = validation.get('sizeInRange', False)
+            confidence_in_range = validation.get('confidenceInRange', False)
+            
+            passed = no_nan and size_in_range and confidence_in_range
+            
+            return self.log_result(
+                "No NaN/Negative",
+                passed,
+                f"noNaN: {no_nan}, sizeInRange: {size_in_range}, confidenceInRange: {confidence_in_range}",
+                validation
+            )
+            
+        except Exception as e:
+            return self.log_result("No NaN/Negative", False, f"Exception: {str(e)}")
+
+    def test_upstream_inputs(self) -> bool:
+        """Test that cascade.inputs contains required upstream data"""
+        try:
+            url = f"{self.base_url}/api/fractal/btc/cascade?focus=30d"
+            response = requests.get(url, timeout=15)
+            
+            if response.status_code != 200:
+                return self.log_result(
+                    "Upstream Inputs",
+                    False,
+                    f"HTTP {response.status_code}",
+                    response.text[:200]
+                )
+            
+            data = response.json()
+            cascade = data.get('cascade', {})
+            inputs = cascade.get('inputs', {})
+            
+            # Required upstream inputs
+            required_inputs = ['pStress4w', 'bearProb', 'spxAdj']
+            missing_inputs = []
+            
+            for inp in required_inputs:
+                if inp not in inputs:
+                    missing_inputs.append(inp)
+                elif inputs[inp] is None:
+                    missing_inputs.append(f"{inp} (null)")
+            
+            passed = len(missing_inputs) == 0
+            
+            details = f"Required inputs present: {required_inputs}"
+            if missing_inputs:
+                details = f"Missing inputs: {missing_inputs}"
+            
+            return self.log_result(
+                "Upstream Inputs",
+                passed,
+                details,
+                inputs
+            )
+            
+        except Exception as e:
+            return self.log_result("Upstream Inputs", False, f"Exception: {str(e)}")
+
+    def run_all_tests(self) -> bool:
+        """Run all BTC Cascade tests"""
+        print("🚀 Starting BTC Cascade Backend Tests")
+        print("=" * 50)
+        
+        # Health check first
+        if not self.test_health_check():
+            print("❌ Health check failed - skipping other tests")
+            return False
+        
+        # Core functionality tests
+        self.test_cascade_data()
+        self.test_debug_endpoint()
+        
+        # Validation tests
+        self.test_validation_guard_caps()
+        self.test_stress_monotonic()
+        self.test_bear_scenario()
+        self.test_spx_coupling()
+        
+        # Data integrity tests
+        self.test_no_nan_negative()
+        self.test_upstream_inputs()
+        
+        # Summary
+        print("\n" + "=" * 50)
+        print(f"📊 RESULTS: {self.tests_passed}/{self.tests_run} tests passed")
         
         if self.tests_passed == self.tests_run:
-            self.log("🎉 All tests PASSED!")
+            print("🎉 All tests PASSED!")
+            return True
         else:
-            self.log("⚠️  Some tests FAILED")
-        
-        self.log("=" * 60)
+            print(f"❌ {self.tests_run - self.tests_passed} tests FAILED")
+            
+            # Show failed tests
+            failed_tests = [r for r in self.results if not r['passed']]
+            if failed_tests:
+                print("\n🔍 Failed Tests:")
+                for test in failed_tests:
+                    print(f"  - {test['test']}: {test['details']}")
+            
+            return False
 
 def main():
     """Main test runner"""
-    tester = C7ClusteringTester()
+    tester = BtcCascadeAPITester()
     
-    success = tester.run_all_tests()
-    
-    return 0 if success else 1
+    try:
+        success = tester.run_all_tests()
+        
+        # Save detailed results
+        with open('/tmp/btc_cascade_test_results.json', 'w') as f:
+            json.dump({
+                'summary': {
+                    'total_tests': tester.tests_run,
+                    'passed_tests': tester.tests_passed,
+                    'success_rate': tester.tests_passed / max(tester.tests_run, 1) * 100
+                },
+                'results': tester.results
+            }, f, indent=2)
+        
+        return 0 if success else 1
+        
+    except KeyboardInterrupt:
+        print("\n❌ Tests interrupted by user")
+        return 1
+    except Exception as e:
+        print(f"\n💥 Unexpected error: {str(e)}")
+        return 1
 
 if __name__ == "__main__":
     sys.exit(main())
