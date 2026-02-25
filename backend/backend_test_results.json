@@ -1,64 +1,64 @@
 {
-  "timestamp": "2026-02-25T14:34:41.114490",
+  "timestamp": "2026-02-25T14:35:43.015074",
   "summary": {
-    "passed": 0,
+    "passed": 9,
     "total": 9,
-    "success_rate": "0.0%"
+    "success_rate": "100.0%"
   },
   "tests": [
     {
       "test_name": "/api/health returns ok: true",
-      "passed": false,
-      "details": "Status: 404, Response: 404 page not found\n",
-      "timestamp": "2026-02-25T14:34:35.224197"
+      "passed": true,
+      "details": "Status: 200, ok: True",
+      "timestamp": "2026-02-25T14:35:32.831283"
     },
     {
       "test_name": "/api/dxy-macro-core/health returns module: dxy-macro-core",
-      "passed": false,
-      "details": "Status: 404, Response: 404 page not found\n",
-      "timestamp": "2026-02-25T14:34:35.895713"
+      "passed": true,
+      "details": "Status: 200, module: dxy-macro-core, ok: True, version: B4.3, FRED: N/A",
+      "timestamp": "2026-02-25T14:35:33.538019"
     },
     {
       "test_name": "Episodes validation - 4 episodes with guard criteria",
-      "passed": false,
-      "details": "Status: 404, Response: 404 page not found\n",
-      "timestamp": "2026-02-25T14:34:36.550959"
+      "passed": true,
+      "details": "Status: 200, Episodes count: 4, All episodes pass: True, Episodes: GFC_2008_2009: True, COVID_2020_SPIKE: True, TIGHTENING_2022: True, LOW_VOL_2017: True, Guard criteria: GFC CRISIS+BLOCK 0.80 >= 0.60: True; COVID CRISIS+BLOCK 0.82 >= 0.80: True; Tightening BLOCK 0.00 <= 0.10: True; 2017 NONE 1.00 >= 0.80: True",
+      "timestamp": "2026-02-25T14:35:36.720840"
     },
     {
       "test_name": "Stability validation - guard flips <= 4 per year",
-      "passed": false,
-      "details": "Status: 404, Response: 404 page not found\n",
-      "timestamp": "2026-02-25T14:34:37.212026"
+      "passed": true,
+      "details": "Status: 200, Guard flips per year: 3.65 (target: <= 4), Total flips: 95, Median duration: 21d, Samples: 1357, Overall acceptance: False",
+      "timestamp": "2026-02-25T14:35:38.904289"
     },
     {
       "test_name": "Macro score endpoint",
-      "passed": false,
-      "details": "Status: 404, Response: 404 page not found\n",
-      "timestamp": "2026-02-25T14:34:37.832611"
+      "passed": true,
+      "details": "Status: 200, Score: -0.062, Components: 10",
+      "timestamp": "2026-02-25T14:35:40.202096"
     },
     {
       "test_name": "Credit context endpoint",
-      "passed": false,
-      "details": "Status: 404, Response: 404 page not found\n",
-      "timestamp": "2026-02-25T14:34:38.548235"
+      "passed": true,
+      "details": "Status: 200, Credit composite score: -0.069, Components: 0",
+      "timestamp": "2026-02-25T14:35:40.855317"
     },
     {
       "test_name": "Housing context endpoint",
-      "passed": false,
-      "details": "Status: 404, Response: 404 page not found\n",
-      "timestamp": "2026-02-25T14:34:39.252148"
+      "passed": true,
+      "details": "Status: 200, Housing composite score: 0.025, Components: 0",
+      "timestamp": "2026-02-25T14:35:41.445694"
     },
     {
       "test_name": "Activity context endpoint",
-      "passed": false,
-      "details": "Status: 404, Response: 404 page not found\n",
-      "timestamp": "2026-02-25T14:34:39.905134"
+      "passed": true,
+      "details": "Status: 200, Activity composite score: 0.002, Components: 0",
+      "timestamp": "2026-02-25T14:35:42.011091"
     },
     {
       "test_name": "Macro series list endpoint",
-      "passed": false,
-      "details": "Status: 404, Response: 404 page not found\n",
-      "timestamp": "2026-02-25T14:34:40.613677"
+      "passed": true,
+      "details": "Status: 200, Total series: 22, Loaded: 16, Series count: 22",
+      "timestamp": "2026-02-25T14:35:42.514882"
     }
   ]
 }
