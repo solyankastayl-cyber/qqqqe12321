@@ -156,12 +156,13 @@ function classifyTrend(delta3m: number | null, threshold: number = 1): ActivityT
 // ═══════════════════════════════════════════════════════════════
 
 /**
- * PMI regime: diffusion index (50 = neutral)
- * >=52 = EXPANSION, 48..52 = NEUTRAL, <48 = CONTRACTION
+ * Manufacturing Employment regime: based on YoY
+ * > +2% = EXPANSION, -2..+2% = NEUTRAL, < -2% = CONTRACTION
  */
-function classifyPmiRegime(value: number): ActivityRegime {
-  if (value >= 52) return 'EXPANSION';
-  if (value < 48) return 'CONTRACTION';
+function classifyManempRegime(yoy: number | null): ActivityRegime {
+  if (yoy === null) return 'NEUTRAL';
+  if (yoy > 0.02) return 'EXPANSION';
+  if (yoy < -0.02) return 'CONTRACTION';
   return 'NEUTRAL';
 }
 
