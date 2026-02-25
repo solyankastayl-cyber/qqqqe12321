@@ -1,0 +1,56 @@
+{
+  "summary": "Completed comprehensive testing of DXY Macro Platform B6 2-Stage Guard implementation. All critical acceptance criteria validated successfully - backend API endpoints working correctly.",
+  
+  "backend_issues": {
+    "critical_bugs": [],
+    "flaky_endpoints": [],
+    "routing_issues": [
+      {
+        "endpoint": "External URL routing",
+        "issue": "External URL (https://dxy-risk-overlay.preview.emergentagent.com) returns 404 for API endpoints",
+        "impact": "External access not working, but localhost:8001 works perfectly",
+        "fix_priority": "LOW",
+        "workaround": "Backend is fully functional on localhost:8001"
+      }
+    ]
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+
+  "passed_tests": [
+    "/api/health returns ok: true - Status 200, validates basic API health",
+    "/api/dxy-macro-core/health returns module: dxy-macro-core - Status 200, FRED API working, B4.3 version",
+    "Episodes validation - All 4 episodes (GFC, COVID, Tightening 2022, Low Vol 2017) with verdict.pass = true",
+    "B6 Guard Criteria: GFC CRISIS+BLOCK 80% >= 60% ✅, COVID CRISIS+BLOCK 82% >= 80% ✅",
+    "B6 Guard Criteria: Tightening 2022 BLOCK 0% <= 10% ✅, Low Vol 2017 NONE 100% >= 80% ✅", 
+    "Stability validation - Guard flips 3.65/year <= 4 ✅, 95 total flips, 21d median duration",
+    "Macro score endpoint - Composite score -0.062 with 10 components working",
+    "Credit context endpoint - Credit composite score -0.069 functional",
+    "Housing context endpoint - Housing composite score 0.025 functional",
+    "Activity context endpoint - Activity composite score 0.002 functional",
+    "Macro series list endpoint - 22 total series, 16 loaded successfully"
+  ],
+
+  "test_report_links": [
+    "/app/backend/backend_test.py",
+    "/app/backend/backend_test_results.json"
+  ],
+
+  "success_percentage": {
+    "backend": "100% (9/9 tests passed)",
+    "frontend": "Not required (backend-only testing)"
+  },
+
+  "action_item_for_main_agent": "External URL routing issue: API endpoints return 404 on https://dxy-risk-overlay.preview.emergentagent.com but work perfectly on localhost:8001. This is a deployment/ingress configuration issue, not a backend functionality issue. All B6 2-Stage Guard acceptance criteria are met.",
+
+  "updated_files": [
+    "/app/backend/backend_test.py"
+  ],
+
+  "should_call_test_agent_after_fix": "false",
+  "should_main_agent_test_itself": "false"
+}
