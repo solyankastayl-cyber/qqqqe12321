@@ -61,26 +61,30 @@ export async function buildAeState(asOf?: string): Promise<AeStateVector> {
   // 3. Get DXY Terminal
   try {
     const dxyPack = await buildDxyTerminalPack();
-    if (dxyPack.ok && dxyPack.decision) {
+    if (dxyPack.ok && dxyPack.core && dxyPack.core.decision) {
+      const decision = dxyPack.core.decision;
+      
       // Action to signed signal
-      const action = dxyPack.decision.action || 'HOLD';
+      const action = decision.action || 'HOLD';
       const actionSign = ACTION_SIGN_MAP[action] ?? 0;
       
       // Scale by forecast return (tanh normalization, k=0.03)
-      const forecastReturn = safeNumber(dxyPack.decision.forecastReturn, 0);
+      const forecastReturn = safeNumber(decision.forecastReturn, 0);
       const returnScale = Math.tanh(Math.abs(forecastReturn) / 0.03);
       
       vector.dxySignalSigned = clamp(actionSign * returnScale, -1, 1);
       
       // Confidence
-      const confidence = dxyPack.decision.macroAdjustedConfidence 
-        || dxyPack.decision.confidence 
+      const confidence = decision.macroAdjustedConfidence 
+        || decision.confidence 
         || 0.5;
       vector.dxyConfidence = clamp(safeNumber(confidence), 0, 1);
       
-      // 90d regime bias
-      if (dxyPack.decision.regimeBias !== undefined) {
-        vector.regimeBias90d = clamp(safeNumber(dxyPack.decision.regimeBias), -1, 1);
+      // 90d regime bias (if available in diagnostics)
+      if (dxyPack.core.diagnostics && dxyPack.core.diagnostics.regimeBias !== undefined) {
+        vector.regimeBias90d = clamp(safeNumber(dxyPack.core.diagnostics.regimeBias), -1, 1);
+      } else if (decision.regimeBias !== undefined) {
+        vector.regimeBias90d = clamp(safeNumber(decision.regimeBias), -1, 1);
       }
     } else {
       missing.push('dxy_terminal');
