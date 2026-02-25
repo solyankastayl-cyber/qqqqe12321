@@ -371,14 +371,13 @@ function buildEmptyContext(seriesId: string, displayName: string): ActivitySerie
 // ═══════════════════════════════════════════════════════════════
 
 export async function buildActivityContext(): Promise<ActivityContext> {
-  const pmi = await buildPmiContext();
+  const manemp = await buildManempContext();
   const indpro = await buildIndproContext();
   const tcu = await buildTcuContext();
   
   // Calculate composite score
-  // Negative sign because strong activity = risk-on = USD pressure
   const pressures = [
-    { weight: WEIGHTS.NAPM, pressure: pmi.pressure, available: pmi.available },
+    { weight: WEIGHTS.MANEMP, pressure: manemp.pressure, available: manemp.available },
     { weight: WEIGHTS.INDPRO, pressure: indpro.pressure, available: indpro.available },
     { weight: WEIGHTS.TCU, pressure: tcu.pressure, available: tcu.available },
   ];
@@ -392,7 +391,6 @@ export async function buildActivityContext(): Promise<ActivityContext> {
   if (available.length > 0) {
     for (const p of available) {
       // Strong activity (positive pressure) = USD supportive (positive score)
-      // This is counterintuitive but historically strong US economy = strong USD
       scoreSigned += p.pressure * p.weight;
       totalWeight += p.weight;
     }
@@ -417,7 +415,7 @@ export async function buildActivityContext(): Promise<ActivityContext> {
   
   // Determine composite regime
   let regime: string;
-  const regimes = [pmi.regime, indpro.regime, tcu.regime].filter(r => r !== 'NEUTRAL');
+  const regimes = [manemp.regime, indpro.regime, tcu.regime].filter(r => r !== 'NEUTRAL');
   const expansionCount = regimes.filter(r => r === 'EXPANSION').length;
   const contractionCount = regimes.filter(r => r === 'CONTRACTION').length;
   
@@ -440,7 +438,7 @@ export async function buildActivityContext(): Promise<ActivityContext> {
   }
   
   return {
-    pmi,
+    manemp,
     indpro,
     tcu,
     composite: {
