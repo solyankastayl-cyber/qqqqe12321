@@ -23,6 +23,30 @@ AE Brain is the intelligence layer aggregating all system state:
 | **C5** | Novelty Detection | ✅ |
 | **C6** | Historical Backfill | ✅ NEW |
 
+### C6 Historical Backfill — VALIDATED ✅ NEW
+
+**Stats (2026-02-25):**
+- **Total vectors**: 1358
+- **Date range**: 2000-01-01 → 2025-12-31
+- **Step**: 7 days (weekly)
+
+**Distribution:**
+| Metric | Value |
+|--------|-------|
+| macroSigned | [-0.271, +0.341], avg = -0.012 |
+| NONE | 82% (1112) |
+| CRISIS | 15% (197) |
+| BLOCK | 4% (49) |
+
+**Crisis Detection Validation:**
+| Period | Regime | Guard | Nearest |
+|--------|--------|-------|---------|
+| GFC 2008-10-11 | RISK_OFF_STRESS | BLOCK | COVID 2020 |
+| COVID 2020-03-14 | RISK_OFF_STRESS | BLOCK | GFC 2008 |
+| 2017-07-01 | NEUTRAL_MIXED | NONE | 2003, 2016 |
+
+---
+
 ### C1 State Vector
 Normalized state from macro + guard + DXY terminal:
 ```json
