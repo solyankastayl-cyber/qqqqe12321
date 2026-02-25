@@ -239,13 +239,12 @@ KNN cosine distance (K=20):
 ## Next Steps
 
 ### Immediate
-1. **C8** — Transition Matrix (regime switch probabilities)
-2. **D1** — SPX Cascade Integration (DXY → SPX)
-3. **D2** — BTC Cascade Integration (DXY → SPX → BTC)
+1. **D1** — SPX Cascade Integration (DXY → SPX)
+2. **D2** — BTC Cascade Integration (DXY → SPX → BTC)
 
 ### Backlog
 - Hysteresis — Reduce guard flaps (median 21d → 30d)
-- Regime Transition Matrix — probability of regime switches
+- C8.2 — Rolling Transition Matrix (evolving window)
 - B4.4 — Energy & Commodity (optional)
 
 ---
