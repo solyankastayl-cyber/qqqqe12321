@@ -54,8 +54,8 @@ const SERIES_WEIGHT_MULTIPLIERS: Record<string, number> = {
 
 // Series to exclude from standard processing (handled via composites)
 const HOUSING_SERIES = ['MORTGAGE30US', 'HOUST', 'PERMIT', 'CSUSHPISA'];
-const ACTIVITY_SERIES = ['NAPM', 'INDPRO', 'TCU'];
-const CREDIT_SERIES = ['BAA10Y', 'BAMLH0A0HYM2', 'STLFSI4'];
+const ACTIVITY_SERIES = ['MANEMP', 'INDPRO', 'TCU'];
+const CREDIT_SERIES = ['BAA10Y', 'TEDRATE', 'VIXCLS'];
 const EXCLUDED_SERIES = [...HOUSING_SERIES, ...ACTIVITY_SERIES, ...CREDIT_SERIES];
 
 // ═══════════════════════════════════════════════════════════════
