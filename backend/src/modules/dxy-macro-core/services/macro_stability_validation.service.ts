@@ -953,33 +953,43 @@ export async function validateEpisodes(
       guard: guardPcts,
     };
     
-    // Episode-specific acceptance (including B6 Guard checks)
+    // Episode-specific acceptance (B6 2-Stage Guard checks)
     let pass = true;
     
     if (ep.key === 'GFC_2008_2009') {
-      // Crisis: BLOCK >= 60%
-      const guardPass = guardPcts.BLOCK >= 0.60;
-      pass = stats.riskOffPct >= 0.50 && stats.creditAvg > 0.20 && guardPass;
+      // B6 Acceptance: CRISIS >= 60%, BLOCK >= 20%
+      const crisisOrBlock = guardPcts.CRISIS + guardPcts.BLOCK;
+      const crisisPass = crisisOrBlock >= 0.60;
+      const blockPass = guardPcts.BLOCK >= 0.20;
+      pass = stats.riskOffPct >= 0.50 && stats.creditAvg > 0.20 && crisisPass;
       acceptanceChecks.push({ key: 'GFC_RISK_OFF_DOMINANT', pass: stats.riskOffPct >= 0.50 });
-      acceptanceChecks.push({ key: 'GFC_GUARD_BLOCK_60PCT', pass: guardPass });
+      acceptanceChecks.push({ key: 'GFC_GUARD_CRISIS_60PCT', pass: crisisPass });
+      acceptanceChecks.push({ key: 'GFC_GUARD_BLOCK_20PCT', pass: blockPass });
     } else if (ep.key === 'COVID_2020_SPIKE') {
-      // Crisis: BLOCK >= 70%
-      const guardPass = guardPcts.BLOCK >= 0.70;
-      pass = stats.riskOffPct >= 0.50 && stats.creditAvg > 0.30 && guardPass;
+      // B6 Acceptance: CRISIS >= 80%, BLOCK >= 40%
+      const crisisOrBlock = guardPcts.CRISIS + guardPcts.BLOCK;
+      const crisisPass = crisisOrBlock >= 0.80;
+      const blockPass = guardPcts.BLOCK >= 0.40;
+      pass = stats.riskOffPct >= 0.50 && stats.creditAvg > 0.30 && crisisPass;
       acceptanceChecks.push({ key: 'COVID_CREDIT_SPIKE', pass: stats.riskOffPct >= 0.50 });
-      acceptanceChecks.push({ key: 'COVID_GUARD_BLOCK_70PCT', pass: guardPass });
+      acceptanceChecks.push({ key: 'COVID_GUARD_CRISIS_80PCT', pass: crisisPass });
+      acceptanceChecks.push({ key: 'COVID_GUARD_BLOCK_40PCT', pass: blockPass });
     } else if (ep.key === 'TIGHTENING_2022') {
-      // Tightening: WARN допустим, BLOCK <= 10%
-      const guardPass = guardPcts.BLOCK <= 0.10;
-      pass = stats.avgScoreSigned >= -0.1 && guardPass;
+      // B6 Acceptance: WARN <= 40%, BLOCK <= 10%
+      const warnPass = guardPcts.WARN <= 0.40;
+      const blockPass = guardPcts.BLOCK <= 0.10;
+      pass = stats.avgScoreSigned >= -0.1 && blockPass;
       acceptanceChecks.push({ key: 'TIGHTENING_FED_DOMINANT', pass: stats.avgScoreSigned >= -0.1 });
-      acceptanceChecks.push({ key: 'TIGHTENING_GUARD_BLOCK_10PCT', pass: guardPass });
+      acceptanceChecks.push({ key: 'TIGHTENING_GUARD_WARN_40PCT', pass: warnPass });
+      acceptanceChecks.push({ key: 'TIGHTENING_GUARD_BLOCK_10PCT', pass: blockPass });
     } else if (ep.key === 'LOW_VOL_2017') {
-      // Low vol: NONE >= 80%
-      const guardPass = guardPcts.NONE >= 0.80;
-      pass = stats.creditAvg < 0.1 && guardPass;
+      // B6 Acceptance: NONE >= 80%, BLOCK = 0%
+      const nonePass = guardPcts.NONE >= 0.80;
+      const blockPass = guardPcts.BLOCK === 0;
+      pass = stats.creditAvg < 0.1 && nonePass;
       acceptanceChecks.push({ key: '2017_LOW_STRESS', pass: stats.creditAvg < 0.1 });
-      acceptanceChecks.push({ key: '2017_GUARD_NONE_80PCT', pass: guardPass });
+      acceptanceChecks.push({ key: '2017_GUARD_NONE_80PCT', pass: nonePass });
+      acceptanceChecks.push({ key: '2017_GUARD_BLOCK_0PCT', pass: blockPass });
     }
     
     episodes.push({
