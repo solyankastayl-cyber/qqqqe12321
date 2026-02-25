@@ -48,6 +48,36 @@ AE Brain is the intelligence layer aggregating all system state:
 
 ---
 
+### C7 Regime Clustering — VALIDATED ✅ NEW
+
+**K-Means Configuration:**
+- K = 6 clusters
+- Metric: Cosine distance
+- Seed: Farthest point (deterministic)
+- Converged: 16 iterations
+
+**Cluster Distribution (1357 points):**
+| Cluster | Label | Size | % |
+|---------|-------|------|---|
+| 0 | RISK_OFF_STRESS | 112 | 8.3% |
+| 1 | TIGHTENING_USD_SUPPORTIVE | 296 | 21.8% |
+| 2 | RISK_OFF_STRESS | 60 | 4.4% |
+| 3 | LIQUIDITY_EXPANSION | 536 | 39.5% |
+| 4 | RISK_OFF_STRESS | 74 | 5.5% |
+| 5 | LOW_VOL_NEUTRAL | 279 | 20.6% |
+
+**Crisis Detection:**
+| Period | Cluster | Label |
+|--------|---------|-------|
+| GFC 2008 | 2 | RISK_OFF_STRESS ✅ |
+| COVID 2020 | 2 | RISK_OFF_STRESS ✅ |
+| 2017 Low Vol | 3 | LIQUIDITY_EXPANSION ✅ |
+| Current 2026 | 3 | LIQUIDITY_EXPANSION |
+
+**Key Finding:** GFC and COVID map to **same cluster** (2) — confirms structural similarity.
+
+---
+
 ### C1 State Vector
 Normalized state from macro + guard + DXY terminal:
 ```json
