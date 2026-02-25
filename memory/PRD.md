@@ -103,6 +103,8 @@ KNN cosine distance (K=20):
 | GET | `/api/ae/novelty` | C5 novelty |
 | GET | `/api/ae/terminal` | Full pack |
 | POST | `/api/ae/admin/snapshot` | Save state |
+| POST | `/api/ae/admin/backfill` | C6 backfill |
+| GET | `/api/ae/admin/backfill-stats` | C6 stats |
 
 ---
 
