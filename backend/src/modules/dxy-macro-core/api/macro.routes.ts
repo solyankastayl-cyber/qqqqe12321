@@ -18,6 +18,7 @@ import { computeMacroScore } from '../services/macro_score.service.js';
 import { buildHousingContext } from '../services/housing_context.service.js';
 import { buildActivityContext } from '../services/activity_context.service.js';
 import { buildCreditContext } from '../services/credit_context.service.js';
+import { validateStability, validateEpisodes } from '../services/macro_stability_validation.service.js';
 import { getDefaultMacroSeries, MACRO_SERIES_REGISTRY } from '../data/macro_sources.registry.js';
 import { checkFredHealth, hasFredApiKey } from '../ingest/fred.client.js';
 
