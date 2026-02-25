@@ -229,7 +229,9 @@ KNN cosine distance (K=20):
 - **C7 — Regime Clustering** ✅
 - **C8 — Transition Matrix** ✅
 - **D1 — SPX Cascade** ✅
-- **D2 — BTC Cascade** ✅ NEW
+- **D1.1 — SPX OOS Validation** ✅ NEW
+- **D2 — BTC Cascade** ✅
+- **D2.1 — BTC OOS Validation** ✅ NEW
 
 ### Frozen ❄️
 - SPX Module
