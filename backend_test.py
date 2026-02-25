@@ -245,6 +245,22 @@ class AEBrainTester:
         success, data, status = self.call_api("admin/snapshot", method="POST")
         
         if not success:
+            # Try with different content-type
+            try:
+                url = f"{self.base_url}/api/ae/admin/snapshot"
+                headers = {}  # Remove Content-Type for POST without body
+                response = requests.post(url, headers=headers, timeout=30)
+                success = response.status_code == 200
+                try:
+                    data = response.json()
+                except:
+                    data = {}
+                status = response.status_code
+            except Exception as e:
+                self.log_test("Snapshot Endpoint", False, f"HTTP {status} - {str(e)}")
+                return False
+        
+        if not success:
             self.log_test("Snapshot Endpoint", False, f"HTTP {status}")
             return False
         
