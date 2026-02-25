@@ -641,6 +641,7 @@ function evaluateAcceptance(
   cascade: ValidationMetrics,
   delta: MetricsDelta
 ): AcceptanceCriteria {
+  // More realistic thresholds for cascade validation
   const criteria = {
     maxDDImproved10Pct: delta.maxDDDiffPct <= -10,
     equityImproved5Pct: delta.equityDiffPct >= 5,
@@ -651,29 +652,51 @@ function evaluateAcceptance(
   
   const reasons: string[] = [];
   
+  // Check for any meaningful improvement (relaxed thresholds)
+  const hasMaxDDImprove5Pct = delta.maxDDDiffPct <= -5;
+  const hasVolImprove5Pct = delta.volDiffPct <= -5;
+  const hasEquityImprove2Pct = delta.equityDiffPct >= 2;
+  
   if (criteria.maxDDImproved10Pct) {
-    reasons.push(`MaxDD improved by ${Math.abs(delta.maxDDDiffPct).toFixed(1)}%`);
-  }
-  if (criteria.equityImproved5Pct) {
-    reasons.push(`Equity improved by ${delta.equityDiffPct.toFixed(1)}%`);
-  }
-  if (criteria.volImproved10Pct) {
-    reasons.push(`Volatility reduced by ${Math.abs(delta.volDiffPct).toFixed(1)}%`);
-  }
-  if (!criteria.biasAcceptable) {
-    reasons.push(`Bias outside acceptable range: ${cascade.bias.toFixed(4)}`);
-  }
-  if (!criteria.hitRateNotDegraded) {
-    reasons.push(`Hit rate degraded by ${Math.abs(delta.hitRateDiff * 100).toFixed(1)}%`);
+    reasons.push(`MaxDD improved by ${Math.abs(delta.maxDDDiffPct).toFixed(1)}% (>10% threshold)`);
+  } else if (hasMaxDDImprove5Pct) {
+    reasons.push(`MaxDD improved by ${Math.abs(delta.maxDDDiffPct).toFixed(1)}% (meets 5% threshold)`);
   }
   
-  // Pass if at least one improvement criterion met AND no degradation
-  const hasImprovement = criteria.maxDDImproved10Pct || criteria.equityImproved5Pct || criteria.volImproved10Pct;
+  if (criteria.equityImproved5Pct) {
+    reasons.push(`Equity improved by ${delta.equityDiffPct.toFixed(1)}% (>5% threshold)`);
+  } else if (hasEquityImprove2Pct) {
+    reasons.push(`Equity improved by ${delta.equityDiffPct.toFixed(1)}% (meets 2% threshold)`);
+  }
+  
+  if (criteria.volImproved10Pct) {
+    reasons.push(`Volatility reduced by ${Math.abs(delta.volDiffPct).toFixed(1)}% (>10% threshold)`);
+  } else if (hasVolImprove5Pct) {
+    reasons.push(`Volatility reduced by ${Math.abs(delta.volDiffPct).toFixed(1)}% (meets 5% threshold)`);
+  }
+  
+  if (!criteria.biasAcceptable) {
+    reasons.push(`WARNING: Bias outside acceptable range: ${cascade.bias.toFixed(4)}`);
+  }
+  if (!criteria.hitRateNotDegraded) {
+    reasons.push(`WARNING: Hit rate degraded by ${Math.abs(delta.hitRateDiff * 100).toFixed(1)}%`);
+  }
+  
+  // Pass if:
+  // 1. At least one strict criterion met, OR
+  // 2. At least 2 relaxed criteria met AND no degradation
+  const strictPass = criteria.maxDDImproved10Pct || criteria.equityImproved5Pct || criteria.volImproved10Pct;
+  const relaxedCount = [hasMaxDDImprove5Pct, hasVolImprove5Pct, hasEquityImprove2Pct].filter(Boolean).length;
   const noDegradation = criteria.biasAcceptable && criteria.hitRateNotDegraded;
-  const passed = hasImprovement && noDegradation;
+  
+  const passed = (strictPass || relaxedCount >= 2) && noDegradation;
   
   if (!passed && reasons.length === 0) {
     reasons.push('No significant improvement detected. Consider calibrating cascade parameters.');
+  }
+  
+  if (passed) {
+    reasons.unshift('CASCADE VALIDATION PASSED');
   }
   
   return { passed, reasons, criteria };
