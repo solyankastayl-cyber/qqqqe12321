@@ -8,7 +8,7 @@ import { buildAeState } from './ae_state.service.js';
 import { classifyRegime } from './ae_regime.service.js';
 import { buildCausalGraph, getKeyDrivers } from './ae_causal.service.js';
 import { buildScenarios } from './ae_scenarios.service.js';
-import { computeNovelty, snapshotState } from './ae_novelty.service.js';
+import { computeNovelty, snapshotState, getStateFromDB } from './ae_novelty.service.js';
 import { clamp } from '../utils/ae_math.js';
 
 // Guard level to mode mapping
