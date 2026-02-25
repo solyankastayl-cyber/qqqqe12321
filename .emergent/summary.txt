@@ -1,141 +1,153 @@
-<analysis>**original_problem_statement:**
-The user wants to deploy and enhance a financial analysis application from a GitHub repository. The work is strictly focused on the backend logic for the 'Fractal' module concerning the DXY (US Dollar Index). The logic for SPX and Bitcoin, as well as all frontend work, is to be ignored.
+<analysis>**original_problem_statement**:
+The user wants to deploy and continue developing a financial analysis application from a provided GitHub repository. The core of the application is a fractal logic module.
 
-The user provided a multi-stage, detailed development plan:
-1.  **Initial setup**: Deploy the existing code.
-2.  **D1 Macro Overlay Validation**: Create and run a validation endpoint () to backtest a 'Macro Overlay' risk management layer, comparing its performance against the pure fractal model. The goal was to reduce drawdown without significantly hurting equity.
-3.  **B3 DXY Research Terminal**: Create a new aggregator endpoint () that combines the fractal signal, macro data, and overlay logic into a single, comprehensive Research Pack.
-4.  **B4 Extended Macro Drivers**: Sequentially enhance the macro model by adding new economic data drivers in distinct blocks:
-    *   **B4.1**: Housing & Real Estate (Mortgage rates, housing starts, etc.).
-    *   **B4.2**: PMI & Economic Activity (ISM PMI, industrial production).
-    *   **B4.3**: Credit & Financial Stress (Credit spreads, stress indexes).
-5.  **B5 Historical Stability Validation**: Create validation endpoints (, ) to ensure the newly complex macro model is stable over time and reacts logically to known historical economic events (e.g., 2008 GFC, 2020 COVID crash).
-6.  **B6 Crisis Guard**: Implement a final risk management layer that automatically blocks or reduces trade size during extreme market stress, based on credit and volatility metrics (VIX).
+**Initial Request:**
+- Focus exclusively on the backend logic for the DXI (currency pair index) module.
+- Do not work on the SPX or Bitcoin modules, as they are frozen.
+- Do not create or look for a frontend for DXI.
+- The primary initial task is to implement C8 - Transition Matrix, which involves calculating, storing, and exposing a regime transition probability matrix for the DXY model via an API.
 
-**User's preferred language**:
-русский (Russian)
+**Subsequent PRODUCT REQUIREMENTS (as provided by the user during the session):**
+1.  **D1 - SPX Cascade:** Implement an overlay on the SPX model that adjusts its exposure (size/confidence) based on signals from the DXY and AE Brain modules, without changing the core SPX signal direction.
+2.  **D2 - BTC Cascade:** Implement a similar cascade for the BTC model, using inputs from DXY, AE Brain, and the adjusted SPX model.
+3.  **D1.1 & D2.1 - OOS Validation:** Create validation endpoints to prove that the SPX and BTC cascades improve the risk profile (specifically by reducing maximum drawdown) on out-of-sample data from 2021-2025.
+4.  **P1.3 - Guard Hysteresis:** Implement a stateful hysteresis mechanism for the system's risk Guard to prevent it from flipping between states (e.g., NONE, WARN, CRISIS) too frequently.
+5.  **P1.4 - Fix Intermittent Test:** Stabilize the test suite to ensure 100% consistent passes.
+6.  **P2 - Liquidity Engine:** Integrate new macroeconomic data series (WALCL, RRP, TGA) to build a Liquidity Impulse Index and incorporate it into the core models.
+
+**User's preferred language**: Russian (Русский). The next agent MUST respond in Russian.
 
 **what currently exists?**
-The agent has successfully deployed the TypeScript backend and has sequentially implemented all the user's requests from D1 to B6. The application is running with a sophisticated, multi-component macroeconomic model that informs a risk overlay on a core fractal trading signal for the DXY index. All data ingestion, scoring, validation, and research aggregation endpoints are in place.
+The project is a TypeScript/Fastify backend application. A Python wrapper () was created to launch the Node.js server within the platform's Python-centric environment. The backend is fully operational locally. All requested features up to P1.3 have been implemented, including the AE Brain (C1-C8), SPX Cascade (D1), BTC Cascade (D2), OOS Validation (D1.1/D2.1), and Guard Hysteresis (P1.3). The validation steps proved that the cascade models successfully reduce maximum drawdown by ~7-8%.
 
 **Last working item**:
-*   **Last item agent was working**: The agent just completed the implementation of **B6 — Crisis Guard**. This feature introduces a final safety layer that automatically reduces risk ( level) or blocks trades ( level) based on predefined market stress conditions (a combination of a credit composite score and the VIX index). The agent created a new , integrated it into the , and updated the API response contract to include details about the stress state.
+*   **Last item agent was working**: The agent was working on task **P1.4 - Fix intermittent timing test**. An intermittent HTTP 500 error was occurring in the BTC cascade validation test (). The root cause was identified as a potential race condition or timeout when fetching data from the SPX cascade endpoint during the test run. The agent was preparing to make the test deterministic by adding retry logic, timeouts, and mocking the system clock.
 *   **Status**: IN PROGRESS
-*   **Agent Testing Done**: N (Implementation is done, but the specific validation tests requested by the user for B6 have not been run yet).
-*   **Which testing method agent to use?**: backend testing agent
+*   **Agent Testing Done**: N
+*   **Which testing method agent to use?**: backend testing agent. After implementing the fix, the agent should run the test suite repeatedly to ensure the intermittent failure is resolved and that tests pass 11/11 times consistently.
 *   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
-*   **Issue 1**: B6 - Crisis Guard Validation (Priority: P0)
-
-    *   **Issue Detail**: The implementation of the B6 Crisis Guard is complete, but it requires thorough validation as per the user's final instructions before the DXY module can be considered finished.
-    *   **Attempted fixes**: N/A
+*   **Issue 1: Intermittent test failure in BTC cascade validation (P0 - HIGHEST PRIORITY)**
+    *   **Description**: The test for  intermittently fails with an HTTP 500 error, preventing 100% test stability.
+    *   **Attempted fixes**: None yet, the agent was in the process of diagnosing and planning the fix.
     *   **Next debug checklist**:
-        1.  Re-run the episode validation using  to check the guard's activation percentages during the four key historical periods (2008-09, COVID 2020, Tightening 2022, Low Vol 2017) and verify they meet the user's acceptance criteria (e.g.,  active in 2008/2020,  in 2017).
-        2.  Re-run the stability validation using  to calculate the guard's flip rate () and median duration ().
-        3.  Re-run the initial D1 macro validation for the OOS period 2021-2025 () to assess the final equity impact of the fully-featured overlay, including the new guard.
-        4.  Present a summary of these three validation results to the user.
-    *   **Why fix this issue and what will be achieved with the fix?**: This is the final acceptance test for the entire DXY module. Passing this validation will confirm that the risk management layer is stable, effective, and ready for use in the next phase (cascading to SPX/BTC).
-    *   **Status**: NOT STARTED
-    *   **Is recurring issue?**: N
-    *   **Should Test frontend/backend/both after fix?**: backend
+        1.  In , locate the  call that retrieves data from the SPX cascade endpoint.
+        2.  Implement robust error handling around this  call, including a timeout with an  and a simple retry mechanism (2-3 attempts).
+        3.  Ensure all database queries in the test environment use a deterministic  clause (e.g., ) to prevent ordering-related race conditions.
+        4.  Mock the system clock () within the test environment to ensure time-based calculations are deterministic.
+    *   **Why fix this issue and what will be achieved with the fix?**: To achieve a fully stable and reliable backend, which is a prerequisite for moving on to the next major feature (Liquidity Engine).
+    *   **Status**: IN PROGRESS
+    *   **Is recurring issue?**: Y
+    *   **Should Test backend/frontend/both after fix?**: backend
+    *   **Blocked on other issue**: None.
 
 **In progress Task List**:
-*   **Task 1**: Validate B6 Crisis Guard
-    *   **Where to resume**: The code is complete. The agent needs to start executing the  commands for the validation endpoints listed in the Pending Issue checklist above.
-    *   **What will be achieved with this?**: Final validation of the DXY module, completing the current scope of work and unlocking the next phase of the project.
-    *   **Status**: IN PROGRESS
-    *   **Should Test frontend/backend/both after fix?**: backend
+There are no in-progress tasks; the current focus is on resolving the pending issue above.
 
 **Upcoming and Future Tasks**
-*   **Upcoming Tasks**:
-    *   **D1 - SPX Cascade Integration (P0)**: After B6 is approved, integrate the DXY macro intelligence into the SPX module. The user specified the logic: . If the DXY guard is , SPX trading must be disabled.
-*   **Future Tasks**:
-    *   **D2 - BTC Cascade Integration (P1)**: After SPX is done, cascade the combined intelligence to the BTC module. The user specified the logic: .
+*   **Upcoming Tasks:**
+    *   **P2: Liquidity Engine (P0):** This is the next major feature to be implemented after the intermittent test is fixed.
+        *   **P2.1:** Ingest new FRED series (, , ) for liquidity analysis. (File: ).
+        *   **P2.2:** Create a new Liquidity Impulse Index service. (New module: ).
+        *   **P2.3:** Integrate the liquidity score into the Macro Score, Guard logic, and AE Brain state vector. (Files: , , ).
+
+*   **Future Tasks:**
+    *   **P3: As-Of / Lagged Reality (P1):** Implement a true as-of query mode in backtests to account for data publication lags.
+    *   **P4: Evidence / Explainability Contracts (P2):** Enhance the AE terminal to provide explanations for its decisions.
+    *   **P5: Engine Global (P2):** Create a global aggregator endpoint for a cross-asset view.
+    *   **P6: Frontend Development (P3):** Build the UI (explicitly deferred until all backend work is complete).
 
 **Completed work in this session**
-*   **Repository Setup**: Cloned project, configured  for TypeScript, and launched the backend server.
-*   **D1 Macro Overlay Validation**: Confirmed the existing overlay logic successfully reduced drawdown on historical data.
-*   **B3 DXY Research Terminal**: Implemented the  endpoint to aggregate fractal, macro, and overlay data into a unified pack.
-*   **B4.1 Housing Drivers**: Integrated housing market data (mortgage rates, starts) into the macro score.
-*   **B4.2 Activity Drivers**: Integrated economic activity data (PMI, industrial production) into the macro score.
-*   **B4.3 Credit Drivers**: Integrated financial stress data (credit spreads, VIX) into the macro score.
-*   **B5 Stability Validation**: Implemented and passed validation tests for model stability and logical behavior during historical economic episodes.
-*   **B6 Crisis Guard Implementation**: Implemented the code for the final / crisis guard layer.
+- **Project Setup**: Configured a TypeScript/Fastify project to run in a Python/Uvicorn environment via a proxy wrapper.
+- **C8 - AE Transition Matrix**: Implemented and validated the regime transition probability matrix. (DONE)
+- **D1 - SPX Cascade**: Implemented and validated an overlay to adjust SPX exposure. (DONE)
+- **D2 - BTC Cascade**: Implemented and validated an overlay to adjust BTC exposure. (DONE)
+- **D1.1 & D2.1 - OOS Validation**: Numerically proved that the cascades reduce max drawdown on out-of-sample data. (DONE)
+- **P1.3 - Guard Hysteresis**: Implemented and validated a mechanism to stabilize the system's risk guard. (DONE)
 
 **Earlier issues found/mentioned but not fixed**
-None. An issue with unavailable FRED data series was resolved by finding and integrating suitable alternatives.
+*   **Issue 1: Public URL returns 404**
+    *   **Debug checklist**: This was diagnosed as a Kubernetes ingress or infrastructure configuration issue, not an application code bug. The user has acknowledged this and de-prioritized the fix. No action is needed from the agent at this time.
+    *   **Why to solve this issue and what will be achieved with this?**: To enable external access to the application.
+    *   **Should Test frontend/backend/both after fix**: both
+    *   **Is recurring issue?**: Y
 
 **Known issue recurrence from previous fork**
-N/A
+*   None.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-*   **Backend**: TypeScript, ts-node, Express.js-style routing
-*   **Database**: MongoDB (interacted with via application services)
-*   **Domain**: Quantitative Finance, Algorithmic Trading, Macroeconomic Analysis
-*   **Architecture**: Modular, Service-Oriented
-*   **Key Concepts**: Fractal Analysis, Macro Overlay, Walk-Forward Validation, Composite Scoring, Risk Management (Size/Confidence Multipliers, Crisis Guards), Data Ingestion (from FRED).
+*   **Backend**: TypeScript, Node.js, Fastify
+*   **Database**: MongoDB
+*   **Architecture**: Modular, service-oriented architecture. A Python script () acts as a proxy wrapper to launch the Node.js application in the expected environment.
+*   **Domain**: Quantitative Finance, including market regimes, transition matrices, risk guards, and signal overlays.
 
 **key DB schema**
-*   **macro_points**: Stores time-series data for various economic indicators, identified by a key (e.g., 'FEDFUNDS', 'VIXCLS').
+*   : 
+*   : 
+*   : 
+*   : 
+*   : 
 
 **changes in tech stack**
-The agent correctly identified that the project required a TypeScript environment, not the default Python/React. It successfully adapted the  file to run the  server via the provided  wrapper script.
+*   A  wrapper was introduced to run the TypeScript/Node.js application within a Python/Uvicorn-based hosting environment.
 
 **All files of reference**
-*   : (New) Implements the B6 crisis guard logic.
-*   : (Updated) Integrates the crisis guard.
-*   : (Updated) Added the  object to the API response.
-*   : (New) Contains logic for B5 stability and episode validation.
-*   : (New) Exposes the B5 validation endpoints.
-*   : (Updated) Heavily modified to include new driver components (Housing, Activity, Credit) with new weightings.
-*   : (Updated) Enhanced to include the new macro drivers in the research output.
-*   : (Updated) Contains the list of all FRED series IDs used by the macro model.
+*   : Created to enable running the TypeScript project.
+*   : The main application entry point, modified to register all new modules.
+*   : The service containing the logic for the intermittently failing test.
+*   : Implements the guard stabilization logic.
+*   : Contains the project roadmap and documentation of completed work.
 
 **Areas that need refactoring**:
-None. The code was built incrementally following a clear, modular pattern provided by the user.
+*   The  API is used directly in multiple services. A centralized HTTP client service with built-in retry logic, timeouts, and error handling would improve robustness and reduce code duplication.
 
 **key api endpoints**
-*   : The primary endpoint for retrieving the complete DXY analysis pack.
-*   : The B5 stability validation endpoint.
-*   : The B5 historical episode validation endpoint.
-*   : The D1 backtesting endpoint, to be reused for final validation.
+*   : SPX data with D1 cascade overlay.
+*   : BTC cascade data.
+*   : Runs OOS validation for BTC (location of the failing test).
+*   : Runs OOS validation for SPX.
+*   : Current hysteresis guard state.
 
 **Critical Info for New Agent**
-*   **Follow User Instructions**: The user provides extremely precise, technical, and step-by-step instructions. Do not deviate. The entire project's success has been based on following this pattern.
-*   **DXY Module is Almost Complete**: The current task is the *final validation step* for the DXY module. Once this is done and the user approves, the next phase (SPX Cascade) begins.
-*   **Core Invariant**: Do not modify the core fractal signal generation (). All work is on the risk management layers that affect , , and .
-*   **Language**: The user communicates in Russian. You MUST respond in Russian.
+*   The project is TypeScript, but you must not try to run it directly. The environment uses  which calls a  wrapper. All backend logic is in the  directory.
+*   The user provides extremely detailed, phased roadmaps. Your immediate task is to fix the intermittent test (P1.4). After that, the next task is to begin **P2 - Liquidity Engine**. Do not deviate from this plan.
+*   The 404 error on the public URL is a known, low-priority infrastructure issue. Focus on backend development and local testing.
 
 **documents and test reports created in this job**
-*   : Contains the project requirements, progress, and task list.
+*   
+*   Test reports are located in .
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Confirms B4 is complete and correct. Lays out the plan for **B5 - Historical Research Stability Validation**.
-2.  **User**: Provides detailed implementation specs for B5, including API contracts and acceptance criteria for both stability and episode validation.
-3.  **User**: Confirms B5 has passed. Lays out the plan for the final DXY step: **B6 - Crisis Guard**.
-4.  **User**: Provides detailed implementation specs for B6, including trigger logic, output mapping, and the updated API contract.
-5.  **User**: Specifies the final acceptance tests for B6, asking for a report on flip rates, activation percentages in historical episodes, and the impact on OOS equity. States that passing this will unlock the next phase (SPX Cascade).
-*(The remaining messages are the agent implementing B5 and B6, culminating in the completion of the B6 implementation code.)*
+1.  **User**: Confirms P1.3 is done, provides specs for P1.4 (fixing the test) and P2 (Liquidity Engine), and sets the priority: fix the test first, then start the Liquidity Engine. (COMPLETION PENDING)
+2.  **User**: Acknowledges D1/D2 validation passed, confirms the cascade approach is correct, and lays out the new roadmap starting with P1.3 (Hysteresis). (COMPLETED)
+3.  **User**: Confirms P1.3 (Hysteresis) validation passed and approves moving to the next task. (COMPLETED)
+4.  **User**: Acknowledges D2.1 (BTC OOS validation) passed and approves the results. Sets the next task to be the D1.1 (SPX OOS validation). (COMPLETED)
+5.  **User**: Analyzes the D2.1 validation results, correctly identifies a data gap (missing AE vectors), and instructs the agent to run the backfill for the required period. (COMPLETED)
+6.  **User**: Lays out the full project roadmap in phases (P1-P6) and provides a detailed spec for D2.1 (BTC OOS validation). (COMPLETED)
+7.  **User**: Confirms D1 is complete and provides the final, detailed spec for D2 (BTC Cascade). (COMPLETED)
+8.  **User**: Confirms C8 is complete and provides the detailed spec for D1 (SPX Cascade), de-prioritizing the ingress/404 issue. (COMPLETED)
+9.  **User**: Provides the initial, very detailed spec for C8 (Transition Matrix) and instructs the agent to study the existing code. (COMPLETED)
+10. **Agent**: Acknowledges the plan to fix the intermittent test (P1.4).
 
 **Project Health Check:**
-*   **Broken**: None
-*   **Mocked**: None
+*   **Broken**: The public-facing URL is non-functional due to a presumed Kubernetes ingress issue.
+*   **Mocked**: No critical components are mocked in production. Tests will require mocking the system clock for determinism.
 
 **3rd Party Integrations**
-*   **FRED (Federal Reserve Economic Data)**: The application ingests macroeconomic time-series data from FRED via a backend process. This is the sole source of external data.
+*   **FRED (Federal Reserve Economic Data)**: Used for fetching public macroeconomic data series. No API key is required.
 
 **Testing status**
-*   **Testing agent used after significant changes**: NO. All testing has been performed via  commands against the API endpoints, following the user's detailed validation plans.
+*   **Testing agent used after significant changes**: YES
 *   **Troubleshoot agent used after agent stuck in loop**: NO
-*   **Test files created**: []
-*   **Known regressions**: None.
+*   **Test files created**: Test logic is part of the service modules (e.g., ).
+*   **Known regressions**: One test in the suite () is flaky and fails intermittently.
 
 **Credentials to test flow:**
-N/A. All endpoints are accessible within the environment without authentication.
+*   None required.
 
 **What agent forgot to execute**
-The agent has implemented the code for  but has not yet performed the final validation tests requested by the user. This is the immediate next action and is detailed in the **Pending/In progress Issue list**.</analysis>
+*   The agent has followed the user's detailed instructions closely and has not overlooked any requested tasks. The next step is to execute the fix for the intermittent test as planned.</analysis>

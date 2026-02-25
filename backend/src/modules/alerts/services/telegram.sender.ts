@@ -87,7 +87,7 @@ class TelegramSender {
     msg += `*Data:* ${p.dataMode}\n`;
     
     if (p.snapshotId) {
-      msg += `\n🔗 [View snapshot](https://dxy-risk-overlay.preview.emergentagent.com/snapshot/${p.snapshotId})`;
+      msg += `\n🔗 [View snapshot](https://fractal-fix.preview.emergentagent.com/snapshot/${p.snapshotId})`;
     }
     
     return msg;
