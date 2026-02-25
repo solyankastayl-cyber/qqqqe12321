@@ -1,10 +1,11 @@
 /**
- * DXY RESEARCH TERMINAL SERVICE — B3
+ * DXY RESEARCH TERMINAL SERVICE — B3 + B4.1 (Housing)
  * 
  * Aggregates:
  * - Fractal Terminal (A4)
  * - Macro Core (B1)
  * - Macro Overlay (B2)
+ * - Housing Context (B4.1)
  * - Research Summary (human-readable insights)
  * 
  * CRITICAL: This service does NOT recalculate anything.
@@ -25,6 +26,7 @@ import {
 import { buildDxyTerminalPack } from './dxy_terminal.service.js';
 import { computeMacroScore } from '../../dxy-macro-core/services/macro_score.service.js';
 import { buildMacroContext, buildAllMacroContexts } from '../../dxy-macro-core/services/macro_context.service.js';
+import { buildHousingContext } from '../../dxy-macro-core/services/housing_context.service.js';
 import { getAllSeriesMeta } from '../../dxy-macro-core/ingest/macro.ingest.service.js';
 import type { MacroContext, MacroScore, MacroSeriesMeta } from '../../dxy-macro-core/contracts/macro.contracts.js';
 import type { TerminalMacroPack } from '../contracts/dxy_terminal.contract.js';
@@ -33,7 +35,9 @@ import type { TerminalMacroPack } from '../contracts/dxy_terminal.contract.js';
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════════
 
+// B4.1: Added housing series to tracking
 const CORE_SERIES = ['FEDFUNDS', 'CPILFESL', 'T10Y2Y', 'UNRATE', 'M2SL', 'CPIAUCSL', 'PPIACO'];
+const HOUSING_SERIES = ['MORTGAGE30US', 'HOUST', 'PERMIT', 'CSUSHPISA'];
 
 const FIXED_LIMITS = [
   'Macro overlay does NOT change signal direction (LONG/SHORT)',
