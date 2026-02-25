@@ -7,140 +7,97 @@
 | **30d** | - | - | **56.1% hit, equity 1.22** | **✅ PRODUCTION** |
 | **90d** | 57% hit, equity 1.49 | 57% hit, equity 1.39 | **38% hit, equity 0.56** | **❌ REGIME ONLY** |
 
-## B4.1 Housing & Real Estate ✅ (NEW)
+## B4 Extended Drivers Complete ✅
 
-### Housing Series (FRED)
-| Series | Name | Points | Coverage | Regime Logic |
-|--------|------|--------|----------|--------------|
-| MORTGAGE30US | 30Y Mortgage Rate | 2,865 | 1971-2026 | TIGHTENING/EASING |
-| HOUST | Housing Starts | 804 | 1959-2026 | EXPANSION/CONTRACTION |
-| PERMIT | Building Permits | 792 | 1960-2026 | EXPANSION/CONTRACTION |
-| CSUSHPISA | Case-Shiller Index | 468 | 1987-2026 | OVERHEATING/COOLING |
+### B4.1 Housing & Real Estate
+| Series | Name | Points | Regime |
+|--------|------|--------|--------|
+| MORTGAGE30US | 30Y Mortgage Rate | 2,865 | NEUTRAL |
+| HOUST | Housing Starts | 804 | CONTRACTION |
+| PERMIT | Building Permits | 792 | NEUTRAL |
+| CSUSHPISA | Case-Shiller Index | 468 | NEUTRAL |
+| **Composite** | | | **score=0.025, regime=NEUTRAL** |
 
-### Housing Pressure Logic
+### B4.2 Economic Activity
+| Series | Name | Points | Regime |
+|--------|------|--------|--------|
+| MANEMP | Manufacturing Employment | 913 | NEUTRAL |
+| INDPRO | Industrial Production | 913 | EXPANSION |
+| TCU | Capacity Utilization | 709 | NEUTRAL |
+| **Composite** | | | **score=0.002, regime=EXPANSION** |
+
+### B4.3 Credit & Financial Stress
+| Series | Name | Points | Regime |
+|--------|------|--------|--------|
+| BAA10Y | Moody's Baa Spread | 10,035 | NEUTRAL |
+| TEDRATE | TED Spread | 8,853 | NEUTRAL |
+| VIXCLS | VIX Volatility | 9,129 | NEUTRAL |
+| **Composite** | | | **score=0.134, regime=NEUTRAL** |
+
+### Macro Score Integration
 ```
-mortgagePressure = clamp(z5y / 3, -1, 1)    # High → USD supportive
-startsPressure = -clamp(z5y / 3, -1, 1)     # Strong → USD pressure
-permitsPressure = -clamp(z5y / 3, -1, 1)    # Strong → USD pressure
-homePricePressure = -clamp(z5y / 3, -1, 1)  # Rising → USD pressure
-
-housingScore = 0.40 × mortgage + 0.20 × starts + 0.20 × permits + 0.20 × homePrice
+Core7 = 55%
+Housing = 15%
+Activity = 15%
+Credit = 15%
 ```
 
-### Current Housing State
-| Metric | Value |
-|--------|-------|
-| Mortgage (MORTGAGE30US) | 6.07% (NEUTRAL) |
-| Starts (HOUST) | 1,404k (CONTRACTION) |
-| Permits (PERMIT) | 1,448k (NEUTRAL) |
-| Home Price (CSUSHPISA) | 332 (NEUTRAL) |
-| **Composite Score** | **0.025 (NEUTRAL)** |
-| **Confidence** | **0.72** |
+**Current Score**: -0.035 (slightly USD bearish, driven by Fed easing)
 
-### Integration
-- Housing weight in macro score: **15%**
-- Added to `/api/dxy-macro-core/score` as HOUSING component
-- Added to `/api/research/dxy/terminal` drivers
-- New endpoint: `/api/dxy-macro-core/housing`
+## D1 Macro Overlay Validation ✅
 
-## D1 Macro Overlay Validation Results ✅
-
-### OOS 2021-2025 (Primary Test)
 | Metric | Mode A (Pure) | Mode B (Macro) | Delta |
 |--------|---------------|----------------|-------|
 | Trades | 79 | 79 | 0 |
 | HitRate | 37.97% | 37.97% | 0% |
 | Equity | 1.034 | 1.030 | -0.4% |
 | MaxDD | 10.56% | 9.14% | **-13.5%** |
-| **Status** | - | - | **✅ PASSED** |
-
-## Architecture Summary
-
-### Backend Stack (TypeScript/Fastify)
-- **Entry**: `/app/backend/src/app.fractal.ts`
-- **Port**: 8001
-- **Database**: MongoDB
-- **Version**: B4.1
-
-### Macro Core Structure (B1 + B4.1)
-```
-/app/backend/src/modules/dxy-macro-core/
-├── api/
-│   └── macro.routes.ts          # Updated for housing
-├── data/
-│   └── macro_sources.registry.ts  # +4 housing series
-├── services/
-│   ├── macro_score.service.ts    # Integrates housing
-│   ├── macro_context.service.ts
-│   └── housing_context.service.ts  # B4.1 NEW
-└── storage/
-```
 
 ## API Endpoints
 
-### Housing (B4.1) — NEW
-- `GET /api/dxy-macro-core/housing` — Housing context + composite
+### Extended Drivers (B4)
+- `GET /api/dxy-macro-core/housing` — Housing context
+- `GET /api/dxy-macro-core/activity` — Activity context
+- `GET /api/dxy-macro-core/credit` — Credit context
 
-### Research Terminal (B3)
-- `GET /api/research/dxy/terminal` — Full research pack with housing
+### Core
+- `GET /api/dxy-macro-core/score` — Full macro score
+- `GET /api/research/dxy/terminal` — Research terminal
+- `GET /api/fractal/dxy/terminal` — DXY terminal
 
-### DXY Terminal (A4)
-- `GET /api/fractal/dxy/terminal` — Terminal (paths unchanged)
+## Macro Series Registry (17 total)
 
-### Macro Core (B1)
-- `GET /api/dxy-macro-core/score` — Score with HOUSING component
-- `GET /api/dxy-macro-core/series` — 11 series (7 core + 4 housing)
-
-## Data Sources
-
-### Macro Series (11 total)
-| Series | Role | Coverage | Status |
-|--------|------|----------|--------|
-| FEDFUNDS | rates | 71.5 years | ✅ B1 |
-| CPIAUCSL | inflation | 76 years | ✅ B1 |
-| CPILFESL | inflation | 69 years | ✅ B1 |
-| UNRATE | labor | 76 years | ✅ B1 |
-| PPIACO | inflation | 75.9 years | ✅ B1 |
-| M2SL | liquidity | 67 years | ✅ B1 |
-| T10Y2Y | curve | 49.7 years | ✅ B1 |
-| MORTGAGE30US | housing | 55 years | ✅ **B4.1** |
-| HOUST | housing | 67 years | ✅ **B4.1** |
-| PERMIT | housing | 66 years | ✅ **B4.1** |
-| CSUSHPISA | housing | 39 years | ✅ **B4.1** |
+| Series | Role | Weight |
+|--------|------|--------|
+| FEDFUNDS | rates | 18% |
+| CPILFESL | inflation | 14% |
+| CPIAUCSL | inflation | 14% |
+| UNRATE | labor | 10% |
+| M2SL | liquidity | 10% |
+| T10Y2Y | curve | 10% |
+| PPIACO | inflation | 5% |
+| HOUSING | composite | 15% |
+| ACTIVITY | composite | 15% |
+| CREDIT | composite | 15% |
 
 ## Implementation Status
 
 ### Completed ✅
 - A4 — Unified DXY Terminal
-- B1 — Macro Data Platform (FRED API)
+- B1 — Macro Data Platform
 - B2 — Macro → DXY Integration
 - D1 — Macro Overlay Validation
 - B3 — DXY Research Terminal
-- **B4.1 — Housing & Real Estate (NEW)**
+- B4.1 — Housing & Real Estate
+- B4.2 — Economic Activity
+- B4.3 — Credit & Financial Stress
 
 ### Frozen ❄️
 - SPX Module
 - BTC Module
 - Frontend
 
-## Roadmap
-
-```
-1. A4 — Unified DXY Terminal ✅ DONE
-2. B1 — Macro Data Platform ✅ DONE
-3. B2 — Macro → DXY Integration ✅ DONE
-4. D1 — Macro Overlay Validation ✅ DONE
-5. B3 — DXY Research Terminal ✅ DONE
-6. B4.1 — Housing & Real Estate ✅ DONE
-7. B4.2 — PMI & Economic Activity (next)
-8. B4.3 — Credit & Financial Stress
-9. B4.4 — Energy & Commodity
-10. B5 — Historical Research Stability
-```
-
 ## Next Steps
-
-1. **B4.2** — PMI drivers (ISM, Industrial Production)
-2. **B4.3** — Credit spreads (BAA10Y, HY Spread, Financial Stress)
-3. **B4.4** — Energy (WTI, Natural Gas)
-4. **B5** — Historical validation of extended drivers
+1. B5 — Historical Research Stability
+2. B4.4 — Energy & Commodity (optional)
+3. Cascade — DXY → SPX → BTC (after DXY complete)
