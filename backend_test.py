@@ -12,7 +12,7 @@ from typing import Dict, Any, List, Optional
 from datetime import datetime
 
 class C7ClusteringTester:
-    def __init__(self, base_url: str = "https://dxy-risk-overlay.preview.emergentagent.com"):
+    def __init__(self, base_url: str = "http://localhost:8001"):
         self.base_url = base_url.rstrip('/')
         self.tests_run = 0
         self.tests_passed = 0
