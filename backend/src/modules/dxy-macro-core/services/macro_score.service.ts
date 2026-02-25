@@ -1,12 +1,14 @@
 /**
- * MACRO SCORE SERVICE — B1
+ * MACRO SCORE SERVICE — B1 + B4.1 (Housing)
  * 
  * Computes composite macro score from all series.
+ * B4.1: Added housing component (MORTGAGE30US, HOUST, PERMIT, CSUSHPISA)
  * 
  * ISOLATION: No imports from DXY/BTC/SPX modules
  */
 
 import { buildAllMacroContexts, buildMacroContext } from './macro_context.service.js';
+import { getHousingScoreComponent } from './housing_context.service.js';
 import { getEnabledMacroSeries, MacroRole } from '../data/macro_sources.registry.js';
 import {
   MacroScore,
@@ -20,15 +22,18 @@ import {
 // ═══════════════════════════════════════════════════════════════
 
 const ROLE_WEIGHTS: Record<MacroRole, number> = {
-  rates: 0.25,        // Fed policy is primary driver
-  inflation: 0.20,    // Split between headline and core
-  labor: 0.15,        // Employment matters for policy
-  liquidity: 0.15,    // M2 affects risk appetite
-  curve: 0.15,        // Yield curve is leading indicator
+  rates: 0.22,        // Fed policy is primary driver (reduced from 0.25 for housing)
+  inflation: 0.18,    // Split between headline and core
+  labor: 0.14,        // Employment matters for policy
+  liquidity: 0.14,    // M2 affects risk appetite
+  curve: 0.14,        // Yield curve is leading indicator
   growth: 0.05,       // Secondary (not in B1 core)
-  housing: 0.03,      // Secondary
-  credit: 0.02,       // Secondary
+  housing: 0.10,      // B4.1: Housing & Real Estate
+  credit: 0.03,       // Secondary
 };
+
+// Housing weight (separate calculation)
+const HOUSING_COMPOSITE_WEIGHT = 0.15;  // 15% of total score
 
 // Per-series weight adjustments (within role)
 const SERIES_WEIGHT_MULTIPLIERS: Record<string, number> = {
@@ -40,6 +45,9 @@ const SERIES_WEIGHT_MULTIPLIERS: Record<string, number> = {
   'M2SL': 1.0,
   'T10Y2Y': 1.0,
 };
+
+// B4.1: Housing series to exclude from standard processing
+const HOUSING_SERIES = ['MORTGAGE30US', 'HOUST', 'PERMIT', 'CSUSHPISA'];
 
 // ═══════════════════════════════════════════════════════════════
 // COMPUTE COMPOSITE SCORE
