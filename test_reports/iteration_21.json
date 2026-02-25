@@ -1,0 +1,68 @@
+{
+  "summary": "Completed comprehensive backend testing for DXY Fractal module with AE Brain and C8 Transition Matrix implementation. All core backend functionality is working correctly on localhost:8001.",
+  
+  "backend_issues": {
+    "public_url_routing": [
+      {
+        "endpoint": "All /api/* routes",
+        "issue": "Public URL returns 404 for all API endpoints",
+        "working_url": "http://localhost:8001",
+        "failing_url": "https://dxy-risk-overlay.preview.emergentagent.com",
+        "impact": "Users cannot access API through public URL",
+        "fix_priority": "MEDIUM"
+      }
+    ],
+    "critical_bugs": []
+  },
+  
+  "frontend_issues": {
+    "service_status": [
+      {
+        "component": "Frontend service",
+        "issue": "Frontend service is in FATAL state - exited too quickly", 
+        "status": "FATAL",
+        "fix_priority": "LOW"
+      }
+    ]
+  },
+  
+  "passed_tests": [
+    "GET /api/health - returns ok: true (local)",
+    "GET /api/ae/health - AE Brain module health check (local)",
+    "GET /api/ae/terminal - full AE terminal pack with C1-C8 components (local)",
+    "POST /api/ae/admin/transition/compute - compute transition matrix (local)",
+    "GET /api/ae/transition/current - matrix with derived metrics (local)",
+    "GET /api/ae/transition/matrix - raw matrix validation (local)",
+    "GET /api/ae/transition/durations - regime duration stats (local)",
+    "C8 Transition Matrix - 3 labels validation (LIQUIDITY_EXPANSION, RISK_OFF_STRESS, TIGHTENING_USD_SUPPORTIVE)",
+    "Matrix properties - row sums ~1.0 validation",
+    "RiskToStress metrics - p1w, p2w, p4w computation validation"
+  ],
+  
+  "test_report_links": [
+    "/app/backend/ae_brain_backend_test.py",
+    "/app/backend/comprehensive_ae_brain_test.py",
+    "/app/backend/ae_brain_test_results.json",
+    "/app/backend/comprehensive_ae_brain_test_results.json"
+  ],
+  
+  "success_percentage": {
+    "backend_local": "100% (8/8 tests passed)",
+    "backend_public": "0% (0/6 tests passed - routing issues)",
+    "c8_transition_matrix": "100% (all validation criteria met)",
+    "ae_brain_components": "100% (C1-C8 components functional)"
+  },
+  
+  "action_item_for_main_agent": {
+    "public_url_routing": "Investigate and fix public URL routing - all /api/* endpoints return 404 on https://dxy-risk-overlay.preview.emergentagent.com",
+    "frontend_service": "Fix frontend service FATAL status if frontend access is needed (currently not required for backend-only testing)"
+  },
+  
+  "updated_files": [
+    "/app/backend/ae_brain_backend_test.py",
+    "/app/backend/comprehensive_ae_brain_test.py"
+  ],
+  
+  "should_call_test_agent_after_fix": "false",
+  "should_main_agent_test_itself": "true"
+}
