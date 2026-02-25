@@ -18,9 +18,32 @@ TS_URL = f"http://127.0.0.1:{TS_PORT}"
 # Global TypeScript process
 ts_process = None
 
+def kill_stale_port(port: int):
+    """Kill any existing process on the given port"""
+    try:
+        result = subprocess.run(
+            ["lsof", "-t", f"-i:{port}"],
+            capture_output=True, text=True, timeout=5
+        )
+        if result.stdout.strip():
+            for pid in result.stdout.strip().split('\n'):
+                pid = pid.strip()
+                if pid:
+                    try:
+                        os.kill(int(pid), signal.SIGKILL)
+                        print(f"[Proxy] Killed stale process {pid} on port {port}")
+                    except (ProcessLookupError, ValueError):
+                        pass
+            import time
+            time.sleep(0.5)
+    except Exception as e:
+        print(f"[Proxy] Warning checking stale port: {e}")
+
 def start_typescript_server():
     """Start TypeScript Fractal server in background"""
     global ts_process
+    
+    kill_stale_port(TS_PORT)
     
     env = os.environ.copy()
     env.update({

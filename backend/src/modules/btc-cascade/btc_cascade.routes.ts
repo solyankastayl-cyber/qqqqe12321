@@ -135,7 +135,7 @@ export async function registerBtcCascadeRoutes(fastify: FastifyInstance): Promis
    * Used for testing guard policies and multiplier calculations.
    */
   fastify.post(`${prefix}/admin/cascade/validate`, async (req: FastifyRequest, reply: FastifyReply) => {
-    const body = req.body as {
+    const body = (req.body ?? {}) as {
       btcSignal?: BtcCoreSignal;
       inputs?: BtcCascadeInputs;
       guardLevel?: GuardLevel;

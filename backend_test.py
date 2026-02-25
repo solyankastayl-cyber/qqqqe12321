@@ -358,7 +358,7 @@ class BtcCascadeAPITester:
             url = f"{self.base_url}/api/fractal/btc/admin/cascade/validate"
             payload = {"testCase": "SPX_LOW"}
             
-            response = requests.post(url, timeout=10)
+            response = requests.post(url, json=payload, timeout=10)
             
             if response.status_code != 200:
                 return self.log_result(
