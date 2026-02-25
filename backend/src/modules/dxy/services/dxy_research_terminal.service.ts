@@ -142,6 +142,14 @@ function buildDrivers(macroScore: MacroScore): ResearchDriver[] {
             ? `Liquidity expansion → risk-on`
             : `Liquidity stable`;
         break;
+      // B4.1: Housing
+      case 'housing':
+        note = c.regime === 'TIGHT'
+          ? `Tight mortgage + weak construction → USD supportive`
+          : c.regime === 'LOOSE'
+            ? `Easing housing cycle → USD pressure`
+            : `Housing conditions neutral`;
+        break;
       default:
         note = `${c.displayName}: ${direction}`;
     }
