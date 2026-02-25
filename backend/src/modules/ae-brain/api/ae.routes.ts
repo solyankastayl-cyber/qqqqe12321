@@ -45,10 +45,18 @@ export async function registerAeRoutes(fastify: FastifyInstance): Promise<void> 
     '/api/ae/state',
     async (request, reply) => {
       const { asOf } = request.query;
+      const targetDate = asOf || new Date().toISOString().split('T')[0];
       
       try {
-        const state = await buildAeState(asOf);
-        return { ok: true, ...state };
+        // First try to get from historical database
+        const historicalState = await getStateFromDB(targetDate);
+        if (historicalState) {
+          return { ok: true, ...historicalState, source: 'historical' };
+        }
+        
+        // Fallback to live calculation for current date
+        const state = await buildAeState(targetDate);
+        return { ok: true, ...state, source: 'live' };
       } catch (e) {
         return reply.status(500).send({
           ok: false,
