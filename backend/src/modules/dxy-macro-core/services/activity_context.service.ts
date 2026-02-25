@@ -192,11 +192,12 @@ function classifyTcuRegime(value: number): ActivityRegime {
 // ═══════════════════════════════════════════════════════════════
 
 /**
- * PMI pressure: (value - 50) / 10, clamped to -1..+1
- * Positive = expansion = risk-on = USD pressure (negative contribution)
+ * Manufacturing Employment pressure: YoY / 5%, clamped to -1..+1
+ * Strong employment growth = expansion = USD supportive
  */
-function calcPmiPressure(value: number): number {
-  return clamp((value - 50) / 10, -1, 1);
+function calcManempPressure(yoy: number | null): number {
+  if (yoy === null) return 0;
+  return clamp(yoy / 0.05, -1, 1);  // 5% YoY = max pressure
 }
 
 /**
