@@ -34,8 +34,11 @@ export async function buildAeTerminal(asOf?: string): Promise<AeTerminal> {
   const today = asOf || new Date().toISOString().split('T')[0];
   
   try {
-    // C1: Build State
-    const state = await buildAeState(today);
+    // C1: Build State (prefer historical if available)
+    let state = await getStateFromDB(today);
+    if (!state) {
+      state = await buildAeState(today);
+    }
     
     // C2: Classify Regime
     const regime = classifyRegime(state);
