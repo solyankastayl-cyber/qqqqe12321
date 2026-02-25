@@ -19,6 +19,7 @@ import { buildCausalGraph } from '../services/ae_causal.service.js';
 import { buildScenarios } from '../services/ae_scenarios.service.js';
 import { computeNovelty, snapshotState, getNoveltyStats } from '../services/ae_novelty.service.js';
 import { buildAeTerminal, getAeBrainHealth } from '../services/ae_terminal.service.js';
+import { runAeBackfill, getBackfillStats } from '../services/ae_backfill.service.js';
 
 export async function registerAeRoutes(fastify: FastifyInstance): Promise<void> {
   
