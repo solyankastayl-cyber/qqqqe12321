@@ -451,6 +451,15 @@ class AEBrainTester:
         test_results.append(self.test_terminal_endpoint())
         test_results.append(self.test_snapshot_endpoint())
         
+        # C6 Historical Backfill specific tests
+        print("\n🏛️ C6 Historical Backfill Tests...")
+        test_results.append(self.test_backfill_stats_endpoint())
+        test_results.append(self.test_historical_state_gfc())
+        test_results.append(self.test_regime_gfc())
+        test_results.append(self.test_regime_covid())
+        test_results.append(self.test_novelty_covid_to_gfc())
+        test_results.append(self.test_terminal_gfc())
+        
         # Summary
         print(f"\n📊 Test Summary:")
         print(f"Tests run: {self.tests_run}")
