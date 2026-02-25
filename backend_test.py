@@ -153,7 +153,7 @@ class AEBrainTester:
         # Check link structure
         valid_links = True
         for i, link in enumerate(links[:3]):  # Check first 3 links
-            required_fields = ["from", "to", "weight"]
+            required_fields = ["from", "to", "strength"]  # Fixed: use "strength" not "weight"
             has_fields = all(field in link for field in required_fields)
             if not has_fields:
                 valid_links = False
