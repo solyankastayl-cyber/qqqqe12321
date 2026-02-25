@@ -132,6 +132,19 @@ export async function registerMacroRoutes(fastify: FastifyInstance): Promise<voi
   });
   
   // ─────────────────────────────────────────────────────────────
+  // GET /housing — Get housing context (B4.1)
+  // ─────────────────────────────────────────────────────────────
+  
+  fastify.get(`${prefix}/housing`, async (req, reply) => {
+    const housing = await buildHousingContext();
+    
+    return {
+      ok: true,
+      housing,
+    };
+  });
+  
+  // ─────────────────────────────────────────────────────────────
   // GET /history — Get historical data for a series
   // ─────────────────────────────────────────────────────────────
   
