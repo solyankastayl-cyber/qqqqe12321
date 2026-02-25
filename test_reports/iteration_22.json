@@ -1,0 +1,67 @@
+{
+  "summary": "Completed comprehensive backend testing for SPX Cascade module (D1 Extended). All specified endpoints and validation scenarios are working correctly. Module successfully implements DXY/AE → SPX overlay with proper guard policies, multipliers, and direction preservation.",
+  
+  "backend_issues": {
+    "public_url_routing": [
+      {
+        "endpoint": "All SPX Cascade /api/fractal/spx/* routes",
+        "issue": "Public URL returns 404 for all API endpoints", 
+        "working_url": "http://127.0.0.1:8002",
+        "failing_url": "https://dxy-risk-overlay.preview.emergentagent.com",
+        "impact": "Users cannot access SPX Cascade API through public URL",
+        "fix_priority": "MEDIUM"
+      }
+    ],
+    "critical_bugs": []
+  },
+  
+  "frontend_issues": {
+    "service_status": [
+      {
+        "component": "Frontend service",
+        "issue": "Frontend service is in FATAL state - exited too quickly",
+        "status": "FATAL", 
+        "fix_priority": "LOW"
+      }
+    ]
+  },
+  
+  "passed_tests": [
+    "GET /api/fractal/spx/cascade/health - module health check (SPX_CASCADE_V1.0)",
+    "GET /api/fractal/spx/cascade?focus=30d - cascade-only data with DXY/AE inputs",
+    "GET /api/fractal/spx/terminal?focus=30d - full terminal with cascade section",
+    "POST /api/fractal/spx/admin/cascade/validate testCase=BLOCK - size multiplier = 0.0",
+    "POST /api/fractal/spx/admin/cascade/validate testCase=CRISIS - size multiplier ≤ 0.4",
+    "POST /api/fractal/spx/admin/cascade/validate testCase=STRESS - stress multipliers applied",
+    "POST /api/fractal/spx/admin/cascade/validate testCase=RARE - novelty haircut 0.85",
+    "Direction preservation - cascade.decisionAdjusted.action == spxCore.action", 
+    "No NaN or negative values in multipliers validation",
+    "DXY and AE inputs populated validation",
+    "Guard caps validation: BLOCK=0.0, CRISIS=0.4, WARN=0.75",
+    "Cascade multiplier factors validation (mStress, mPersist, mNovel, mScenario)"
+  ],
+  
+  "test_report_links": [
+    "/app/backend_test_spx_cascade.py"
+  ],
+  
+  "success_percentage": {
+    "backend_local": "100% (10/10 SPX Cascade tests passed)",
+    "backend_public": "0% (0/10 tests passed - routing issues)",
+    "guard_policies": "100% (BLOCK→0, CRISIS≤0.4, WARN=0.75 validated)",
+    "cascade_logic": "100% (direction preservation, multipliers, inputs validated)"
+  },
+  
+  "action_item_for_main_agent": {
+    "public_url_routing": "Investigate and fix public URL routing for SPX Cascade endpoints - all /api/fractal/spx/* return 404 on https://dxy-risk-overlay.preview.emergentagent.com but work on localhost:8002",
+    "port_configuration": "Backend is running on port 8002 instead of expected port 8001 - verify port configuration and ingress rules",
+    "frontend_service": "Fix frontend service FATAL status if frontend access is needed (currently not required for backend-only testing)"
+  },
+  
+  "updated_files": [
+    "/app/backend_test_spx_cascade.py"
+  ],
+  
+  "should_call_test_agent_after_fix": "false",
+  "should_main_agent_test_itself": "true"
+}
