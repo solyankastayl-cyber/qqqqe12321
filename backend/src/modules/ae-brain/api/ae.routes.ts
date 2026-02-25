@@ -245,4 +245,6 @@ export async function registerAeRoutes(fastify: FastifyInstance): Promise<void> 
   console.log('  GET  /api/ae/novelty');
   console.log('  GET  /api/ae/terminal');
   console.log('  POST /api/ae/admin/snapshot');
+  console.log('  POST /api/ae/admin/backfill');
+  console.log('  GET  /api/ae/admin/backfill-stats');
 }
