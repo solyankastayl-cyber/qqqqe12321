@@ -294,8 +294,8 @@ function buildTakeaways(
 // ═══════════════════════════════════════════════════════════════
 
 function buildDataFreshness(seriesMeta: MacroSeriesMeta[]): DataFreshness[] {
-  // B4.1: Include housing series
-  const allSeries = [...CORE_SERIES, ...HOUSING_SERIES];
+  // B4.1-B4.3: Include all extended series
+  const allSeries = [...CORE_SERIES, ...HOUSING_SERIES, ...ACTIVITY_SERIES, ...CREDIT_SERIES];
   
   return allSeries.map(key => {
     const meta = seriesMeta.find(m => m.seriesId === key);
