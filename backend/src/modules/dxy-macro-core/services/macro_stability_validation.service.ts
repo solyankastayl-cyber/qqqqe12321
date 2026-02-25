@@ -263,27 +263,34 @@ function classifyRegime(score: number): 'RISK_OFF' | 'NEUTRAL' | 'RISK_ON' {
 }
 
 /**
- * B6: Classify Crisis Guard Level
+ * B6: Classify Crisis Guard Level (2-Stage)
  * 
- * BLOCK: creditComposite > 0.5 AND VIX > 35
- * WARN:  creditComposite > 0.4 AND macroScoreSigned > 0.2
- * NONE:  otherwise
+ * 1️⃣ BLOCK:  creditComposite > 0.55 AND VIX > 35 (пик паники)
+ * 2️⃣ CRISIS: creditComposite > 0.4 AND VIX > 25 (системный стресс)
+ * 3️⃣ WARN:   creditComposite > 0.35 AND macroScoreSigned > 0.2 (tightening)
+ * 4️⃣ NONE:   otherwise
  */
 function classifyGuardLevel(
   creditComposite: number,
   vix: number,
   macroScoreSigned: number
 ): GuardLevel {
-  // Primary Trigger: BLOCK
+  // 1️⃣ BLOCK — пик паники
   if (creditComposite > BLOCK_CREDIT_THRESHOLD && vix > BLOCK_VIX_THRESHOLD) {
     return 'BLOCK';
   }
   
-  // Secondary Trigger: WARN
+  // 2️⃣ CRISIS — системный стресс
+  if (creditComposite > CRISIS_CREDIT_THRESHOLD && vix > CRISIS_VIX_THRESHOLD) {
+    return 'CRISIS';
+  }
+  
+  // 3️⃣ WARN — tightening / conflict
   if (creditComposite > WARN_CREDIT_THRESHOLD && macroScoreSigned > WARN_MACRO_SCORE_THRESHOLD) {
     return 'WARN';
   }
   
+  // 4️⃣ NONE
   return 'NONE';
 }
 
