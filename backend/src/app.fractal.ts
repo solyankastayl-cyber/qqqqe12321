@@ -439,6 +439,12 @@ async function main() {
   await registerTransitionRoutes(app);
   console.log('[Fractal] ✅ AE Transition registered at /api/ae/transition/*');
   
+  // BLOCK D1: Register SPX Cascade Module (DXY/AE → SPX)
+  console.log('[Fractal] Registering SPX Cascade Module (D1)...');
+  const { registerSpxCascadeRoutes } = await import('./modules/spx-cascade/spx_cascade.routes.js');
+  await registerSpxCascadeRoutes(app);
+  console.log('[Fractal] ✅ SPX Cascade D1 registered at /api/fractal/spx/cascade');
+  
   // NOTE: SPX Phase routes already registered via spx-core module
   
   // BLOCK C: Register Combined Terminal (Building)
