@@ -271,10 +271,10 @@ async function buildBaaContext(): Promise<CreditSeriesContext> {
   }
 }
 
-async function buildHyContext(): Promise<CreditSeriesContext> {
-  const seriesId = 'BAMLH0A0HYM2';
+async function buildTedContext(): Promise<CreditSeriesContext> {
+  const seriesId = 'TEDRATE';
   const spec = getMacroSeriesSpec(seriesId);
-  const displayName = spec?.displayName ?? 'High Yield Spread';
+  const displayName = spec?.displayName ?? 'TED Spread';
   
   try {
     let points = await getMacroSeriesPoints(seriesId);
@@ -294,9 +294,9 @@ async function buildHyContext(): Promise<CreditSeriesContext> {
     const delta12m = computeDelta(points, current, 12);
     const stats = compute5YearStats(points, current);
     
-    const trend = classifyTrend(delta3m, stats?.std5y ?? 0.5);
-    const regime = classifySpreadRegime(stats?.z5y ?? null);
-    const pressure = calcSpreadPressure(stats?.z5y ?? null);
+    const trend = classifyTrend(delta3m, stats?.std5y ?? 0.1);
+    const regime = classifyTedRegime(current);
+    const pressure = calcTedPressure(current);
     
     return {
       seriesId,
@@ -313,15 +313,15 @@ async function buildHyContext(): Promise<CreditSeriesContext> {
       pressure: Math.round(pressure * 1000) / 1000,
     };
   } catch (error: any) {
-    console.error(`[Credit] Failed to build HY context:`, error.message);
+    console.error(`[Credit] Failed to build TED context:`, error.message);
     return buildEmptyContext(seriesId, displayName);
   }
 }
 
-async function buildFsiContext(): Promise<CreditSeriesContext> {
-  const seriesId = 'STLFSI4';
+async function buildVixContext(): Promise<CreditSeriesContext> {
+  const seriesId = 'VIXCLS';
   const spec = getMacroSeriesSpec(seriesId);
-  const displayName = spec?.displayName ?? 'Financial Stress Index';
+  const displayName = spec?.displayName ?? 'VIX (Volatility Index)';
   
   try {
     let points = await getMacroSeriesPoints(seriesId);
@@ -330,7 +330,7 @@ async function buildFsiContext(): Promise<CreditSeriesContext> {
       return buildEmptyContext(seriesId, displayName);
     }
     
-    // Convert weekly to monthly
+    // Convert daily to monthly
     points = toMonthlyAverage(points);
     
     const latestPoint = points[points.length - 1];
@@ -341,18 +341,18 @@ async function buildFsiContext(): Promise<CreditSeriesContext> {
     const delta12m = computeDelta(points, current, 12);
     const stats = compute5YearStats(points, current);
     
-    const trend = classifyTrend(delta3m, 0.5);
-    const regime = classifyFsiRegime(current);
-    const pressure = calcFsiPressure(current);
+    const trend = classifyTrend(delta3m, 3);
+    const regime = classifyVixRegime(current);
+    const pressure = calcVixPressure(current);
     
     return {
       seriesId,
       displayName,
       available: true,
-      current: { value: Math.round(current * 1000) / 1000, date: currentDate },
+      current: { value: Math.round(current * 100) / 100, date: currentDate },
       deltas: {
-        delta3m: delta3m !== null ? Math.round(delta3m * 1000) / 1000 : null,
-        delta12m: delta12m !== null ? Math.round(delta12m * 1000) / 1000 : null,
+        delta3m: delta3m !== null ? Math.round(delta3m * 100) / 100 : null,
+        delta12m: delta12m !== null ? Math.round(delta12m * 100) / 100 : null,
       },
       stats,
       trend,
@@ -360,7 +360,7 @@ async function buildFsiContext(): Promise<CreditSeriesContext> {
       pressure: Math.round(pressure * 1000) / 1000,
     };
   } catch (error: any) {
-    console.error(`[Credit] Failed to build FSI context:`, error.message);
+    console.error(`[Credit] Failed to build VIX context:`, error.message);
     return buildEmptyContext(seriesId, displayName);
   }
 }
