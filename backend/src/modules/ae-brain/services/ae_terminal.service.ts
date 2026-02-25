@@ -117,6 +117,11 @@ export async function buildAeTerminal(asOf?: string): Promise<AeTerminal> {
       notes.push('Note: Rare market configuration');
     }
     
+    // Add transition warning if stress risk is high
+    if (transition && transition.riskToStress.p4w > 0.25) {
+      notes.push(`Elevated 4-week stress risk: ${(transition.riskToStress.p4w * 100).toFixed(1)}%`);
+    }
+    
     // Explanation
     const keyDrivers = getKeyDrivers(causal);
     const headline = buildHeadline(regime.regime, state.vector.dxySignalSigned, guardMode);
