@@ -22,7 +22,8 @@ AE Brain is the intelligence layer aggregating all system state:
 | **C4** | Scenario Engine | ✅ |
 | **C5** | Novelty Detection | ✅ |
 | **C6** | Historical Backfill | ✅ |
-| **C7** | Regime Clustering | ✅ NEW |
+| **C7** | Regime Clustering | ✅ |
+| **C8** | Transition Matrix | ✅ NEW |
 
 ### C6 Historical Backfill — VALIDATED ✅ NEW
 
