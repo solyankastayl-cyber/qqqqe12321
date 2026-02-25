@@ -227,7 +227,8 @@ KNN cosine distance (K=20):
 - **C5 — Novelty Detection** ✅
 - **C6 — Historical Backfill** ✅
 - **C7 — Regime Clustering** ✅
-- **C8 — Transition Matrix** ✅ NEW
+- **C8 — Transition Matrix** ✅
+- **D1 — SPX Cascade** ✅ NEW
 
 ### Frozen ❄️
 - SPX Module
