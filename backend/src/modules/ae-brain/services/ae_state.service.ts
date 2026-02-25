@@ -60,7 +60,7 @@ export async function buildAeState(asOf?: string): Promise<AeStateVector> {
   
   // 3. Get DXY Terminal
   try {
-    const dxyPack = await buildDxyTerminalPack();
+    const dxyPack = await buildDxyTerminalPack({ focus: '30d' });
     if (dxyPack.ok && dxyPack.core && dxyPack.core.decision) {
       const decision = dxyPack.core.decision;
       
