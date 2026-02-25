@@ -193,8 +193,8 @@ KNN cosine distance (K=20):
 
 ## Next Steps
 
-### Immediate (D-Track)
-1. **C7** — Regime Clustering (k-means on state vectors) — Optional
+### Immediate
+1. **C8** — Transition Matrix (regime switch probabilities)
 2. **D1** — SPX Cascade Integration (DXY → SPX)
 3. **D2** — BTC Cascade Integration (DXY → SPX → BTC)
 
