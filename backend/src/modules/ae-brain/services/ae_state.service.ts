@@ -37,7 +37,16 @@ export async function buildAeState(asOf?: string): Promise<AeStateVector> {
     const macroResult = await computeMacroScore();
     if (macroResult.ok && macroResult.score) {
       vector.macroSigned = clamp(safeNumber(macroResult.score.scoreSigned), -1, 1);
-      vector.macroConfidence = clamp(safeNumber(macroResult.score.confidence, 0.5), 0, 1);
+      
+      // confidence может быть строкой (LOW/MEDIUM/HIGH) или числом
+      const confValue = macroResult.score.confidence;
+      if (typeof confValue === 'string') {
+        // Map string to numeric
+        const confMap: Record<string, number> = { 'LOW': 0.3, 'MEDIUM': 0.6, 'HIGH': 0.9 };
+        vector.macroConfidence = confMap[confValue] ?? 0.5;
+      } else {
+        vector.macroConfidence = clamp(safeNumber(confValue, 0.5), 0, 1);
+      }
     } else {
       missing.push('macro_score');
     }
