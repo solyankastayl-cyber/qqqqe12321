@@ -228,7 +228,8 @@ KNN cosine distance (K=20):
 - **C6 — Historical Backfill** ✅
 - **C7 — Regime Clustering** ✅
 - **C8 — Transition Matrix** ✅
-- **D1 — SPX Cascade** ✅ NEW
+- **D1 — SPX Cascade** ✅
+- **D2 — BTC Cascade** ✅ NEW
 
 ### Frozen ❄️
 - SPX Module
