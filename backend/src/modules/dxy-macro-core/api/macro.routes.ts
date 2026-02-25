@@ -231,5 +231,53 @@ export async function registerMacroRoutes(fastify: FastifyInstance): Promise<voi
     return result;
   });
   
-  console.log(`[Macro] Routes registered at ${prefix}/*`);
+  // ─────────────────────────────────────────────────────────────
+  // B5.1: GET /validate/stability — Stability validation
+  // ─────────────────────────────────────────────────────────────
+  
+  fastify.get(`${prefix}/validate/stability`, async (req: FastifyRequest, reply: FastifyReply) => {
+    const query = req.query as {
+      from?: string;
+      to?: string;
+      step?: string;
+      smooth?: string;
+      span?: string;
+    };
+    
+    const params = {
+      from: query.from || '2000-01-01',
+      to: query.to || '2025-12-31',
+      stepDays: query.step ? parseInt(query.step) : 7,
+      smooth: (query.smooth === 'ema' ? 'ema' : 'none') as 'ema' | 'none',
+      span: query.span ? parseInt(query.span) : 14,
+    };
+    
+    console.log(`[Macro B5.1] Stability validation: ${params.from} to ${params.to}, step=${params.stepDays}`);
+    
+    const report = await validateStability(params);
+    
+    return report;
+  });
+  
+  // ─────────────────────────────────────────────────────────────
+  // B5.2: GET /validate/episodes — Episode validation
+  // ─────────────────────────────────────────────────────────────
+  
+  fastify.get(`${prefix}/validate/episodes`, async (req: FastifyRequest, reply: FastifyReply) => {
+    const query = req.query as {
+      smooth?: string;
+      span?: string;
+    };
+    
+    const smooth = query.smooth === 'ema' ? 'ema' : 'none';
+    const span = query.span ? parseInt(query.span) : 14;
+    
+    console.log(`[Macro B5.2] Episode validation: smooth=${smooth}, span=${span}`);
+    
+    const report = await validateEpisodes(smooth as 'ema' | 'none', span);
+    
+    return report;
+  });
+  
+  console.log(`[Macro] Routes registered at ${prefix}/* (B5 Validation)`);
 }
