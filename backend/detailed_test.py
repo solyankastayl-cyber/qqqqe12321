@@ -47,7 +47,7 @@ def test_endpoint_response(url, method="GET", data=None, params=None):
         print()
 
 def main():
-    base_url = "https://dxy-replay-pro.preview.emergentagent.com"
+    base_url = "https://dxy-risk-overlay.preview.emergentagent.com"
     
     print("🧪 Detailed Fractal Backend Response Validation")
     print("="*60)

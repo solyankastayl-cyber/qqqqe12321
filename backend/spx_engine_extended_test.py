@@ -9,7 +9,7 @@ import json
 from datetime import datetime
 import sys
 
-BASE_URL = 'https://dxy-replay-pro.preview.emergentagent.com'
+BASE_URL = 'https://dxy-risk-overlay.preview.emergentagent.com'
 
 def test_edge_cases():
     """Test edge cases and error conditions"""

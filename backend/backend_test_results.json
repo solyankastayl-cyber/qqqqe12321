@@ -63,7 +63,7 @@
     {
       "test_name": "Admin Endpoint Accessibility",
       "passed": true,
-      "details": "https://dxy-replay-pro.preview.emergentagent.com/admin/fractal: HTTP 200; https://dxy-replay-pro.preview.emergentagent.com/api/admin/fractal: HTTP 404; ",
+      "details": "https://dxy-risk-overlay.preview.emergentagent.com/admin/fractal: HTTP 200; https://dxy-risk-overlay.preview.emergentagent.com/api/admin/fractal: HTTP 404; ",
       "timestamp": "2026-02-24T11:59:33.031343"
     }
   ]
