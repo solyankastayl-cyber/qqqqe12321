@@ -57,8 +57,18 @@ export interface TradingGuard {
 
 export interface MacroOverlay {
   confidenceMultiplier: number;  // 0.6..1.15
+  sizeMultiplier: number;        // B6: 0..1 (affected by guard)
   thresholdShift: number;        // -0.005..+0.01
   tradingGuard: TradingGuard;
+}
+
+// B6: Crisis Guard Stress State
+export interface StressState {
+  creditComposite: number;
+  vix: number;
+  macroScoreSigned: number;
+  triggered: boolean;
+  level: 'NONE' | 'WARN' | 'BLOCK';
 }
 
 export interface MacroTerminalPack {
@@ -73,6 +83,7 @@ export interface MacroTerminalPack {
   }>;
   regime: MacroRegime;
   overlay: MacroOverlay;
+  stress: StressState;  // B6: Crisis Guard
   updatedAt: string;
 }
 
