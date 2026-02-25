@@ -465,7 +465,7 @@ export async function getActivityScoreComponent(): Promise<{
 }> {
   const ctx = await buildActivityContext();
   
-  const anyAvailable = ctx.pmi.available || ctx.indpro.available || ctx.tcu.available;
+  const anyAvailable = ctx.manemp.available || ctx.indpro.available || ctx.tcu.available;
   
   return {
     key: 'ACTIVITY',
