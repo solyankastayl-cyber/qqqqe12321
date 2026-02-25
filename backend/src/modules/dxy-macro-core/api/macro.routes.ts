@@ -147,6 +147,32 @@ export async function registerMacroRoutes(fastify: FastifyInstance): Promise<voi
   });
   
   // ─────────────────────────────────────────────────────────────
+  // GET /activity — Get economic activity context (B4.2)
+  // ─────────────────────────────────────────────────────────────
+  
+  fastify.get(`${prefix}/activity`, async (req, reply) => {
+    const activity = await buildActivityContext();
+    
+    return {
+      ok: true,
+      activity,
+    };
+  });
+  
+  // ─────────────────────────────────────────────────────────────
+  // GET /credit — Get credit & financial stress context (B4.3)
+  // ─────────────────────────────────────────────────────────────
+  
+  fastify.get(`${prefix}/credit`, async (req, reply) => {
+    const credit = await buildCreditContext();
+    
+    return {
+      ok: true,
+      credit,
+    };
+  });
+  
+  // ─────────────────────────────────────────────────────────────
   // GET /history — Get historical data for a series
   // ─────────────────────────────────────────────────────────────
   
