@@ -145,11 +145,12 @@ KNN cosine distance (K=20):
 - B5.1 — Stability Validation
 - B5.2 — Episode Validation
 - **B6 — 2-Stage Crisis Guard** ✅
-- **C1 — State Vector Aggregator** ✅ NEW
-- **C2 — Regime Classifier** ✅ NEW
-- **C3 — Causal Graph** ✅ NEW
-- **C4 — Scenario Engine** ✅ NEW
-- **C5 — Novelty Detection** ✅ NEW
+- **C1 — State Vector Aggregator** ✅
+- **C2 — Regime Classifier** ✅
+- **C3 — Causal Graph** ✅
+- **C4 — Scenario Engine** ✅
+- **C5 — Novelty Detection** ✅
+- **C6 — Historical Backfill** ✅ NEW
 
 ### Frozen ❄️
 - SPX Module
