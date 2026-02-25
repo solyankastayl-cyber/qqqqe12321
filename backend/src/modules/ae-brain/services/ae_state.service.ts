@@ -11,8 +11,8 @@ import { clamp, safeNumber } from '../utils/ae_math.js';
 import { computeMacroScore } from '../../dxy-macro-core/services/macro_score.service.js';
 import { computeCrisisGuard } from '../../dxy-macro-core/services/crisis_guard.service.js';
 
-// Import from dxy fractal terminal (read-only)
-import { buildDxyTerminalPack } from '../../dxy/services/dxy_terminal_pack.service.js';
+// Import from dxy terminal (read-only)
+import { buildDxyTerminalPack } from '../../dxy/services/dxy_terminal.service.js';
 
 /**
  * Build AE State Vector
