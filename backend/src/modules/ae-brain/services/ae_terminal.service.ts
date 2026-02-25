@@ -134,6 +134,8 @@ export async function buildAeTerminal(asOf?: string): Promise<AeTerminal> {
       causal,
       scenarios,
       novelty,
+      cluster,        // C7
+      transition,     // C8
       recommendation: {
         sizeMultiplier: Math.round(sizeMultiplier * 100) / 100,
         guard: guardMode,
