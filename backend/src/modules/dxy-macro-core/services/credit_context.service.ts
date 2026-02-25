@@ -385,14 +385,14 @@ function buildEmptyContext(seriesId: string, displayName: string): CreditSeriesC
 
 export async function buildCreditContext(): Promise<CreditContext> {
   const baa = await buildBaaContext();
-  const hy = await buildHyContext();
-  const fsi = await buildFsiContext();
+  const ted = await buildTedContext();
+  const vix = await buildVixContext();
   
   // Calculate composite score
   const pressures = [
     { weight: WEIGHTS.BAA10Y, pressure: baa.pressure, available: baa.available },
-    { weight: WEIGHTS.BAMLH0A0HYM2, pressure: hy.pressure, available: hy.available },
-    { weight: WEIGHTS.STLFSI4, pressure: fsi.pressure, available: fsi.available },
+    { weight: WEIGHTS.TEDRATE, pressure: ted.pressure, available: ted.available },
+    { weight: WEIGHTS.VIXCLS, pressure: vix.pressure, available: vix.available },
   ];
   
   const available = pressures.filter(p => p.available);
@@ -427,10 +427,10 @@ export async function buildCreditContext(): Promise<CreditContext> {
   
   // Determine composite regime
   let regime: string;
-  const stressCount = [baa.regime, hy.regime, fsi.regime].filter(
+  const stressCount = [baa.regime, ted.regime, vix.regime].filter(
     r => r === 'STRESS' || r === 'HIGH_STRESS'
   ).length;
-  const calmCount = [baa.regime, hy.regime, fsi.regime].filter(
+  const calmCount = [baa.regime, ted.regime, vix.regime].filter(
     r => r === 'CALM' || r === 'LOW_STRESS'
   ).length;
   
@@ -454,8 +454,8 @@ export async function buildCreditContext(): Promise<CreditContext> {
   
   return {
     baa,
-    hy,
-    fsi,
+    ted,
+    vix,
     composite: {
       scoreSigned: Math.round(scoreSigned * 1000) / 1000,
       confidence: Math.round(confidence * 1000) / 1000,
