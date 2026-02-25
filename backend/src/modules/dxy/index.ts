@@ -56,7 +56,7 @@ async function coldStartDxyData(): Promise<void> {
 
 export async function registerDxyModule(fastify: FastifyInstance): Promise<void> {
   console.log('[DXY] ═══════════════════════════════════════════════════════');
-  console.log('[DXY] Registering DXY Module v1.1.0 (A4 Terminal)');
+  console.log('[DXY] Registering DXY Module v1.2.0 (B3 Research Terminal)');
   
   // Cold start data check
   await coldStartDxyData();
