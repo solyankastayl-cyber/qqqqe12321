@@ -47,8 +47,8 @@ export interface CreditSeriesContext {
 
 export interface CreditContext {
   baa: CreditSeriesContext;
-  hy: CreditSeriesContext;
-  fsi: CreditSeriesContext;
+  ted: CreditSeriesContext;
+  vix: CreditSeriesContext;
   
   composite: {
     scoreSigned: number;  // -1..+1 (positive = stress = USD supportive)
