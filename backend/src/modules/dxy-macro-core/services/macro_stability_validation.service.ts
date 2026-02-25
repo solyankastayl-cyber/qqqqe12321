@@ -84,16 +84,18 @@ export interface StabilityReport {
     smoothed: ScoreStats;
   };
   regime: RegimeStats;
-  // B6: Crisis Guard stats
+  // B6: Crisis Guard stats (2-Stage)
   guard: {
     counts: {
       NONE: number;
       WARN: number;
+      CRISIS: number;
       BLOCK: number;
     };
     percentages: {
       NONE: number;
       WARN: number;
+      CRISIS: number;
       BLOCK: number;
     };
     flips: {
