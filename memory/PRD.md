@@ -7,6 +7,42 @@
 | **30d** | - | - | **56.1% hit, equity 1.22** | **✅ PRODUCTION** |
 | **90d** | 57% hit, equity 1.49 | 57% hit, equity 1.39 | **38% hit, equity 0.56** | **❌ REGIME ONLY** |
 
+## B4.1 Housing & Real Estate ✅ (NEW)
+
+### Housing Series (FRED)
+| Series | Name | Points | Coverage | Regime Logic |
+|--------|------|--------|----------|--------------|
+| MORTGAGE30US | 30Y Mortgage Rate | 2,865 | 1971-2026 | TIGHTENING/EASING |
+| HOUST | Housing Starts | 804 | 1959-2026 | EXPANSION/CONTRACTION |
+| PERMIT | Building Permits | 792 | 1960-2026 | EXPANSION/CONTRACTION |
+| CSUSHPISA | Case-Shiller Index | 468 | 1987-2026 | OVERHEATING/COOLING |
+
+### Housing Pressure Logic
+```
+mortgagePressure = clamp(z5y / 3, -1, 1)    # High → USD supportive
+startsPressure = -clamp(z5y / 3, -1, 1)     # Strong → USD pressure
+permitsPressure = -clamp(z5y / 3, -1, 1)    # Strong → USD pressure
+homePricePressure = -clamp(z5y / 3, -1, 1)  # Rising → USD pressure
+
+housingScore = 0.40 × mortgage + 0.20 × starts + 0.20 × permits + 0.20 × homePrice
+```
+
+### Current Housing State
+| Metric | Value |
+|--------|-------|
+| Mortgage (MORTGAGE30US) | 6.07% (NEUTRAL) |
+| Starts (HOUST) | 1,404k (CONTRACTION) |
+| Permits (PERMIT) | 1,448k (NEUTRAL) |
+| Home Price (CSUSHPISA) | 332 (NEUTRAL) |
+| **Composite Score** | **0.025 (NEUTRAL)** |
+| **Confidence** | **0.72** |
+
+### Integration
+- Housing weight in macro score: **15%**
+- Added to `/api/dxy-macro-core/score` as HOUSING component
+- Added to `/api/research/dxy/terminal` drivers
+- New endpoint: `/api/dxy-macro-core/housing`
+
 ## D1 Macro Overlay Validation Results ✅
 
 ### OOS 2021-2025 (Primary Test)
@@ -16,44 +52,7 @@
 | HitRate | 37.97% | 37.97% | 0% |
 | Equity | 1.034 | 1.030 | -0.4% |
 | MaxDD | 10.56% | 9.14% | **-13.5%** |
-| Blocked | 0 | 0 | - |
 | **Status** | - | - | **✅ PASSED** |
-
-### Full 2000-2025 (Extended Test)
-| Metric | Mode A (Pure) | Mode B (Macro) | Delta |
-|--------|---------------|----------------|-------|
-| Trades | 331 | 331 | 0 |
-| HitRate | 49.85% | 49.85% | 0% |
-| Equity | 1.84 | 1.70 | -7.6% |
-| MaxDD | 26.32% | 22.95% | **-12.8%** |
-| AvgSize | 1.0 | 0.86 | -14% |
-
-## B3 Research Terminal ✅ (NEW)
-
-Unified research endpoint aggregating all DXY intelligence:
-
-### Endpoint
-`GET /api/research/dxy/terminal?focus=30d&rank=1`
-
-### Response Structure
-```json
-{
-  "terminal": { /* A4 Terminal Pack */ },
-  "macroCore": { /* B1 Macro Score + Contexts */ },
-  "overlay": { /* B2 Macro Overlay */ },
-  "research": {
-    "headline": "DXY: SHORT ↓ (86/100). Macro: NEUTRAL.",
-    "takeaways": ["..."],
-    "drivers": [{"key": "FEDFUNDS", "contribution": -0.088, "note": "..."}],
-    "risks": ["⚠️ Signal conflicts with macro environment"],
-    "dataFreshness": [{"key": "FEDFUNDS", "lagDays": 55}],
-    "limits": ["Macro does NOT change direction"]
-  }
-}
-```
-
-### Debug Endpoint
-`GET /api/research/dxy/terminal/debug`
 
 ## Architecture Summary
 
@@ -61,62 +60,53 @@ Unified research endpoint aggregating all DXY intelligence:
 - **Entry**: `/app/backend/src/app.fractal.ts`
 - **Port**: 8001
 - **Database**: MongoDB
+- **Version**: B4.1
 
-### DXY Module Structure
+### Macro Core Structure (B1 + B4.1)
 ```
-/app/backend/src/modules/dxy/
+/app/backend/src/modules/dxy-macro-core/
 ├── api/
-│   ├── dxy.research_terminal.routes.ts  # B3 NEW
-│   └── dxy.terminal.routes.ts           # A4
-├── contracts/
-│   ├── dxy_research_terminal.contract.ts  # B3 NEW
-│   └── dxy_terminal.contract.ts           # A4
-├── forward/
-│   └── services/
-│       └── dxy_macro_validation.service.ts  # D1
+│   └── macro.routes.ts          # Updated for housing
+├── data/
+│   └── macro_sources.registry.ts  # +4 housing series
 ├── services/
-│   ├── dxy_research_terminal.service.ts  # B3 NEW
-│   ├── dxy_terminal.service.ts           # A4
-│   └── macro_overlay.service.ts          # B2
-└── index.ts
+│   ├── macro_score.service.ts    # Integrates housing
+│   ├── macro_context.service.ts
+│   └── housing_context.service.ts  # B4.1 NEW
+└── storage/
 ```
 
 ## API Endpoints
 
-### Research Terminal (B3) — NEW
-- `GET /api/research/dxy/terminal` — Full research pack
-- `GET /api/research/dxy/terminal/debug` — Source info
+### Housing (B4.1) — NEW
+- `GET /api/dxy-macro-core/housing` — Housing context + composite
+
+### Research Terminal (B3)
+- `GET /api/research/dxy/terminal` — Full research pack with housing
 
 ### DXY Terminal (A4)
-- `GET /api/fractal/dxy/terminal` — Unified terminal with macro
-
-### D1 Macro Validation
-- `POST /api/forward/dxy/admin/validate/macro` — Walk-forward comparison
+- `GET /api/fractal/dxy/terminal` — Terminal (paths unchanged)
 
 ### Macro Core (B1)
-- `GET /api/dxy-macro-core/health` — Health check
-- `GET /api/dxy-macro-core/series` — List all series
-- `GET /api/dxy-macro-core/score` — Composite macro score
-- `POST /api/dxy-macro-core/admin/ingest` — Load from FRED
+- `GET /api/dxy-macro-core/score` — Score with HOUSING component
+- `GET /api/dxy-macro-core/series` — 11 series (7 core + 4 housing)
 
 ## Data Sources
 
-| Asset | Candles | Coverage | Source |
-|-------|---------|----------|--------|
-| DXY | 18,413 | 1952-2026 | Stooq + FRED |
-| SPX | 19,242 | 1950-2026 | Stooq |
-| BTC | 5,700+ | 2015-2026 | Coinbase |
-
-### Macro Series (FRED)
+### Macro Series (11 total)
 | Series | Role | Coverage | Status |
 |--------|------|----------|--------|
-| FEDFUNDS | rates | 71.5 years | ✅ |
-| CPIAUCSL | inflation | 76 years | ✅ |
-| CPILFESL | inflation | 69 years | ✅ |
-| UNRATE | labor | 76 years | ✅ |
-| PPIACO | inflation | 75.9 years | ✅ |
-| M2SL | liquidity | 67 years | ✅ |
-| T10Y2Y | curve | 49.7 years | ✅ |
+| FEDFUNDS | rates | 71.5 years | ✅ B1 |
+| CPIAUCSL | inflation | 76 years | ✅ B1 |
+| CPILFESL | inflation | 69 years | ✅ B1 |
+| UNRATE | labor | 76 years | ✅ B1 |
+| PPIACO | inflation | 75.9 years | ✅ B1 |
+| M2SL | liquidity | 67 years | ✅ B1 |
+| T10Y2Y | curve | 49.7 years | ✅ B1 |
+| MORTGAGE30US | housing | 55 years | ✅ **B4.1** |
+| HOUST | housing | 67 years | ✅ **B4.1** |
+| PERMIT | housing | 66 years | ✅ **B4.1** |
+| CSUSHPISA | housing | 39 years | ✅ **B4.1** |
 
 ## Implementation Status
 
@@ -125,7 +115,8 @@ Unified research endpoint aggregating all DXY intelligence:
 - B1 — Macro Data Platform (FRED API)
 - B2 — Macro → DXY Integration
 - D1 — Macro Overlay Validation
-- **B3 — DXY Research Terminal (NEW)**
+- B3 — DXY Research Terminal
+- **B4.1 — Housing & Real Estate (NEW)**
 
 ### Frozen ❄️
 - SPX Module
@@ -140,12 +131,16 @@ Unified research endpoint aggregating all DXY intelligence:
 3. B2 — Macro → DXY Integration ✅ DONE
 4. D1 — Macro Overlay Validation ✅ DONE
 5. B3 — DXY Research Terminal ✅ DONE
-6. B4 — Extended Drivers (housing/PMI/credit/oil) (next)
-7. Integration — DXY → SPX → BTC cascade (later)
+6. B4.1 — Housing & Real Estate ✅ DONE
+7. B4.2 — PMI & Economic Activity (next)
+8. B4.3 — Credit & Financial Stress
+9. B4.4 — Energy & Commodity
+10. B5 — Historical Research Stability
 ```
 
 ## Next Steps
 
-1. **B4** — Extend macro drivers (housing, PMI, credit spreads, oil/energy)
-2. **B5** — Historical research stability validation
-3. **Cascade** — DXY regime → SPX → BTC pipeline (after DXY complete)
+1. **B4.2** — PMI drivers (ISM, Industrial Production)
+2. **B4.3** — Credit spreads (BAA10Y, HY Spread, Financial Stress)
+3. **B4.4** — Energy (WTI, Natural Gas)
+4. **B5** — Historical validation of extended drivers
