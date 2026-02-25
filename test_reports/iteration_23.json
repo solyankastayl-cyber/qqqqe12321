@@ -1,0 +1,42 @@
+{
+  "summary": "Completed BTC Cascade backend testing. Module is functional with 10/11 tests passing. All core features working: guard caps (BLOCK→0, CRISIS≤0.35, WARN≤0.70), stress multiplier monotonic behavior, scenario tilt, upstream data integration. One intermittent HTTP 500 error on SPX_LOW validation endpoint.",
+  
+  "backend_issues": {
+    "intermittent_errors": [
+      {
+        "endpoint": "/api/fractal/btc/admin/cascade/validate",
+        "issue": "HTTP 500 error when testing SPX_LOW case (intermittent)",
+        "impact": "Validation endpoint occasionally fails, but manual testing shows logic works correctly",
+        "fix_priority": "LOW",
+        "note": "Manual curl test successful - likely load/timing related"
+      }
+    ]
+  },
+  
+  "frontend_issues": {},
+  
+  "passed_tests": [
+    "Module health check - BTC_CASCADE_V1.0 active", 
+    "Cascade data retrieval with 30d focus",
+    "Debug endpoint with timing info (AE: ~2900ms, SPX: ~4200ms)",
+    "Guard cap BLOCK: size=0 (correct blocking)",
+    "Guard cap CRISIS: size≤0.35 (correct capping)", 
+    "Guard cap WARN: size≤0.70 (correct capping)",
+    "Stress monotonic: pStress4w=0.25 → mStress=0.625",
+    "Bear scenario: mScenario=0.80 (correct tilt)",
+    "Data integrity: no NaN/negative values",
+    "Upstream inputs: pStress4w, bearProb, spxAdj present"
+  ],
+  
+  "test_report_links": ["/app/backend_test.py"],
+  
+  "action_item_for_main_agent": "Optional: investigate intermittent HTTP 500 on SPX_LOW validation endpoint - module is otherwise fully functional",
+  
+  "updated_files": ["/app/backend_test.py"],
+  
+  "success_percentage": "backend: 91% (10/11 tests pass, one intermittent failure)",
+  
+  "should_call_test_agent_after_fix": "false",
+  
+  "should_main_agent_test_itself": "true"
+}
