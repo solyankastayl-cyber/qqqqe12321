@@ -1,10 +1,22 @@
 /**
- * CRISIS GUARD SERVICE — B6
+ * CRISIS GUARD SERVICE — B6 (2-Stage Guard)
  * 
  * Stress-aware layer that manages risk exposure:
  * - Does NOT change direction
  * - Does NOT touch fractal paths
  * - Only manages: confidenceMultiplier, sizeMultiplier, tradingAllowed
+ * 
+ * 🎯 Guard Hierarchy (top-down):
+ *   1. BLOCK  (peak panic) — самый строгий
+ *   2. CRISIS (systemic stress)
+ *   3. WARN   (soft tightening / macro conflict)
+ *   4. NONE
+ * 
+ * 📊 Acceptance Targets:
+ *   - GFC 2008-09:     CRISIS ≥ 60%, BLOCK ≥ 20%
+ *   - COVID 2020:      CRISIS ≥ 80%, BLOCK ≥ 40%
+ *   - Tightening 2022: WARN ≤ 40%,   BLOCK ≤ 10%
+ *   - Low Vol 2017:    NONE ≥ 80%,   BLOCK = 0%
  * 
  * ISOLATION: No imports from DXY/BTC/SPX fractal core
  */
@@ -16,7 +28,7 @@ import { getMacroSeriesPoints } from '../ingest/macro.ingest.service.js';
 // TYPES
 // ═══════════════════════════════════════════════════════════════
 
-export type GuardLevel = 'NONE' | 'WARN' | 'BLOCK';
+export type GuardLevel = 'NONE' | 'WARN' | 'CRISIS' | 'BLOCK';
 
 export interface StressState {
   creditComposite: number;
@@ -41,22 +53,27 @@ export interface CrisisGuardResult {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// CONSTANTS — Guard Thresholds
+// CONSTANTS — B6 Guard Thresholds (2-Stage)
 // ═══════════════════════════════════════════════════════════════
 
-// Primary Trigger: BLOCK
-const BLOCK_CREDIT_THRESHOLD = 0.5;
+// Stage 2: BLOCK (пик паники)
+const BLOCK_CREDIT_THRESHOLD = 0.55;
 const BLOCK_VIX_THRESHOLD = 35;
 
-// Secondary Trigger: WARN
-const WARN_CREDIT_THRESHOLD = 0.4;
+// Stage 1: CRISIS (системный стресс)
+const CRISIS_CREDIT_THRESHOLD = 0.4;
+const CRISIS_VIX_THRESHOLD = 25;
+
+// Stage 3: WARN (tightening / conflict)
+const WARN_CREDIT_THRESHOLD = 0.35;
 const WARN_MACRO_SCORE_THRESHOLD = 0.2;
 
 // Guard Output Multipliers
-const GUARD_MULTIPLIERS = {
-  NONE: { confidence: 1.0, size: 1.0, tradingAllowed: true },
-  WARN: { confidence: 0.7, size: 0.5, tradingAllowed: true },
-  BLOCK: { confidence: 0.5, size: 0, tradingAllowed: false },
+const GUARD_MULTIPLIERS: Record<GuardLevel, { confidence: number; size: number; tradingAllowed: boolean }> = {
+  NONE:   { confidence: 1.0,  size: 1.0, tradingAllowed: true },
+  WARN:   { confidence: 0.75, size: 0.6, tradingAllowed: true },
+  CRISIS: { confidence: 0.65, size: 0.4, tradingAllowed: true },
+  BLOCK:  { confidence: 0.5,  size: 0,   tradingAllowed: false },
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -101,32 +118,71 @@ async function getVixAtDate(targetDate: string): Promise<number> {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// GUARD LEVEL CLASSIFICATION
+// GUARD LEVEL CLASSIFICATION — B6 2-Stage
 // ═══════════════════════════════════════════════════════════════
 
 /**
  * Determine guard level based on stress conditions
  * 
- * BLOCK: creditComposite > 0.5 AND VIX > 35
- * WARN:  creditComposite > 0.4 AND macroScoreSigned > 0.2
- * NONE:  otherwise
+ * 🎯 B6 2-Stage Guard Logic:
+ * 
+ * 1️⃣ BLOCK (пик паники):
+ *    creditComposite > 0.55 AND VIX > 35
+ * 
+ * 2️⃣ CRISIS (системный стресс):
+ *    creditComposite > 0.4 AND VIX > 25
+ * 
+ * 3️⃣ WARN (tightening / conflict):
+ *    creditComposite > 0.35 AND macroScoreSigned > 0.2
+ * 
+ * 4️⃣ NONE (спокойствие)
  */
 function classifyGuardLevel(
   creditComposite: number,
   vix: number,
   macroScoreSigned: number
 ): GuardLevel {
-  // Primary Trigger: BLOCK
+  // 1️⃣ BLOCK — пик паники (самый строгий)
   if (creditComposite > BLOCK_CREDIT_THRESHOLD && vix > BLOCK_VIX_THRESHOLD) {
     return 'BLOCK';
   }
   
-  // Secondary Trigger: WARN
+  // 2️⃣ CRISIS — системный стресс
+  if (creditComposite > CRISIS_CREDIT_THRESHOLD && vix > CRISIS_VIX_THRESHOLD) {
+    return 'CRISIS';
+  }
+  
+  // 3️⃣ WARN — tightening / conflict
   if (creditComposite > WARN_CREDIT_THRESHOLD && macroScoreSigned > WARN_MACRO_SCORE_THRESHOLD) {
     return 'WARN';
   }
   
+  // 4️⃣ NONE — спокойствие
   return 'NONE';
+}
+
+/**
+ * Map guard level to overlay outputs
+ */
+function mapModeToOverlay(
+  level: GuardLevel,
+  baseOverlayMultiplier: number
+): GuardOutput & { finalConfidenceMultiplier: number } {
+  const mult = GUARD_MULTIPLIERS[level];
+  
+  // Apply min() — overlay = min(baseOverlay, guardOverlay)
+  const finalConfidenceMultiplier = Math.min(
+    baseOverlayMultiplier,
+    mult.confidence
+  );
+  
+  return {
+    confidenceMultiplier: mult.confidence,
+    sizeMultiplier: mult.size,
+    tradingAllowed: mult.tradingAllowed,
+    level,
+    finalConfidenceMultiplier,
+  };
 }
 
 /**
@@ -160,18 +216,12 @@ export async function computeCrisisGuard(
   // Get current VIX
   const vix = await getCurrentVix();
   
-  // Classify guard level
+  // Classify guard level using B6 2-Stage logic
   const level = classifyGuardLevel(creditComposite, vix, macroScoreSigned);
   const triggered = level !== 'NONE';
   
-  // Get guard output
-  const guard = getGuardOutput(level);
-  
-  // Apply min() to confidence multiplier
-  const finalConfidenceMultiplier = Math.min(
-    baseOverlayMultiplier,
-    guard.confidenceMultiplier
-  );
+  // Get guard output with final multiplier
+  const overlay = mapModeToOverlay(level, baseOverlayMultiplier);
   
   return {
     stress: {
@@ -182,11 +232,13 @@ export async function computeCrisisGuard(
       level,
     },
     guard: {
-      ...guard,
-      confidenceMultiplier: Math.round(guard.confidenceMultiplier * 1000) / 1000,
+      confidenceMultiplier: Math.round(overlay.confidenceMultiplier * 1000) / 1000,
+      sizeMultiplier: overlay.sizeMultiplier,
+      tradingAllowed: overlay.tradingAllowed,
+      level,
     },
     baseOverlayMultiplier: Math.round(baseOverlayMultiplier * 1000) / 1000,
-    finalConfidenceMultiplier: Math.round(finalConfidenceMultiplier * 1000) / 1000,
+    finalConfidenceMultiplier: Math.round(overlay.finalConfidenceMultiplier * 1000) / 1000,
   };
 }
 
@@ -218,11 +270,13 @@ export interface GuardValidationResult {
   guardCounts: {
     NONE: number;
     WARN: number;
+    CRISIS: number;
     BLOCK: number;
   };
   percentages: {
     NONE: number;
     WARN: number;
+    CRISIS: number;
     BLOCK: number;
   };
   flips: number;
@@ -254,6 +308,7 @@ export async function validateGuardPeriod(
   const counts = {
     NONE: levels.filter(l => l === 'NONE').length,
     WARN: levels.filter(l => l === 'WARN').length,
+    CRISIS: levels.filter(l => l === 'CRISIS').length,
     BLOCK: levels.filter(l => l === 'BLOCK').length,
   };
   
@@ -261,6 +316,7 @@ export async function validateGuardPeriod(
   const percentages = {
     NONE: total > 0 ? Math.round((counts.NONE / total) * 1000) / 1000 : 0,
     WARN: total > 0 ? Math.round((counts.WARN / total) * 1000) / 1000 : 0,
+    CRISIS: total > 0 ? Math.round((counts.CRISIS / total) * 1000) / 1000 : 0,
     BLOCK: total > 0 ? Math.round((counts.BLOCK / total) * 1000) / 1000 : 0,
   };
   
@@ -305,9 +361,43 @@ export const GUARD_THRESHOLDS = {
   BLOCK: {
     credit: BLOCK_CREDIT_THRESHOLD,
     vix: BLOCK_VIX_THRESHOLD,
+    description: 'Peak Panic — Trading Disabled',
+  },
+  CRISIS: {
+    credit: CRISIS_CREDIT_THRESHOLD,
+    vix: CRISIS_VIX_THRESHOLD,
+    description: 'Systemic Stress — Reduced Size',
   },
   WARN: {
     credit: WARN_CREDIT_THRESHOLD,
     macroScore: WARN_MACRO_SCORE_THRESHOLD,
+    description: 'Soft Tightening / Macro Conflict',
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// B6 ACCEPTANCE CRITERIA (for testing)
+// ═══════════════════════════════════════════════════════════════
+
+export const B6_ACCEPTANCE_CRITERIA = {
+  GFC_2008_2009: {
+    CRISIS_MIN: 0.60,  // ≥ 60%
+    BLOCK_MIN: 0.20,   // ≥ 20%
+  },
+  COVID_2020: {
+    CRISIS_MIN: 0.80,  // ≥ 80%
+    BLOCK_MIN: 0.40,   // ≥ 40%
+  },
+  TIGHTENING_2022: {
+    WARN_MAX: 0.40,    // ≤ 40%
+    BLOCK_MAX: 0.10,   // ≤ 10%
+  },
+  LOW_VOL_2017: {
+    NONE_MIN: 0.80,    // ≥ 80%
+    BLOCK_MAX: 0,      // = 0%
+  },
+  STABILITY: {
+    flipsPerYear: 4,     // ≤ 4
+    medianDuration: 30,  // ≥ 30 days
   },
 };
