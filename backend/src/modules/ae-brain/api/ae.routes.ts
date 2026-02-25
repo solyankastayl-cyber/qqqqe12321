@@ -74,11 +74,20 @@ export async function registerAeRoutes(fastify: FastifyInstance): Promise<void> 
     '/api/ae/regime',
     async (request, reply) => {
       const { asOf } = request.query;
+      const targetDate = asOf || new Date().toISOString().split('T')[0];
       
       try {
-        const state = await buildAeState(asOf);
+        // First try historical data
+        const historicalState = await getStateFromDB(targetDate);
+        if (historicalState) {
+          const regime = classifyRegime(historicalState);
+          return { ok: true, asOf: targetDate, source: 'historical', ...regime };
+        }
+        
+        // Fallback to live
+        const state = await buildAeState(targetDate);
         const regime = classifyRegime(state);
-        return { ok: true, asOf: state.asOf, ...regime };
+        return { ok: true, asOf: targetDate, source: 'live', ...regime };
       } catch (e) {
         return reply.status(500).send({
           ok: false,
