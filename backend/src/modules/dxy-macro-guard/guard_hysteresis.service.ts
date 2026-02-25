@@ -133,34 +133,38 @@ async function loadHistoricalInputs(from: string, to: string): Promise<GuardInpu
   for (const vec of vectors) {
     const v = vec.vector || {};
     const date = vec.asOf;
+    // guardLevel can be float [0..1] where:
+    // 0-0.25 = NONE, 0.25-0.5 = WARN, 0.5-0.75 = CRISIS, 0.75+ = BLOCK
     const guardLevel = v.guardLevel ?? 0;
     const macroSigned = v.macroSigned ?? 0;
     
-    // Map guardLevel to synthetic credit/vix (deterministic)
-    // guardLevel: 0 = normal, 1 = warn, 2 = crisis, 3+ = block
+    // Use hash of date for deterministic "noise"
+    const dateHash = date.split('-').reduce((a, b) => a + parseInt(b), 0) / 100;
+    const noise = (dateHash % 1) * 0.05;
+    
     let creditComposite = 0.15;
     let vix = 15;
     
-    // Use hash of date for deterministic "noise"
-    const dateHash = date.split('-').reduce((a, b) => a + parseInt(b), 0) / 100;
-    const noise = (dateHash % 1) * 0.1;
-    
-    if (guardLevel >= 3) {
+    if (guardLevel >= 0.75) {
       // BLOCK conditions
       creditComposite = 0.55 + noise;
       vix = 35 + noise * 50;
-    } else if (guardLevel >= 2) {
+    } else if (guardLevel >= 0.5) {
       // CRISIS conditions
-      creditComposite = 0.30 + noise;
-      vix = 22 + noise * 40;
-    } else if (guardLevel >= 1) {
+      creditComposite = 0.30 + noise + guardLevel * 0.2;
+      vix = 22 + guardLevel * 20;
+    } else if (guardLevel >= 0.25) {
       // WARN conditions
-      creditComposite = 0.32 + noise * 0.5;
-      vix = 16 + noise * 20;
+      creditComposite = 0.32 + noise;
+      vix = 16 + guardLevel * 15;
+    } else if (guardLevel > 0) {
+      // Slight stress
+      creditComposite = 0.20 + guardLevel * 0.3;
+      vix = 14 + guardLevel * 20;
     } else {
       // NONE - use macro as tightening signal
       creditComposite = 0.15 + Math.abs(macroSigned) * 0.1;
-      vix = 14 + noise * 30;
+      vix = 14 + noise * 10;
     }
     
     inputs.push({
