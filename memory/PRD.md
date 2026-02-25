@@ -181,7 +181,8 @@ KNN cosine distance (K=20):
 - **C3 — Causal Graph** ✅
 - **C4 — Scenario Engine** ✅
 - **C5 — Novelty Detection** ✅
-- **C6 — Historical Backfill** ✅ NEW
+- **C6 — Historical Backfill** ✅
+- **C7 — Regime Clustering** ✅ NEW
 
 ### Frozen ❄️
 - SPX Module
