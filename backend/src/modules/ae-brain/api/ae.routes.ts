@@ -237,6 +237,52 @@ export async function registerAeRoutes(fastify: FastifyInstance): Promise<void> 
     }
   );
   
+  // ═══════════════════════════════════════════════════════════════
+  // ADMIN: HISTORICAL BACKFILL (C6)
+  // ═══════════════════════════════════════════════════════════════
+  
+  fastify.post<{ Querystring: { from?: string; to?: string; stepDays?: string } }>(
+    '/api/ae/admin/backfill',
+    async (request, reply) => {
+      const from = request.query.from || '2000-01-01';
+      const to = request.query.to || '2025-12-31';
+      const stepDays = parseInt(request.query.stepDays || '7');
+      
+      if (stepDays < 1 || stepDays > 30) {
+        return reply.status(400).send({
+          ok: false,
+          error: 'stepDays must be 1-30',
+        });
+      }
+      
+      try {
+        const result = await runAeBackfill(from, to, stepDays);
+        return result;
+      } catch (e) {
+        return reply.status(500).send({
+          ok: false,
+          error: (e as Error).message,
+        });
+      }
+    }
+  );
+  
+  // ═══════════════════════════════════════════════════════════════
+  // ADMIN: BACKFILL STATS
+  // ═══════════════════════════════════════════════════════════════
+  
+  fastify.get('/api/ae/admin/backfill-stats', async (request, reply) => {
+    try {
+      const stats = await getBackfillStats();
+      return { ok: true, ...stats };
+    } catch (e) {
+      return reply.status(500).send({
+        ok: false,
+        error: (e as Error).message,
+      });
+    }
+  });
+  
   console.log('[AE Brain] Routes registered:');
   console.log('  GET  /api/ae/health');
   console.log('  GET  /api/ae/state');
