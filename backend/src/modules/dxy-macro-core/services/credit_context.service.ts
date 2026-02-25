@@ -208,11 +208,19 @@ function calcSpreadPressure(z5y: number | null): number {
 }
 
 /**
- * FSI pressure: current / 3, clamped to -1..+1
- * High stress = safe-haven bid = USD supportive (positive)
+ * VIX pressure: (value - 20) / 15, clamped to -1..+1
+ * High VIX = fear = safe-haven bid = USD supportive (positive)
  */
-function calcFsiPressure(value: number): number {
-  return clamp(value / 3, -1, 1);
+function calcVixPressure(value: number): number {
+  return clamp((value - 20) / 15, -1, 1);
+}
+
+/**
+ * TED Spread pressure: (value - 0.3) / 0.5, clamped to -1..+1
+ * High TED = banking stress = USD supportive (positive)
+ */
+function calcTedPressure(value: number): number {
+  return clamp((value - 0.3) / 0.5, -1, 1);
 }
 
 // ═══════════════════════════════════════════════════════════════
