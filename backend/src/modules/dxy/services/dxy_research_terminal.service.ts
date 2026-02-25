@@ -269,7 +269,10 @@ function buildTakeaways(
 // ═══════════════════════════════════════════════════════════════
 
 function buildDataFreshness(seriesMeta: MacroSeriesMeta[]): DataFreshness[] {
-  return CORE_SERIES.map(key => {
+  // B4.1: Include housing series
+  const allSeries = [...CORE_SERIES, ...HOUSING_SERIES];
+  
+  return allSeries.map(key => {
     const meta = seriesMeta.find(m => m.seriesId === key);
     const lagDays = calcLagDays(meta?.lastDate ?? null);
     
