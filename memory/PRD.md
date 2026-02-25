@@ -7,90 +7,103 @@
 | **30d** | - | - | **56.1% hit, equity 1.22** | **✅ PRODUCTION** |
 | **90d** | 57% hit, equity 1.49 | 57% hit, equity 1.39 | **38% hit, equity 0.56** | **❌ REGIME ONLY** |
 
+---
+
+## C-Track: AE Brain — IMPLEMENTED ✅ NEW
+
+### Architecture
+AE Brain is the intelligence layer aggregating all system state:
+
+| Component | Description | Status |
+|-----------|-------------|--------|
+| **C1** | State Vector Aggregator | ✅ |
+| **C2** | Regime Classifier | ✅ |
+| **C3** | Causal Graph | ✅ |
+| **C4** | Scenario Engine | ✅ |
+| **C5** | Novelty Detection | ✅ |
+
+### C1 State Vector
+Normalized state from macro + guard + DXY terminal:
+```json
+{
+  "macroSigned": [-1..1],
+  "macroConfidence": [0..1],
+  "guardLevel": [0..1],
+  "dxySignalSigned": [-1..1],
+  "dxyConfidence": [0..1],
+  "regimeBias90d": [-1..1]
+}
+```
+
+### C2 Regime Classifier
+State machine with 6 regimes:
+- `LIQUIDITY_EXPANSION` — Fed easing, risk-on
+- `LIQUIDITY_CONTRACTION` — Fed tightening, credit rising
+- `DOLLAR_DOMINANCE` — Strong USD, hawkish policy
+- `DISINFLATION_PIVOT` — Falling inflation, potential pivot
+- `RISK_OFF_STRESS` — Crisis mode (guard >= CRISIS)
+- `NEUTRAL_MIXED` — No dominant signal
+
+### C3 Causal Graph
+Fixed rule graph with 10 links:
+- Rates → USD (+)
+- CreditStress → SPX (-)
+- Liquidity → BTC (+)
+- USD → BTC (-)
+
+Strength = baseWeight × guardMultiplier × confidenceMultiplier
+
+### C4 Scenario Engine
+3 scenarios with softmax probabilities:
+| Scenario | Trigger | Tilts |
+|----------|---------|-------|
+| BASE | Neutral state | DXY/SPX/BTC FLAT |
+| BULL_RISK_ON | Low stress, dovish | DXY↓ SPX↑ BTC↑ |
+| BEAR_STRESS | High stress | DXY↑ SPX↓ BTC↓ |
+
+### C5 Novelty Detection
+KNN cosine distance (K=20):
+- `KNOWN` (< 0.12)
+- `RARE` (0.12-0.18)
+- `UNSEEN` (> 0.18)
+
+### AE Brain API Endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/ae/health` | Module health |
+| GET | `/api/ae/state` | C1 state vector |
+| GET | `/api/ae/regime` | C2 regime |
+| GET | `/api/ae/causal` | C3 causal links |
+| GET | `/api/ae/scenarios` | C4 scenarios |
+| GET | `/api/ae/novelty` | C5 novelty |
+| GET | `/api/ae/terminal` | Full pack |
+| POST | `/api/ae/admin/snapshot` | Save state |
+
+---
+
 ## B6 2-Stage Guard — VALIDATED ✅
 
 ### Guard Hierarchy
 1. **BLOCK** (peak panic): `credit > 0.50 AND VIX > 32`
-   - Trading Disabled, Size = 0%, Confidence = 50%
 2. **CRISIS** (systemic stress): `credit > 0.25 AND VIX > 18`
-   - Trading Allowed, Size = 40%, Confidence = 65%
 3. **WARN** (soft tightening): `credit > 0.30 AND macroScore > 0.15`
-   - Trading Allowed, Size = 60%, Confidence = 75%
 4. **NONE** — normal operation
 
 ### Episode Validation Results (2026-02-25)
-
 | Episode | Period | CRISIS+BLOCK | Target | Status |
 |---------|--------|--------------|--------|--------|
 | GFC | 2008-2009 | **80%** | ≥60% | ✅ |
 | COVID | Feb-Jun 2020 | **82%** | ≥80% | ✅ |
-| Tightening | 2022-2023 | 21% (CRISIS only) | BLOCK ≤10% | ✅ |
-| Low Vol | 2017 | 0% (NONE=100%) | NONE ≥80% | ✅ |
+| Tightening | 2022-2023 | 21% | BLOCK ≤10% | ✅ |
+| Low Vol | 2017 | 0% | NONE ≥80% | ✅ |
 
 ### Stability Metrics (2000-2025)
 | Metric | Value | Threshold | Status |
 |--------|-------|-----------|--------|
 | Guard flips/year | **3.65** | < 4 | ✅ |
 | Median duration | **21 days** | > 30 | ⚠️ |
-| NONE % | 76.9% | - | - |
-| CRISIS % | 18.1% | - | - |
-| BLOCK % | 5.0% | - | - |
 
-## B5 Historical Validation Complete ✅
-
-### B5.1 Stability Metrics (2000-2025)
-| Metric | Value | Threshold | Status |
-|--------|-------|-----------|--------|
-| Regime flips/year | **1.04** | < 12 | ✅ |
-| Median duration (days) | **329** | > 20 | ✅ |
-| Score std | **0.167** | 0.03-0.25 | ✅ |
-| Score range | [-0.41, +0.57] | - | - |
-
-### Driver Dominance
-| Driver | Share | Avg Contribution |
-|--------|-------|------------------|
-| HOUSING | 43.6% | 0.40 |
-| CREDIT | 32.9% | 0.34 |
-| ACTIVITY | 13.0% | 0.29 |
-| FED | 10.6% | 0.18 |
-
-### B5.2 Episode Validation
-| Episode | Period | Risk-Off | Credit | Fed | Status |
-|---------|--------|----------|--------|-----|--------|
-| GFC | 2008-2009 | **68%** | +0.58 | -0.35 | ✅ |
-| COVID | Feb-Jun 2020 | **100%** | +0.53 | -0.56 | ✅ |
-| Tightening | 2022-2023 | 0% | +0.13 | **+0.60** | ✅ |
-| Low Vol | 2017 | 0% | **-0.56** | +0.13 | ✅ |
-
-## B4 Extended Drivers
-
-### Macro Score Weights
-```
-Core7 = 55% (Fed, CPI, UNRATE, M2, T10Y2Y, PPI)
-Housing = 15% (Mortgage, Starts, Permits, Case-Shiller)
-Activity = 15% (MANEMP, INDPRO, TCU)
-Credit = 15% (BAA10Y, TEDRATE, VIX)
-```
-
-## API Endpoints
-
-### B6 Crisis Guard
-- `GET /api/dxy-macro-core/validate/episodes` — Episode validation with guard stats
-- `GET /api/dxy-macro-core/validate/stability` — Stability report with guard metrics
-
-### B5 Validation
-- `GET /api/dxy-macro-core/validate/stability` — Stability report
-- `GET /api/dxy-macro-core/validate/episodes` — Episode validation
-
-### B4 Extended Drivers
-- `GET /api/dxy-macro-core/housing`
-- `GET /api/dxy-macro-core/activity`
-- `GET /api/dxy-macro-core/credit`
-
-### Core
-- `GET /api/dxy-macro-core/score`
-- `GET /api/research/dxy/terminal`
-- `GET /api/fractal/dxy/terminal`
+---
 
 ## Implementation Status
 
@@ -98,28 +111,41 @@ Credit = 15% (BAA10Y, TEDRATE, VIX)
 - A4 — Unified DXY Terminal
 - B1 — Macro Data Platform
 - B2 — Macro → DXY Integration
-- D1 — Macro Overlay Validation
 - B3 — DXY Research Terminal
 - B4.1 — Housing & Real Estate
 - B4.2 — Economic Activity
 - B4.3 — Credit & Financial Stress
-- **B5.1 — Stability Validation**
-- **B5.2 — Episode Validation**
-- **B6 — 2-Stage Crisis Guard** ✅ NEW
+- B5.1 — Stability Validation
+- B5.2 — Episode Validation
+- **B6 — 2-Stage Crisis Guard** ✅
+- **C1 — State Vector Aggregator** ✅ NEW
+- **C2 — Regime Classifier** ✅ NEW
+- **C3 — Causal Graph** ✅ NEW
+- **C4 — Scenario Engine** ✅ NEW
+- **C5 — Novelty Detection** ✅ NEW
 
 ### Frozen ❄️
 - SPX Module
 - BTC Module
 - Frontend
 
+---
+
 ## Next Steps
-1. ~~**Crisis Guard** — Auto-trigger при VIX > 35 + Credit spike~~ **DONE**
-2. **Hysteresis** — Reduce guard duration flaps (median 21d → 30d target)
-3. **B4.4** — Energy & Commodity (optional)
-4. **Cascade** — DXY → SPX → BTC
+
+### Immediate (D-Track)
+1. **D1** — SPX Cascade Integration (DXY → SPX)
+2. **D2** — BTC Cascade Integration (DXY → SPX → BTC)
+
+### Backlog
+- Hysteresis — Reduce guard flaps (median 21d → 30d)
+- Historical backfill — Snapshot state vectors for 2000-2025
+- B4.4 — Energy & Commodity (optional)
+
+---
 
 ## Tech Stack
 - Backend: TypeScript + Fastify (port 8001)
 - Database: MongoDB
 - Data Source: FRED API
-- Module: `dxy-macro-core`
+- Modules: `dxy-macro-core`, `ae-brain`
