@@ -920,7 +920,7 @@ export async function validateEpisodes(
       }
     }
     
-    // B6: Compute Crisis Guard levels for episode
+    // B6: Compute Crisis Guard levels for episode (2-Stage)
     const guardLevels: GuardLevel[] = samples.map(s => 
       classifyGuardLevel(s.creditComposite, s.vix, s.scoreSigned)
     );
@@ -928,6 +928,7 @@ export async function validateEpisodes(
     const guardCounts = {
       NONE: guardLevels.filter(l => l === 'NONE').length,
       WARN: guardLevels.filter(l => l === 'WARN').length,
+      CRISIS: guardLevels.filter(l => l === 'CRISIS').length,
       BLOCK: guardLevels.filter(l => l === 'BLOCK').length,
     };
     
@@ -935,6 +936,7 @@ export async function validateEpisodes(
     const guardPcts = {
       NONE: Math.round((guardCounts.NONE / total) * 100) / 100,
       WARN: Math.round((guardCounts.WARN / total) * 100) / 100,
+      CRISIS: Math.round((guardCounts.CRISIS / total) * 100) / 100,
       BLOCK: Math.round((guardCounts.BLOCK / total) * 100) / 100,
     };
     
