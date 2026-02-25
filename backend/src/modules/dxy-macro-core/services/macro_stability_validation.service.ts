@@ -11,6 +11,7 @@
 import { MacroPointModel } from '../storage/macro_points.model.js';
 import { computeMacroScore } from './macro_score.service.js';
 import type { MacroScore, MacroScoreComponent } from '../contracts/macro.contracts.js';
+import type { GuardLevel } from './crisis_guard.service.js';
 
 // ═══════════════════════════════════════════════════════════════
 // TYPES
