@@ -457,29 +457,33 @@ async function buildHistoricalScoreTimeSeries(
     const scoreSigned = totalWeight > 0 ? weightedSum / totalWeight : 0;
     
     // B6: Compute credit composite for guard calculation
-    // creditComposite = average of BAA z-score and VIX normalized
+    // Use same logic as credit_context.service: weighted average of pressures
+    // BAA pressure: z5y / 3, VIX pressure: (value - 20) / 15
+    // Credit composite = (BAA_pressure * 0.4 + VIX_pressure * 0.3) / 0.7 (normalized)
     let creditComposite = 0;
-    let creditParts = 0;
+    let creditWeight = 0;
     
     if (baaVal !== null) {
       const baaZ = computeZScore(baaVal, pointsBySeriesId.get('BAA10Y') || [], date);
-      creditComposite += clamp((baaZ + 1) / 4, 0, 1);  // Map z-score to 0-1
-      creditParts++;
+      const baaPressure = clamp(baaZ / 3, -1, 1);  // Same as credit_context.service
+      creditComposite += baaPressure * 0.4;
+      creditWeight += 0.4;
     }
     if (vixVal !== null) {
-      creditComposite += clamp((vixVal - 12) / 40, 0, 1);  // Map VIX 12-52 to 0-1
-      creditParts++;
+      const vixPressure = clamp((vixVal - 20) / 15, -1, 1);  // Same as credit_context.service
+      creditComposite += vixPressure * 0.3;
+      creditWeight += 0.3;
     }
     
-    if (creditParts > 0) {
-      creditComposite = creditComposite / creditParts;
+    if (creditWeight > 0) {
+      creditComposite = creditComposite / creditWeight;
     }
     
     samples.push({
       date,
       scoreSigned,
-      creditComposite,  // B6: For guard calculation
-      vix: vixVal ?? 20,  // B6: For guard calculation
+      creditComposite: Math.round(creditComposite * 1000) / 1000,  // B6: For guard calculation
+      vix: vixVal ?? 20,  // B6: For guard calculation (raw value)
       components,
     });
   }
