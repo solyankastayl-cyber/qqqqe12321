@@ -480,7 +480,7 @@ export async function getCreditScoreComponent(): Promise<{
 }> {
   const ctx = await buildCreditContext();
   
-  const anyAvailable = ctx.baa.available || ctx.hy.available || ctx.fsi.available;
+  const anyAvailable = ctx.baa.available || ctx.ted.available || ctx.vix.available;
   
   return {
     key: 'CREDIT',
