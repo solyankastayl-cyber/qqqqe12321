@@ -46,7 +46,7 @@ export interface ActivitySeriesContext {
 }
 
 export interface ActivityContext {
-  pmi: ActivitySeriesContext;
+  manemp: ActivitySeriesContext;
   indpro: ActivitySeriesContext;
   tcu: ActivitySeriesContext;
   
