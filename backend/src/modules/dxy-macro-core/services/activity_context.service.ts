@@ -65,8 +65,8 @@ export interface ActivityContext {
 // ═══════════════════════════════════════════════════════════════
 
 const WEIGHTS = {
-  NAPM: 0.45,
-  INDPRO: 0.30,
+  MANEMP: 0.35,  // Manufacturing Employment (replaces NAPM)
+  INDPRO: 0.40,
   TCU: 0.25,
 };
 
