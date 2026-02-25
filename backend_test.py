@@ -20,6 +20,11 @@ class C7ClusteringTester:
         self.results = {}
         self.determinism_data = {}
         
+    def log(self, message: str, level: str = "INFO"):
+        """Log test messages"""
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        print(f"[{timestamp}] {level}: {message}")
+
     def log_test(self, name: str, success: bool, details: str = ""):
         """Log test result"""
         self.tests_run += 1
@@ -30,26 +35,39 @@ class C7ClusteringTester:
             self.failures.append(f"{name}: {details}")
             print(f"❌ {name}: FAILED {details}")
     
-    def call_api(self, endpoint: str, method: str = "GET", data: Dict = None) -> tuple[bool, Dict, int]:
-        """Make API call and return (success, response_data, status_code)"""
-        url = f"{self.base_url}/api/ae/{endpoint}"
+    def api_call(self, method: str, endpoint: str, params: Optional[Dict] = None, data: Optional[Dict] = None) -> Dict:
+        """Make API call and return JSON response"""
+        url = f"{self.base_url}/{endpoint.lstrip('/')}"
         headers = {'Content-Type': 'application/json'}
         
+        self.log(f"API {method} {url}")
+        
         try:
-            if method == "GET":
-                response = requests.get(url, headers=headers, timeout=30)
-            elif method == "POST":
-                response = requests.post(url, json=data, headers=headers, timeout=30)
+            if method == 'GET':
+                response = requests.get(url, headers=headers, params=params, timeout=30)
+            elif method == 'POST':
+                response = requests.post(url, headers=headers, params=params, json=data, timeout=120)
+            else:
+                raise ValueError(f"Unsupported method: {method}")
+
+            self.log(f"Response: {response.status_code}")
             
-            try:
-                json_data = response.json()
-            except:
-                json_data = {}
+            if response.status_code >= 400:
+                self.log(f"Error response: {response.text}", "ERROR")
+                return {
+                    'ok': False, 
+                    'error': f'HTTP {response.status_code}: {response.text}',
+                    'status_code': response.status_code
+                }
             
-            return response.status_code == 200, json_data, response.status_code
-        except Exception as e:
-            print(f"❌ API call failed: {endpoint} - {str(e)}")
-            return False, {}, 0
+            return response.json()
+            
+        except requests.exceptions.Timeout:
+            return {'ok': False, 'error': 'Request timeout'}
+        except requests.exceptions.RequestException as e:
+            return {'ok': False, 'error': f'Request error: {str(e)}'}
+        except json.JSONDecodeError:
+            return {'ok': False, 'error': 'Invalid JSON response'}
     
     def test_health_endpoint(self):
         """Test /api/ae/health endpoint"""
