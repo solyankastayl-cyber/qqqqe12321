@@ -226,7 +226,8 @@ KNN cosine distance (K=20):
 - **C4 — Scenario Engine** ✅
 - **C5 — Novelty Detection** ✅
 - **C6 — Historical Backfill** ✅
-- **C7 — Regime Clustering** ✅ NEW
+- **C7 — Regime Clustering** ✅
+- **C8 — Transition Matrix** ✅ NEW
 
 ### Frozen ❄️
 - SPX Module
