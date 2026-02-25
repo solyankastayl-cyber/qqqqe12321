@@ -239,6 +239,31 @@ function classifyRegime(score: number): 'RISK_OFF' | 'NEUTRAL' | 'RISK_ON' {
   return 'NEUTRAL';
 }
 
+/**
+ * B6: Classify Crisis Guard Level
+ * 
+ * BLOCK: creditComposite > 0.5 AND VIX > 35
+ * WARN:  creditComposite > 0.4 AND macroScoreSigned > 0.2
+ * NONE:  otherwise
+ */
+function classifyGuardLevel(
+  creditComposite: number,
+  vix: number,
+  macroScoreSigned: number
+): GuardLevel {
+  // Primary Trigger: BLOCK
+  if (creditComposite > BLOCK_CREDIT_THRESHOLD && vix > BLOCK_VIX_THRESHOLD) {
+    return 'BLOCK';
+  }
+  
+  // Secondary Trigger: WARN
+  if (creditComposite > WARN_CREDIT_THRESHOLD && macroScoreSigned > WARN_MACRO_SCORE_THRESHOLD) {
+    return 'WARN';
+  }
+  
+  return 'NONE';
+}
+
 // ═══════════════════════════════════════════════════════════════
 // SCORE TIME SERIES BUILDER
 // ═══════════════════════════════════════════════════════════════
@@ -246,6 +271,8 @@ function classifyRegime(score: number): 'RISK_OFF' | 'NEUTRAL' | 'RISK_ON' {
 interface ScoreSample {
   date: string;
   scoreSigned: number;
+  creditComposite: number;  // B6: Added for guard calculation
+  vix: number;              // B6: Added for guard calculation
   components: MacroScoreComponent[];
 }
 
