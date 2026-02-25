@@ -39,7 +39,7 @@ export async function registerMacroRoutes(fastify: FastifyInstance): Promise<voi
     return {
       ok: true,
       module: 'dxy-macro-core',
-      version: 'B4.1',  // Updated for housing
+      version: 'B4.3',  // Updated for credit
       fred: {
         ...fredHealth,
         hasApiKey: hasFredApiKey(),
