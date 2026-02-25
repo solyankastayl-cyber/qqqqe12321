@@ -1,0 +1,529 @@
+{
+  "timestamp": "2026-02-25T16:53:31.221338",
+  "summary": {
+    "passed": 6,
+    "total": 6,
+    "success_rate": "100.0%",
+    "local_backend_status": "WORKING",
+    "public_url_status": "ROUTING_ISSUE"
+  },
+  "endpoints_tested": {
+    "health_check": "/api/health",
+    "ae_brain_health": "/api/ae/health",
+    "ae_terminal": "/api/ae/terminal",
+    "transition_compute": "/api/ae/admin/transition/compute",
+    "transition_matrix": "/api/ae/transition/matrix",
+    "transition_current": "/api/ae/transition/current",
+    "transition_durations": "/api/ae/transition/durations"
+  },
+  "validation_results": {
+    "c8_transition_matrix": "IMPLEMENTED",
+    "three_labels_present": "PASS",
+    "row_sums_valid": "PASS",
+    "risk_to_stress_metrics": "PASS",
+    "matrix_computation": "PASS"
+  },
+  "tests": [
+    {
+      "test_name": "Basic Health Check (/api/health)",
+      "passed": true,
+      "details": "Local: 200 (True), Public: 404 (False), Local ok: True",
+      "timestamp": "2026-02-25T16:53:08.619504"
+    },
+    {
+      "test_name": "AE Brain Health (/api/ae/health)",
+      "passed": true,
+      "details": "Local: 200, Public: 404, module: ae-brain, components: 5",
+      "timestamp": "2026-02-25T16:53:10.219330"
+    },
+    {
+      "test_name": "AE Terminal Full Pack (/api/ae/terminal)",
+      "passed": true,
+      "details": "Local: 200, Public: 404, missing_components: 0, has_C8_transition: True, has_riskToStress: True",
+      "timestamp": "2026-02-25T16:53:26.020127"
+    },
+    {
+      "test_name": "Transition Matrix Compute (/api/ae/admin/transition/compute)",
+      "passed": true,
+      "details": "Local: 200, Public: 404, labels: 3, samples: 312, matrix_size: 3x3",
+      "timestamp": "2026-02-25T16:53:27.419678"
+    },
+    {
+      "test_name": "Transition Matrix Properties Validation",
+      "passed": true,
+      "details": "Local: 200, Public: 404, expected_labels: True, row_sums_valid: True, labels: ['LIQUIDITY_EXPANSION', 'RISK_OFF_STRESS', 'TIGHTENING_USD_SUPPORTIVE']",
+      "timestamp": "2026-02-25T16:53:28.819877"
+    },
+    {
+      "test_name": "Transition Current Metrics (/api/ae/transition/current)",
+      "passed": true,
+      "details": "Local: 200, Public: 404, has_matrix: True, has_derived: True, has_riskToStress_periods: True, p1w: 0.0167, p2w: 0.0258, p4w: 0.0331",
+      "timestamp": "2026-02-25T16:53:30.219761"
+    }
+  ],
+  "detailed_endpoint_results": {
+    "basic_health": {
+      "passed": true,
+      "local_result": {
+        "status": 200,
+        "success": true,
+        "data": {
+          "ok": true,
+          "mode": "FRACTAL_ONLY",
+          "timestamp": "2026-02-25T16:53:08.037Z"
+        },
+        "error": null
+      },
+      "public_result": {
+        "status": 404,
+        "success": false,
+        "data": null,
+        "error": "404 page not found\n"
+      }
+    },
+    "ae_brain_health": {
+      "passed": true,
+      "local_result": {
+        "status": 200,
+        "success": true,
+        "data": {
+          "ok": true,
+          "module": "ae-brain",
+          "version": "C1-C5",
+          "components": [
+            "state",
+            "regime",
+            "causal",
+            "scenarios",
+            "novelty"
+          ],
+          "noveltyStats": {
+            "totalSnapshots": 1357,
+            "dateRange": {
+              "from": "2000-01-01",
+              "to": "2025-12-27"
+            }
+          }
+        },
+        "error": null
+      },
+      "public_result": {
+        "status": 404,
+        "success": false,
+        "data": null,
+        "error": "404 page not found\n"
+      }
+    },
+    "ae_terminal": {
+      "passed": true,
+      "local_result": {
+        "status": 200,
+        "success": true,
+        "data": {
+          "ok": true,
+          "asOf": "2026-02-25",
+          "state": {
+            "asOf": "2026-02-25",
+            "vector": {
+              "macroSigned": -0.007,
+              "macroConfidence": 0.3,
+              "guardLevel": 0.66,
+              "dxySignalSigned": -0.1941697464836912,
+              "dxyConfidence": 1,
+              "regimeBias90d": 0
+            },
+            "health": {
+              "ok": true,
+              "missing": []
+            }
+          },
+          "regime": {
+            "regime": "RISK_OFF_STRESS",
+            "confidence": 0.85,
+            "reasons": [
+              "Guard level elevated (66%)",
+              "Crisis/Block mode active"
+            ],
+            "timestamp": "2026-02-25T16:53:25.427Z"
+          },
+          "causal": {
+            "links": [
+              {
+                "from": "Rates",
+                "to": "USD",
+                "impact": "+",
+                "strength": 0.59,
+                "reason": "Higher rates attract USD flows"
+              },
+              {
+                "from": "Rates",
+                "to": "SPX",
+                "impact": "-",
+                "strength": 0.57,
+                "reason": "Higher rates compress equity valuations"
+              },
+              {
+                "from": "CreditStress",
+                "to": "SPX",
+                "impact": "-",
+                "strength": 0.76,
+                "reason": "Credit stress reduces risk appetite"
+              },
+              {
+                "from": "CreditStress",
+                "to": "BTC",
+                "impact": "-",
+                "strength": 0.66,
+                "reason": "Stress triggers risk-off in crypto"
+              },
+              {
+                "from": "Liquidity",
+                "to": "SPX",
+                "impact": "+",
+                "strength": 0.71,
+                "reason": "Liquidity expansion supports equities"
+              },
+              {
+                "from": "Liquidity",
+                "to": "BTC",
+                "impact": "+",
+                "strength": 0.76,
+                "reason": "Liquidity expansion drives crypto"
+              },
+              {
+                "from": "USD",
+                "to": "BTC",
+                "impact": "-",
+                "strength": 0.62,
+                "reason": "Strong USD pressures BTC (inverse correlation)"
+              },
+              {
+                "from": "USD",
+                "to": "SPX",
+                "impact": "-",
+                "strength": 0.47,
+                "reason": "Strong USD headwind for multinationals"
+              },
+              {
+                "from": "Inflation",
+                "to": "Rates",
+                "impact": "+",
+                "strength": 0.67,
+                "reason": "Higher inflation leads to rate hikes"
+              },
+              {
+                "from": "Activity",
+                "to": "SPX",
+                "impact": "+",
+                "strength": 0.62,
+                "reason": "Strong activity supports earnings"
+              }
+            ],
+            "timestamp": "2026-02-25T16:53:25.427Z"
+          },
+          "scenarios": {
+            "scenarios": [
+              {
+                "name": "BASE",
+                "prob": 0.454,
+                "tilt": {
+                  "DXY": "DOWN",
+                  "SPX": "DOWN",
+                  "BTC": "DOWN"
+                },
+                "notes": [
+                  "Continuation of current trends",
+                  "Macro signals near neutral"
+                ],
+                "volatilityExpectation": "MEDIUM"
+              },
+              {
+                "name": "BULL_RISK_ON",
+                "prob": 0.19,
+                "tilt": {
+                  "DXY": "DOWN",
+                  "SPX": "UP",
+                  "BTC": "UP"
+                },
+                "notes": [
+                  "Risk appetite improves",
+                  "Dovish macro supports risk"
+                ],
+                "volatilityExpectation": "MEDIUM"
+              },
+              {
+                "name": "BEAR_STRESS",
+                "prob": 0.355,
+                "tilt": {
+                  "DXY": "UP",
+                  "SPX": "DOWN",
+                  "BTC": "DOWN"
+                },
+                "notes": [
+                  "Risk-off escalation",
+                  "Elevated stress persists",
+                  "Crisis conditions dominate"
+                ],
+                "volatilityExpectation": "HIGH"
+              }
+            ],
+            "timestamp": "2026-02-25T16:53:25.427Z"
+          },
+          "novelty": {
+            "novelty": "KNOWN",
+            "score": 0.099,
+            "nearest": [
+              "2016-01-30",
+              "2016-02-06",
+              "2016-02-20",
+              "2016-02-13",
+              "2016-02-27"
+            ],
+            "timestamp": "2026-02-25T16:53:25.427Z"
+          },
+          "transition": {
+            "currentLabel": "LIQUIDITY_EXPANSION",
+            "mostLikelyNext": "LIQUIDITY_EXPANSION",
+            "mostLikelyNextProb": 0.9667,
+            "selfTransitionProb": 0.9667,
+            "riskToStress": {
+              "p1w": 0.0167,
+              "p2w": 0.0258,
+              "p4w": 0.0331
+            },
+            "medianDurationWeeks": 4
+          },
+          "recommendation": {
+            "sizeMultiplier": 0.6,
+            "guard": "CRISIS",
+            "notes": [
+              "Reduced exposure \u2014 crisis mode"
+            ]
+          },
+          "explain": {
+            "headline": "Crisis regime: USD weakness, risk assets under pressure",
+            "drivers": [
+              "CreditStress -| SPX",
+              "Liquidity -> BTC",
+              "Liquidity -> SPX"
+            ],
+            "limits": [
+              "SPX/BTC integration pending (D-Track)"
+            ]
+          },
+          "computedAt": "2026-02-25T16:53:11.340Z"
+        },
+        "error": null
+      },
+      "public_result": {
+        "status": 404,
+        "success": false,
+        "data": null,
+        "error": "404 page not found\n"
+      }
+    },
+    "transition_compute": {
+      "passed": true,
+      "local_result": {
+        "status": 200,
+        "success": true,
+        "data": {
+          "ok": true,
+          "matrix": {
+            "meta": {
+              "from": "2020-01-01",
+              "to": "2025-12-31",
+              "stepDays": 7,
+              "alpha": 1,
+              "samples": 312,
+              "labels": [
+                "LIQUIDITY_EXPANSION",
+                "RISK_OFF_STRESS",
+                "TIGHTENING_USD_SUPPORTIVE"
+              ],
+              "computedAt": "2026-02-25T16:53:27.122Z"
+            },
+            "matrix": [
+              [
+                0.9667,
+                0.0167,
+                0.0167
+              ],
+              [
+                0.2857,
+                0.5714,
+                0.1429
+              ],
+              [
+                0.0103,
+                0.0052,
+                0.9845
+              ]
+            ],
+            "rowSums": [
+              1.0001,
+              1,
+              1
+            ]
+          }
+        },
+        "error": null
+      },
+      "public_result": {
+        "status": 404,
+        "success": false,
+        "data": null,
+        "error": "404 page not found\n"
+      }
+    },
+    "transition_matrix_properties": {
+      "passed": true,
+      "local_result": {
+        "status": 200,
+        "success": true,
+        "data": {
+          "ok": true,
+          "matrix": {
+            "meta": {
+              "from": "2020-01-01",
+              "to": "2025-12-31",
+              "stepDays": 7,
+              "alpha": 1,
+              "samples": 312,
+              "labels": [
+                "LIQUIDITY_EXPANSION",
+                "RISK_OFF_STRESS",
+                "TIGHTENING_USD_SUPPORTIVE"
+              ],
+              "computedAt": "2026-02-25T16:53:27.122Z"
+            },
+            "matrix": [
+              [
+                0.9667,
+                0.0167,
+                0.0167
+              ],
+              [
+                0.2857,
+                0.5714,
+                0.1429
+              ],
+              [
+                0.0103,
+                0.0052,
+                0.9845
+              ]
+            ],
+            "rowSums": [
+              1.0001,
+              1,
+              1
+            ]
+          }
+        },
+        "error": null
+      },
+      "public_result": {
+        "status": 404,
+        "success": false,
+        "data": null,
+        "error": "404 page not found\n"
+      }
+    },
+    "transition_current_metrics": {
+      "passed": true,
+      "local_result": {
+        "status": 200,
+        "success": true,
+        "data": {
+          "ok": true,
+          "matrix": {
+            "meta": {
+              "from": "2020-01-01",
+              "to": "2025-12-31",
+              "stepDays": 7,
+              "alpha": 1,
+              "samples": 312,
+              "labels": [
+                "LIQUIDITY_EXPANSION",
+                "RISK_OFF_STRESS",
+                "TIGHTENING_USD_SUPPORTIVE"
+              ],
+              "computedAt": "2026-02-25T16:53:27.122Z"
+            },
+            "matrix": [
+              [
+                0.9667,
+                0.0167,
+                0.0167
+              ],
+              [
+                0.2857,
+                0.5714,
+                0.1429
+              ],
+              [
+                0.0103,
+                0.0052,
+                0.9845
+              ]
+            ],
+            "rowSums": [
+              1.0001,
+              1,
+              1
+            ]
+          },
+          "derived": {
+            "stressLabels": [
+              "RISK_OFF_STRESS"
+            ],
+            "currentLabel": "LIQUIDITY_EXPANSION",
+            "riskToStress": {
+              "label": "LIQUIDITY_EXPANSION",
+              "p1w": 0.0167,
+              "p2w": 0.0258,
+              "p4w": 0.0331
+            },
+            "mostLikelyNext": "LIQUIDITY_EXPANSION",
+            "mostLikelyNextProb": 0.9667,
+            "selfTransitionProb": 0.9667
+          },
+          "durations": [
+            {
+              "label": "RISK_OFF_STRESS",
+              "count": 22,
+              "medianWeeks": 4,
+              "meanWeeks": 8,
+              "p90Weeks": 13,
+              "maxWeeks": 48
+            },
+            {
+              "label": "LIQUIDITY_EXPANSION",
+              "count": 17,
+              "medianWeeks": 4,
+              "meanWeeks": 41.6,
+              "p90Weeks": 120,
+              "maxWeeks": 282
+            },
+            {
+              "label": "TIGHTENING_USD_SUPPORTIVE",
+              "count": 14,
+              "medianWeeks": 6,
+              "meanWeeks": 33.9,
+              "p90Weeks": 128,
+              "maxWeeks": 183
+            }
+          ]
+        },
+        "error": null
+      },
+      "public_result": {
+        "status": 404,
+        "success": false,
+        "data": null,
+        "error": "404 page not found\n"
+      }
+    }
+  }
+}
