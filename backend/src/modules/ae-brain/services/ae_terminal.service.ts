@@ -3,13 +3,17 @@
  * Aggregates C1-C5 into unified terminal output
  */
 
-import type { AeTerminal, GuardMode } from '../contracts/ae_terminal.contract.js';
+import type { AeTerminal, GuardMode, AeClusterInfo, AeTransitionInfo } from '../contracts/ae_terminal.contract.js';
 import { buildAeState } from './ae_state.service.js';
 import { classifyRegime } from './ae_regime.service.js';
 import { buildCausalGraph, getKeyDrivers } from './ae_causal.service.js';
 import { buildScenarios } from './ae_scenarios.service.js';
 import { computeNovelty, snapshotState, getStateFromDB } from './ae_novelty.service.js';
 import { clamp } from '../utils/ae_math.js';
+
+// C7 & C8 imports
+import { getCurrentCluster } from '../cluster/services/cluster.service.js';
+import { getTransitionPack } from '../transition/services/transition.service.js';
 
 // Guard level to mode mapping
 const GUARD_LEVEL_TO_MODE: Record<number, GuardMode> = {
