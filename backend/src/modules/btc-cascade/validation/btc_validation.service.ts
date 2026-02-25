@@ -1,0 +1,580 @@
+/**
+ * BTC CASCADE OOS VALIDATION SERVICE — D2.1
+ * 
+ * Runs out-of-sample validation comparing:
+ * A) Baseline BTC (no cascade, size=1.0)
+ * B) BTC Cascade (full DXY→AE→SPX→BTC chain)
+ * 
+ * KEY FORMULA:
+ * PnL_t = signalDirection_t * return_{t+1} * sizeMultiplier_t
+ */
+
+import { getMongoDb } from '../../../db/mongoose.js';
+import type {
+  ValidationResult,
+  ValidationMetrics,
+  MetricsDelta,
+  ExposureDistribution,
+  AcceptanceCriteria,
+  PeriodBreakdown,
+  DailySignal,
+} from './btc_validation.contract.js';
+
+import {
+  calcStressMultiplier,
+  calcScenarioMultiplier,
+  calcNoveltyMultiplier,
+  calcSpxCouplingMultiplier,
+  BTC_GUARD_CAPS,
+} from '../btc_cascade.rules.js';
+
+// ═══════════════════════════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════════════════════════
+
+const PERIODS = [
+  { name: '2021 Bull', from: '2021-01-01', to: '2021-12-31' },
+  { name: '2022 Tightening', from: '2022-01-01', to: '2022-12-31' },
+  { name: '2023 Sideways', from: '2023-01-01', to: '2023-12-31' },
+  { name: '2024 Recovery', from: '2024-01-01', to: '2024-12-31' },
+  { name: '2025 Current', from: '2025-01-01', to: '2025-12-31' },
+];
+
+// ═══════════════════════════════════════════════════════════════
+// DATA LOADING
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Load BTC candles from MongoDB.
+ */
+async function loadBtcCandles(from: string, to: string): Promise<Array<{
+  date: string;
+  close: number;
+}>> {
+  const db = getMongoDb();
+  
+  // Try different collection names
+  const collections = ['btc_candles', 'candles', 'canonical_candles'];
+  
+  for (const collName of collections) {
+    try {
+      const candles = await db.collection(collName)
+        .find({
+          $or: [
+            { date: { $gte: from, $lte: to } },
+            { symbol: 'BTC', date: { $gte: from, $lte: to } },
+          ]
+        })
+        .sort({ date: 1 })
+        .toArray();
+      
+      if (candles.length > 0) {
+        return candles.map(c => ({
+          date: c.date,
+          close: c.close || c.c || c.price,
+        }));
+      }
+    } catch (e) {
+      continue;
+    }
+  }
+  
+  // Try OHLC collection with symbol filter
+  try {
+    const candles = await db.collection('ohlc')
+      .find({ symbol: 'BTC', date: { $gte: from, $lte: to } })
+      .sort({ date: 1 })
+      .toArray();
+    
+    if (candles.length > 0) {
+      return candles.map(c => ({
+        date: c.date,
+        close: c.close || c.c,
+      }));
+    }
+  } catch (e) {
+    // Continue
+  }
+  
+  return [];
+}
+
+/**
+ * Load AE state vectors for as-of backtest.
+ */
+async function loadAeStateVectors(from: string, to: string): Promise<Map<string, {
+  guardLevel: number;
+  pStress4w: number;
+  bearProb: number;
+  bullProb: number;
+  noveltyScore: number;
+  regime: string;
+}>> {
+  const db = getMongoDb();
+  const map = new Map();
+  
+  try {
+    const vectors = await db.collection('ae_state_vectors')
+      .find({ asOf: { $gte: from, $lte: to } })
+      .sort({ asOf: 1 })
+      .toArray();
+    
+    for (const v of vectors) {
+      map.set(v.asOf, {
+        guardLevel: v.guardLevel ?? 0,
+        pStress4w: 0.06, // Default, will be enriched from transition data
+        bearProb: 0.25,
+        bullProb: 0.25,
+        noveltyScore: v.noveltyScore ?? 0,
+        regime: v.regimeLabel ?? 'NEUTRAL',
+      });
+    }
+  } catch (e) {
+    console.warn('[BTC Validation] No AE state vectors found');
+  }
+  
+  // Try to load transition data for stress probabilities
+  try {
+    const transitions = await db.collection('ae_transition_matrices')
+      .find({})
+      .sort({ computedAt: -1 })
+      .limit(1)
+      .toArray();
+    
+    if (transitions.length > 0) {
+      // Use latest matrix for stress probabilities
+      // In production, would need as-of query
+    }
+  } catch (e) {
+    // Continue with defaults
+  }
+  
+  return map;
+}
+
+/**
+ * Load SPX cascade data for coupling.
+ */
+async function loadSpxCascadeData(from: string, to: string): Promise<Map<string, number>> {
+  const db = getMongoDb();
+  const map = new Map();
+  
+  // Try to load from SPX state vectors or cascade runs
+  try {
+    const vectors = await db.collection('ae_state_vectors')
+      .find({ asOf: { $gte: from, $lte: to } })
+      .sort({ asOf: 1 })
+      .toArray();
+    
+    for (const v of vectors) {
+      // Estimate SPX exposure from macro conditions
+      // In production would fetch from actual SPX cascade
+      const macroScore = v.macroSigned ?? 0;
+      const guardLevel = v.guardLevel ?? 0;
+      
+      // Simple model: positive macro → higher SPX exposure
+      let spxAdj = 0.8 + macroScore * 0.3;
+      
+      // Apply guard haircut
+      if (guardLevel >= 3) spxAdj = 0;
+      else if (guardLevel >= 2) spxAdj *= 0.4;
+      else if (guardLevel >= 1) spxAdj *= 0.75;
+      
+      map.set(v.asOf, Math.max(0, Math.min(1, spxAdj)));
+    }
+  } catch (e) {
+    // Continue with defaults
+  }
+  
+  return map;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SIGNAL GENERATION
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Generate BTC core signal (simplified model for validation).
+ * 
+ * In production, would replay actual BTC fractal engine.
+ * Here we use a momentum-based proxy.
+ */
+function generateBtcCoreSignal(
+  prices: number[],
+  index: number,
+  lookback: number = 30
+): { direction: number; confidence: number } {
+  if (index < lookback) {
+    return { direction: 0, confidence: 0.5 };
+  }
+  
+  // Simple momentum: compare current price to lookback average
+  const slice = prices.slice(index - lookback, index);
+  const avg = slice.reduce((a, b) => a + b, 0) / slice.length;
+  const current = prices[index];
+  const momentum = (current - avg) / avg;
+  
+  // Direction based on momentum
+  let direction = 0;
+  if (momentum > 0.02) direction = 1; // LONG
+  else if (momentum < -0.02) direction = -1; // SHORT
+  
+  // Confidence based on momentum strength
+  const confidence = Math.min(1, Math.abs(momentum) * 10);
+  
+  return { direction, confidence };
+}
+
+/**
+ * Calculate cascade size multiplier.
+ */
+function calculateCascadeSize(
+  guardLevel: number,
+  pStress4w: number,
+  bearProb: number,
+  bullProb: number,
+  noveltyScore: number,
+  spxAdj: number
+): { size: number; mStress: number; mScenario: number; mNovel: number; mSPX: number; guardName: string } {
+  // Determine guard
+  let guardName: 'NONE' | 'WARN' | 'CRISIS' | 'BLOCK' = 'NONE';
+  if (guardLevel >= 3) guardName = 'BLOCK';
+  else if (guardLevel >= 2) guardName = 'CRISIS';
+  else if (guardLevel >= 1) guardName = 'WARN';
+  
+  const guardCap = BTC_GUARD_CAPS[guardName];
+  
+  // Calculate multipliers
+  const mStress = calcStressMultiplier(pStress4w);
+  const mScenario = calcScenarioMultiplier(bearProb, bullProb);
+  const noveltyLabel = noveltyScore > 0.12 ? 'RARE' : 'NORMAL';
+  const mNovel = calcNoveltyMultiplier(noveltyLabel);
+  const mSPX = calcSpxCouplingMultiplier(spxAdj);
+  
+  // Total multiplier
+  const mTotal = mStress * mScenario * mNovel * mSPX;
+  const size = Math.min(guardCap, mTotal);
+  
+  return { size, mStress, mScenario, mNovel, mSPX, guardName };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EQUITY CALCULATION
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Calculate equity curve and metrics.
+ */
+function calculateEquityMetrics(
+  signals: DailySignal[],
+  useBaseline: boolean
+): ValidationMetrics {
+  if (signals.length === 0) {
+    return {
+      hitRate: 0, bias: 0, equityFinal: 1, maxDrawdown: 0,
+      volatility: 0, avgExposure: 0, tradeCount: 0,
+      winLossRatio: 0, wins: 0, losses: 0,
+    };
+  }
+  
+  let equity = 1.0;
+  let peak = 1.0;
+  let maxDD = 0;
+  
+  let correctPredictions = 0;
+  let totalPredictions = 0;
+  let biasSum = 0;
+  let wins = 0;
+  let losses = 0;
+  let exposureSum = 0;
+  
+  const returns: number[] = [];
+  
+  for (let i = 1; i < signals.length; i++) {
+    const signal = signals[i - 1];
+    const nextSignal = signals[i];
+    
+    const direction = signal.direction;
+    const size = useBaseline ? signal.baselineSize : signal.cascadeSize;
+    const actualReturn = nextSignal.dailyReturn;
+    
+    // Skip if no position
+    if (direction === 0 || size === 0) continue;
+    
+    // PnL = direction * return * size
+    const pnl = direction * actualReturn * size;
+    equity *= (1 + pnl);
+    returns.push(pnl);
+    
+    // Track metrics
+    totalPredictions++;
+    exposureSum += Math.abs(size);
+    
+    // Hit rate: direction correct?
+    const isCorrect = (direction > 0 && actualReturn > 0) || (direction < 0 && actualReturn < 0);
+    if (isCorrect) {
+      correctPredictions++;
+      wins++;
+    } else {
+      losses++;
+    }
+    
+    // Bias: prediction vs actual
+    biasSum += direction * 0.01 - actualReturn; // Assume 1% expected
+    
+    // Max drawdown
+    peak = Math.max(peak, equity);
+    const dd = (peak - equity) / peak;
+    maxDD = Math.max(maxDD, dd);
+  }
+  
+  // Calculate volatility
+  const avgReturn = returns.length > 0 
+    ? returns.reduce((a, b) => a + b, 0) / returns.length 
+    : 0;
+  const variance = returns.length > 1
+    ? returns.reduce((sum, r) => sum + Math.pow(r - avgReturn, 2), 0) / (returns.length - 1)
+    : 0;
+  const volatility = Math.sqrt(variance);
+  
+  return {
+    hitRate: totalPredictions > 0 ? correctPredictions / totalPredictions : 0,
+    bias: totalPredictions > 0 ? biasSum / totalPredictions : 0,
+    equityFinal: equity,
+    maxDrawdown: maxDD,
+    volatility,
+    avgExposure: totalPredictions > 0 ? exposureSum / totalPredictions : 0,
+    tradeCount: totalPredictions,
+    winLossRatio: losses > 0 ? wins / losses : wins,
+    wins,
+    losses,
+  };
+}
+
+/**
+ * Calculate exposure distribution.
+ */
+function calculateExposureDistribution(signals: DailySignal[]): ExposureDistribution {
+  const counts = { NONE: 0, WARN: 0, CRISIS: 0, BLOCK: 0 };
+  
+  for (const s of signals) {
+    const guard = s.guardLevel.toUpperCase() as keyof typeof counts;
+    if (guard in counts) {
+      counts[guard]++;
+    } else {
+      counts.NONE++;
+    }
+  }
+  
+  const total = signals.length || 1;
+  return {
+    none: counts.NONE / total,
+    warn: counts.WARN / total,
+    crisis: counts.CRISIS / total,
+    block: counts.BLOCK / total,
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MAIN VALIDATION FUNCTION
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Run OOS validation for BTC cascade.
+ */
+export async function runBtcOosValidation(
+  from: string,
+  to: string,
+  focus: string = '30d'
+): Promise<ValidationResult> {
+  const t0 = Date.now();
+  
+  console.log(`[BTC Validation] Running OOS validation ${from} → ${to}`);
+  
+  // Load data
+  const candles = await loadBtcCandles(from, to);
+  const aeVectors = await loadAeStateVectors(from, to);
+  const spxCascade = await loadSpxCascadeData(from, to);
+  
+  console.log(`[BTC Validation] Loaded ${candles.length} candles, ${aeVectors.size} AE vectors`);
+  
+  // Build daily signals
+  const signals: DailySignal[] = [];
+  const prices = candles.map(c => c.close);
+  
+  for (let i = 1; i < candles.length; i++) {
+    const candle = candles[i];
+    const prevCandle = candles[i - 1];
+    const dailyReturn = (candle.close - prevCandle.close) / prevCandle.close;
+    
+    // Get BTC core signal
+    const { direction, confidence } = generateBtcCoreSignal(prices, i);
+    
+    // Get cascade inputs (as-of)
+    const ae = aeVectors.get(candle.date) ?? {
+      guardLevel: 0,
+      pStress4w: 0.06,
+      bearProb: 0.25,
+      bullProb: 0.25,
+      noveltyScore: 0,
+      regime: 'NEUTRAL',
+    };
+    
+    const spxAdj = spxCascade.get(candle.date) ?? 0.8;
+    
+    // Calculate cascade size
+    const cascade = calculateCascadeSize(
+      ae.guardLevel,
+      ae.pStress4w,
+      ae.bearProb,
+      ae.bullProb,
+      ae.noveltyScore,
+      spxAdj
+    );
+    
+    signals.push({
+      date: candle.date,
+      price: candle.close,
+      dailyReturn,
+      direction,
+      baselineSize: 1.0,
+      cascadeSize: cascade.size,
+      guardLevel: cascade.guardName,
+      mStress: cascade.mStress,
+      mScenario: cascade.mScenario,
+      mNovel: cascade.mNovel,
+      mSPX: cascade.mSPX,
+    });
+  }
+  
+  console.log(`[BTC Validation] Generated ${signals.length} daily signals`);
+  
+  // Calculate metrics
+  const baseline = calculateEquityMetrics(signals, true);
+  const cascade = calculateEquityMetrics(signals, false);
+  
+  // Calculate delta
+  const delta: MetricsDelta = {
+    equityDiff: cascade.equityFinal - baseline.equityFinal,
+    equityDiffPct: baseline.equityFinal !== 0 
+      ? (cascade.equityFinal - baseline.equityFinal) / baseline.equityFinal * 100 
+      : 0,
+    maxDDDiff: cascade.maxDrawdown - baseline.maxDrawdown,
+    maxDDDiffPct: baseline.maxDrawdown !== 0 
+      ? (cascade.maxDrawdown - baseline.maxDrawdown) / baseline.maxDrawdown * 100 
+      : 0,
+    volDiff: cascade.volatility - baseline.volatility,
+    volDiffPct: baseline.volatility !== 0 
+      ? (cascade.volatility - baseline.volatility) / baseline.volatility * 100 
+      : 0,
+    hitRateDiff: cascade.hitRate - baseline.hitRate,
+  };
+  
+  // Exposure distribution
+  const exposureDistribution = calculateExposureDistribution(signals);
+  const avgSizeMultiplier = signals.length > 0
+    ? signals.reduce((sum, s) => sum + s.cascadeSize, 0) / signals.length
+    : 0;
+  
+  // Acceptance criteria
+  const acceptance = evaluateAcceptance(baseline, cascade, delta);
+  
+  // Period breakdown
+  const breakdown: PeriodBreakdown[] = [];
+  for (const period of PERIODS) {
+    if (period.from >= from && period.to <= to) {
+      const periodSignals = signals.filter(s => s.date >= period.from && s.date <= period.to);
+      if (periodSignals.length > 0) {
+        const periodBaseline = calculateEquityMetrics(periodSignals, true);
+        const periodCascade = calculateEquityMetrics(periodSignals, false);
+        const periodDelta: MetricsDelta = {
+          equityDiff: periodCascade.equityFinal - periodBaseline.equityFinal,
+          equityDiffPct: periodBaseline.equityFinal !== 0 
+            ? (periodCascade.equityFinal - periodBaseline.equityFinal) / periodBaseline.equityFinal * 100 
+            : 0,
+          maxDDDiff: periodCascade.maxDrawdown - periodBaseline.maxDrawdown,
+          maxDDDiffPct: periodBaseline.maxDrawdown !== 0 
+            ? (periodCascade.maxDrawdown - periodBaseline.maxDrawdown) / periodBaseline.maxDrawdown * 100 
+            : 0,
+          volDiff: periodCascade.volatility - periodBaseline.volatility,
+          volDiffPct: periodBaseline.volatility !== 0 
+            ? (periodCascade.volatility - periodBaseline.volatility) / periodBaseline.volatility * 100 
+            : 0,
+          hitRateDiff: periodCascade.hitRate - periodBaseline.hitRate,
+        };
+        
+        breakdown.push({
+          period: period.name,
+          from: period.from,
+          to: period.to,
+          baseline: periodBaseline,
+          cascade: periodCascade,
+          delta: periodDelta,
+        });
+      }
+    }
+  }
+  
+  return {
+    ok: true,
+    period: { from, to },
+    focus,
+    baseline,
+    cascade,
+    cascadeExtra: {
+      exposureDistribution,
+      avgSizeMultiplier,
+    },
+    delta,
+    acceptance,
+    breakdown,
+    computedAt: new Date().toISOString(),
+    durationMs: Date.now() - t0,
+  };
+}
+
+/**
+ * Evaluate acceptance criteria.
+ */
+function evaluateAcceptance(
+  baseline: ValidationMetrics,
+  cascade: ValidationMetrics,
+  delta: MetricsDelta
+): AcceptanceCriteria {
+  const criteria = {
+    maxDDImproved10Pct: delta.maxDDDiffPct <= -10,
+    equityImproved5Pct: delta.equityDiffPct >= 5,
+    volImproved10Pct: delta.volDiffPct <= -10,
+    biasAcceptable: Math.abs(cascade.bias) <= 0.002,
+    hitRateNotDegraded: delta.hitRateDiff >= -0.03,
+  };
+  
+  const reasons: string[] = [];
+  
+  if (criteria.maxDDImproved10Pct) {
+    reasons.push(`MaxDD improved by ${Math.abs(delta.maxDDDiffPct).toFixed(1)}%`);
+  }
+  if (criteria.equityImproved5Pct) {
+    reasons.push(`Equity improved by ${delta.equityDiffPct.toFixed(1)}%`);
+  }
+  if (criteria.volImproved10Pct) {
+    reasons.push(`Volatility reduced by ${Math.abs(delta.volDiffPct).toFixed(1)}%`);
+  }
+  if (!criteria.biasAcceptable) {
+    reasons.push(`Bias outside acceptable range: ${cascade.bias.toFixed(4)}`);
+  }
+  if (!criteria.hitRateNotDegraded) {
+    reasons.push(`Hit rate degraded by ${Math.abs(delta.hitRateDiff * 100).toFixed(1)}%`);
+  }
+  
+  // Pass if at least one improvement criterion met AND no degradation
+  const hasImprovement = criteria.maxDDImproved10Pct || criteria.equityImproved5Pct || criteria.volImproved10Pct;
+  const noDegradation = criteria.biasAcceptable && criteria.hitRateNotDegraded;
+  const passed = hasImprovement && noDegradation;
+  
+  if (!passed && reasons.length === 0) {
+    reasons.push('No significant improvement detected. Consider calibrating cascade parameters.');
+  }
+  
+  return { passed, reasons, criteria };
+}
